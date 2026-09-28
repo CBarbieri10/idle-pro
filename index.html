@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Idle Pro: 2.0 (AAA Edition)</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&family=Rajdhani:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <link rel="stylesheet" href="css/styles.css">
+    
+    <script src="https://cdn.jsdelivr.net/npm/phaser@3.80.1/dist/phaser.min.js"></script>
+    <script src="js/store.js"></script>
+    <script src="js/engine.js" defer></script>
+</head>
+<body>
+
+    <!-- Renderizador Nativo -->
+    <div id="game-container"></div>
+
+    <!-- UI DOM Camada Superior -->
+    <div id="ui-layer" class="pointer-none">
+        
+        <!-- TOP-LEFT: TACTICAL BADGE (O Ego) -->
+        <div class="tactical-badge glass-premium pointer-auto">
+            <div class="avatar-ring">
+                <div class="paper-doll-container mini">
+                    <img src="img/base-atleta.png" class="doll-layer layer-base" onerror="this.src='https://via.placeholder.com/80x160/222/fff?text=Avatar'">
+                    <img src="img/uniforme-default.png" class="doll-layer layer-uniform" id="doll-uniform">
+                    <img src="img/transparent.png" class="doll-layer layer-hair" id="doll-hair">
+                    <img src="img/transparent.png" class="doll-layer layer-boots" id="doll-boots">
+                </div>
+            </div>
+            <div class="tactical-ovr">
+                <span class="ovr-label">OVR TÁTICO</span>
+                <span class="ovr-value gradient-gold" id="ui-ovr">50</span>
+            </div>
+        </div>
+
+        <!-- TOP-RIGHT: VAULT WIDGET (A Economia) -->
+        <div class="vault-widget glass-premium pointer-auto">
+            <div class="stat-item"><i class="ph-fill ph-lightning" style="color: #10b981;"></i> <span id="ui-energy">100</span></div>
+            <div class="stat-separator"></div>
+            <div class="stat-item"><i class="ph-fill ph-coins" style="color: #eab308;"></i> <span id="ui-coins">0</span></div>
+            <div class="stat-separator"></div>
+            <div class="stat-item"><i class="ph-fill ph-diamond" style="color: #06b6d4;"></i> <span id="ui-diamonds">0</span></div>
+        </div>
+
+        <!-- BOTTOM DOCK: Barra Inferior Agressiva -->
+        <div class="bottom-dock glass-premium pointer-auto">
+            <button class="dock-btn btn-store" onclick="UI.abrirStore()">
+                <i class="ph-fill ph-storefront"></i> DEPARTAMENTO VIP
+            </button>
+            <button class="dock-btn btn-boss" onclick="UI.simularVitoria()">
+                <i class="ph-fill ph-trophy"></i> QUICK MATCH BOSS
+            </button>
+        </div>
+
+        <!-- MODAL: PORTAL DE NOTÍCIAS -->
+        <div id="modal-news" class="modal-overlay hidden pointer-auto">
+            <div class="modal-glass news-portal">
+                <div class="news-header">ÚLTIMA HORA</div>
+                <h1 class="news-headline" id="news-headline-text">O NOVO ÍDOLO DA VÁRZEA</h1>
+                <div class="news-body">
+                    <div class="paper-doll-container large-doll">
+                        <img src="img/base-atleta.png" class="doll-layer layer-base" onerror="this.src='https://via.placeholder.com/150x300/222/fff?text=Base'">
+                        <img src="img/uniforme-default.png" class="doll-layer layer-uniform" id="news-doll-uniform">
+                        <img src="img/transparent.png" class="doll-layer layer-hair" id="news-doll-hair">
+                        <img src="img/transparent.png" class="doll-layer layer-boots" id="news-doll-boots">
+                    </div>
+                    <div class="news-feedback" id="news-feedback-text">
+                        Com uma leitura tática impecável, seu nome ecoa pelos corredores do continente. A lenda começou.
+                    </div>
+                </div>
+                <button class="btn-primary glow-btn" onclick="UI.fecharNews()">RETORNAR AO MAPA</button>
+            </div>
+        </div>
+
+        <!-- MODAL: DEPARTAMENTO FINANCEIRO -->
+        <div id="modal-store" class="modal-overlay hidden pointer-auto">
+            <div class="modal-glass store-panel">
+                <button class="btn-close" onclick="UI.fecharStore()"><i class="ph ph-x"></i></button>
+                <h2 class="store-title">DEPARTAMENTO VIP</h2>
+                
+                <div class="flash-sale-banner">
+                    <div class="flash-info">
+                        <span class="pulse-tag">⚠️ FLASH SALE ATIVA</span>
+                        <h3>Pacote de Elite</h3>
+                        <p>Domine o jogo com +300 Energia e Equipamentos Exclusivos.</p>
+                        <div class="countdown" id="flash-timer">14:59</div>
+                    </div>
+                    <div class="flash-action">
+                        <button class="btn-buy-flash glow-btn-gold" onclick="UI.comprarFlashSale()">COMPRAR AGORA</button>
+                    </div>
+                </div>
+
+                <div class="store-grid">
+                    <div class="store-item">
+                        <div class="item-icon"><i class="ph-fill ph-lightning"></i></div>
+                        <div class="item-name">Vórtex Energético</div>
+                        <div class="item-price"><i class="ph-fill ph-diamond"></i> 50</div>
+                        <button class="btn-secondary" onclick="UI.comprarEnergia()">RESTAURAR</button>
+                    </div>
+                    <div class="store-item epic-item">
+                        <div class="item-icon"><i class="ph-fill ph-sneaker"></i></div>
+                        <div class="item-name">Chuteira Apex Neon</div>
+                        <div class="item-price"><i class="ph-fill ph-diamond"></i> 500</div>
+                        <button class="btn-primary" onclick="UI.comprarCosmetico('BOOT_APEX')">EQUIPAR ITEM</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Interface Controller -->
+    <script src="js/app.js"></script>
+</body>
+</html>
