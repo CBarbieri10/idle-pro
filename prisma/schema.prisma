@@ -25,3 +25,77 @@ enum Role {
   ADMIN
   ANALYST
 }
+
+// ─── Fase 1: Entidades Core ────────────────────────────────────────────────
+
+model League {
+  id        String   @id @default(cuid())
+  name      String
+  country   String
+  season    String   // ex: "2025/2026"
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  teams     Team[]
+
+  @@map("leagues")
+}
+
+model Team {
+  id        String   @id @default(cuid())
+  name      String
+  shortName String?  // ex: "FLA", "PAL"
+  country   String
+  city      String?
+  leagueId  String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  league    League?  @relation(fields: [leagueId], references: [id])
+  athletes  Athlete[] @relation("ClubAthletes")
+  national  Athlete[] @relation("NationalAthletes")
+
+  @@map("teams")
+}
+
+enum Position {
+  GOALKEEPER
+  RIGHT_BACK
+  CENTER_BACK
+  LEFT_BACK
+  DEFENSIVE_MID
+  CENTRAL_MID
+  ATTACKING_MID
+  RIGHT_WING
+  LEFT_WING
+  STRIKER
+  FORWARD
+}
+
+enum FootPreference {
+  RIGHT
+  LEFT
+  BOTH
+}
+
+model Athlete {
+  id              String         @id @default(cuid())
+  name            String
+  position        Position
+  birthDate       DateTime?
+  nationality     String?
+  height          Int?           // cm
+  weight          Int?           // kg
+  footPreference  FootPreference @default(RIGHT)
+  photoUrl        String?
+  notes           String?
+  teamId          String
+  nationalTeamId  String?
+  createdAt       DateTime       @default(now())
+  updatedAt       DateTime       @updatedAt
+
+  team            Team           @relation("ClubAthletes", fields: [teamId], references: [id])
+  nationalTeam    Team?          @relation("NationalAthletes", fields: [nationalTeamId], references: [id])
+
+  @@map("athletes")
+}
