@@ -87,7 +87,10 @@ model Athlete {
   height          Int?           // cm
   weight          Int?           // kg
   footPreference  FootPreference @default(RIGHT)
-  photoUrl        String?
+  photoUrl            String?        // foto de perfil
+  photoHasAlpha       Boolean        @default(false) // PNG/WebP com fundo transparente
+  actionPhotoUrl      String?        // foto de ação
+  actionPhotoHasAlpha Boolean        @default(false)
   notes           String?
   teamId          String
   nationalTeamId  String?

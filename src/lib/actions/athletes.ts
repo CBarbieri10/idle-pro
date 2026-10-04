@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { Position, FootPreference } from "@prisma/client";
+import { deleteAthleteUploads } from "@/lib/uploads";
 
 // ─── Schema ─────────────────────────────────────────────────────────────────
 
@@ -109,5 +110,7 @@ export async function updateAthlete(id: string, formData: FormData) {
 
 export async function deleteAthlete(id: string) {
   await prisma.athlete.delete({ where: { id } });
+  await deleteAthleteUploads(id).catch(() => {});
   revalidatePath("/athletes");
 }
+
