@@ -24,10 +24,23 @@ import {
   formatAge,
   formatDate,
 } from "@/lib/domain";
-import { ArrowLeft, Shield, Globe, Camera, BarChart3, Fingerprint, Sparkles } from "lucide-react";
+import {
+  ArrowLeft,
+  Shield,
+  Globe,
+  Camera,
+  BarChart3,
+  Fingerprint,
+  Sparkles,
+  ExternalLink,
+  TrendingUp,
+  Clock,
+  Calendar,
+} from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 
 export async function generateMetadata({
@@ -40,17 +53,17 @@ export async function generateMetadata({
   if (!athlete) return { title: "Atleta não encontrado" };
   return {
     title: `${athlete.name} | The Net Scouting`,
-    description: `Perfil de ${athlete.name} — ${POSITION_LABELS[athlete.position]}`,
+    description: `Perfil e inteligência de performance de ${athlete.name} — ${POSITION_LABELS[athlete.position]}`,
   };
 }
 
-function StatItem({ label, value }: { label: string; value: string }) {
+function StatTile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="space-y-1">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+    <div className="rounded-xl border border-border-subtle bg-bg-surface-elevated p-3">
+      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
         {label}
       </p>
-      <p className="text-sm font-medium text-foreground">{value}</p>
+      <p className="text-sm font-black text-foreground font-mono mt-1">{value}</p>
     </div>
   );
 }
@@ -118,15 +131,15 @@ export default async function AthleteProfilePage({
   const hasMetrics = athleteStats && Object.keys(athleteStats.metrics).length > 0;
 
   return (
-    <div className="space-y-6 max-w-4xl">
-      {/* Back & Actions */}
-      <div className="flex flex-wrap items-center justify-between gap-3">
+    <div className="space-y-6 max-w-5xl mx-auto">
+      {/* ─── Breadcrumb & Action Toolbar ──────────────────────────────────── */}
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle pb-4">
         <Link
           href="/athletes"
-          className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+          className="inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors"
         >
-          <ArrowLeft className="h-4 w-4" />
-          Voltar para atletas
+          <ArrowLeft className="h-3.5 w-3.5 text-indigo-400" />
+          Voltar para lista de atletas
         </Link>
 
         {/* Executive Action Toolbar */}
@@ -136,29 +149,38 @@ export default async function AthleteProfilePage({
             athleteName={athlete.name}
             initialInPortfolio={inPortfolio}
           />
+
+          <Link
+            href={`/athletes/${athlete.id}/raio-x`}
+            target="_blank"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-border-strong bg-bg-surface-elevated px-3 py-1.5 text-xs font-semibold text-zinc-300 hover:bg-bg-surface-highlight transition-all"
+          >
+            <ExternalLink className="h-3.5 w-3.5 text-indigo-400" />
+            Dossiê A4 (Tela Cheia)
+          </Link>
+
           <AthleteRaioXModal athlete={raioXData} />
         </div>
       </div>
 
-      {/* ─── Hero header ─────────────────────────────────────────────────── */}
-      <section className="relative mt-4">
-        {/* Background layer (clipped) */}
-        <div className="hero-stage absolute inset-0 overflow-hidden rounded-2xl border border-border/60 shadow-2xl shadow-primary/10" />
+      {/* ─── Hero Executive Header ────────────────────────────────────────── */}
+      <section className="relative mt-2">
+        {/* Holographic background */}
+        <div className="hero-stage absolute inset-0 overflow-hidden rounded-2xl border border-border-strong shadow-2xl" />
 
         {/* Monogram watermark */}
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl"
         >
-          <span className="absolute -bottom-6 right-4 select-none text-[9rem] font-black leading-none tracking-tighter text-white/[0.04]">
+          <span className="absolute -bottom-6 right-4 select-none text-[9rem] font-black leading-none tracking-tighter text-white/[0.03]">
             {initials}
           </span>
         </div>
 
-        <div className="relative flex min-h-[220px] flex-col items-start gap-6 p-6 sm:flex-row sm:items-end sm:pl-8">
-          {/* Profile photo */}
+        <div className="relative z-10 flex min-h-[220px] flex-col items-start gap-6 p-6 sm:flex-row sm:items-end sm:pl-8">
+          {/* Profile photo with alpha float stage */}
           {athlete.photoUrl && athlete.photoHasAlpha ? (
-            // Transparent cut-out — overflows the top of the card
             <div className="relative -mt-16 h-[260px] w-[200px] shrink-0 sm:-mb-6 sm:self-end">
               <Image
                 src={athlete.photoUrl}
@@ -171,7 +193,7 @@ export default async function AthleteProfilePage({
               />
             </div>
           ) : athlete.photoUrl ? (
-            <div className="relative h-32 w-28 shrink-0 overflow-hidden rounded-2xl ring-2 ring-primary/40 shadow-xl">
+            <div className="relative h-32 w-28 shrink-0 overflow-hidden rounded-2xl ring-2 ring-indigo-500/40 shadow-xl border border-indigo-500/30">
               <Image
                 src={athlete.photoUrl}
                 alt={athlete.name}
@@ -183,7 +205,7 @@ export default async function AthleteProfilePage({
               />
             </div>
           ) : (
-            <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-2xl bg-primary/15 text-3xl font-bold text-primary ring-1 ring-primary/30">
+            <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-2xl bg-indigo-500/20 text-3xl font-black text-indigo-400 ring-1 ring-indigo-500/30">
               {initials}
             </div>
           )}
@@ -192,76 +214,75 @@ export default async function AthleteProfilePage({
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
                 <Badge
-                  className={`mb-2 text-xs font-medium border-0 ${POSITION_COLORS[athlete.position]}`}
+                  className={`mb-2 text-[10px] font-bold px-2 py-0.5 border-0 ${POSITION_COLORS[athlete.position]}`}
                 >
                   {POSITION_LABELS[athlete.position]}
                 </Badge>
-                <h1 className="truncate text-2xl font-extrabold tracking-tight text-white sm:text-3xl">
+                <h1 className="truncate text-2xl font-black tracking-tight text-white sm:text-3xl">
                   {athlete.name}
                 </h1>
                 {athlete.nationality && (
-                  <span className="mt-1 flex items-center gap-1 text-xs text-white/60">
-                    <Globe className="h-3 w-3" />
+                  <span className="mt-1 flex items-center gap-1 text-xs text-white/70">
+                    <Globe className="h-3.5 w-3.5 text-indigo-400" />
                     {athlete.nationality}
                   </span>
                 )}
               </div>
 
-              <div className="flex shrink-0 items-center gap-1">
+              <div className="flex shrink-0 items-center gap-1.5">
                 <EditAthleteButton athlete={athlete} teams={teamList} />
                 <DeleteAthleteButton id={athlete.id} name={athlete.name} />
               </div>
             </div>
 
-            {/* Club & National Team */}
-            <div className="mt-4 flex flex-wrap gap-3">
-              <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-black/25 px-3 py-2 backdrop-blur-md">
-                <Shield className="h-4 w-4 text-primary" />
+            {/* Club & Physical Pills Bar */}
+            <div className="mt-4 flex flex-wrap items-center gap-2">
+              <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-black/35 px-3 py-1.5 backdrop-blur-md">
+                <Shield className="h-4 w-4 text-indigo-400" />
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider text-white/50">Clube</p>
-                  <p className="text-sm font-medium text-white">{athlete.team.name}</p>
+                  <p className="text-[9px] uppercase font-bold tracking-wider text-white/50">Clube</p>
+                  <p className="text-xs font-bold text-white">{athlete.team.name}</p>
                 </div>
               </div>
-              {athlete.nationalTeam && (
-                <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-black/25 px-3 py-2 backdrop-blur-md">
-                  <Globe className="h-4 w-4 text-chart-2" />
-                  <div>
-                    <p className="text-[10px] uppercase tracking-wider text-white/50">Seleção</p>
-                    <p className="text-sm font-medium text-white">{athlete.nationalTeam.name}</p>
-                  </div>
-                </div>
-              )}
+
+              <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-black/35 px-3 py-1.5 backdrop-blur-md font-mono text-xs text-zinc-300">
+                <Clock className="h-3.5 w-3.5 text-indigo-400" />
+                <span>
+                  <strong>Amostragem:</strong> {athleteStats?.totalMinutes ?? 0}&apos; ({athleteStats?.totalMatches ?? 0} jogos)
+                </span>
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ─── Impressão Digital Tática (Gráfico de Radar Per-90) ─────────────── */}
-      <Card className="p-6 border-border bg-card overflow-hidden">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-border/60">
+      {/* ─── Tactical Spider Radar & Key Highlights ───────────────────────── */}
+      <Card className="rounded-2xl border border-border-strong bg-bg-surface p-6 shadow-xl overflow-hidden">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-border-subtle">
           <div>
             <div className="flex items-center gap-2">
-              <Fingerprint className="h-5 w-5 text-primary" />
-              <h2 className="text-base font-bold text-foreground">
-                Impressão Digital Tática
+              <div className="h-6 w-6 rounded bg-indigo-600 flex items-center justify-center text-white">
+                <Fingerprint className="h-4 w-4" />
+              </div>
+              <h2 className="text-base font-black text-foreground">
+                Impressão Digital Tática (Radar Multidimensional)
               </h2>
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">
-              Normalização Per-90 calibrada em relação aos padrões de elite da posição
+              Métricas Per-90 calibradas em relação aos padrões de referência da liga profissional.
             </p>
           </div>
 
-          <div className="flex items-center gap-2">
-            <Badge variant="outline" className="border-primary/30 text-primary gap-1 text-[11px]">
-              <Sparkles className="h-3 w-3" />
-              Per-90 Benchmark
-            </Badge>
-          </div>
+          <Badge variant="outline" className="border-indigo-500/30 text-indigo-400 gap-1 text-[11px] font-bold">
+            <Sparkles className="h-3 w-3" />
+            Normalização Per-90
+          </Badge>
         </div>
 
         {hasMetrics ? (
           <div className="flex flex-col lg:flex-row items-center justify-around gap-8">
-            <div className="flex-1 flex justify-center">
+            {/* SVG Radar */}
+            <div className="flex-1 flex justify-center py-2">
               <RadarChart
                 metrics={athleteStats.metrics}
                 size={340}
@@ -270,43 +291,56 @@ export default async function AthleteProfilePage({
             </div>
 
             {/* Quick summary column */}
-            <div className="w-full lg:w-72 space-y-4">
-              <div className="rounded-xl border border-border/80 bg-muted/20 p-4">
-                <p className="text-xs font-semibold text-foreground mb-3 flex items-center gap-1.5">
-                  <BarChart3 className="h-3.5 w-3.5 text-primary" />
-                  Destaques Estatísticos
+            <div className="w-full lg:w-80 space-y-4">
+              <div className="rounded-xl border border-border-strong bg-bg-surface-elevated p-4 shadow-sm">
+                <p className="text-xs font-bold uppercase tracking-wider text-foreground mb-3 flex items-center justify-between">
+                  <span className="flex items-center gap-1.5">
+                    <BarChart3 className="h-3.5 w-3.5 text-indigo-400" />
+                    Top Destaques Estatísticos
+                  </span>
+                  <span className="text-[10px] text-muted-foreground font-mono">Per-90</span>
                 </p>
-                <div className="space-y-2.5">
+
+                <div className="space-y-2">
                   {Object.entries(athleteStats.metrics)
                     .filter(([, m]) => m.per90 > 0)
                     .sort(([, a], [, b]) => b.per90 - a.per90)
-                    .slice(0, 5)
-                    .map(([k, m]) => (
-                      <div
-                        key={k}
-                        className="flex items-center justify-between text-xs border-b border-border/40 pb-1.5 last:border-none last:pb-0"
-                      >
-                        <span className="text-muted-foreground truncate max-w-[150px]">
-                          {m.label}
-                        </span>
-                        <span className="font-mono font-bold text-foreground">
-                          {m.per90}
-                          <span className="text-[10px] text-muted-foreground ml-0.5">/90</span>
-                        </span>
-                      </div>
-                    ))}
+                    .slice(0, 6)
+                    .map(([k, m]) => {
+                      const isHigh = m.per90 >= 2.0 || k === "goals" || k === "xg" || k === "key_passes";
+                      return (
+                        <div
+                          key={k}
+                          className="flex items-center justify-between text-xs border-b border-border-subtle/60 pb-1.5 last:border-none last:pb-0"
+                        >
+                          <span className="text-muted-foreground truncate max-w-[160px]">
+                            {m.label}
+                          </span>
+                          <span
+                            className={cn(
+                              "font-mono font-black tabular-nums text-xs",
+                              isHigh ? "text-emerald-400" : "text-foreground"
+                            )}
+                          >
+                            {m.per90}
+                            <span className="text-[9px] text-muted-foreground ml-0.5">/90</span>
+                          </span>
+                        </div>
+                      );
+                    })}
                 </div>
               </div>
 
-              <div className="rounded-xl border border-primary/20 bg-primary/5 p-3.5 text-[11px] text-muted-foreground leading-relaxed">
-                💡 <span className="font-semibold text-foreground">Dica do Analista:</span> Use as abas do radar (Ataque, Passe, Defesa) para isolar sub-dimensões e comparar o volume de ações com o equilíbrio tático.
+              {/* Tactical Coach / Analyst Insight Card */}
+              <div className="rounded-xl border border-indigo-500/20 bg-indigo-500/5 p-3.5 text-[11px] text-muted-foreground leading-relaxed">
+                💡 <span className="font-bold text-foreground">Dica do Analista:</span> Use as abas do radar (Ataque, Passe, Defesa) para isolar sub-dimensões e comparar o volume de ações com o equilíbrio tático.
               </div>
             </div>
           </div>
         ) : (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
+          <div className="flex flex-col items-center justify-center py-16 text-center">
             <Fingerprint className="h-10 w-10 text-muted-foreground/30 mb-2" />
-            <p className="text-sm font-medium text-foreground">Nenhuma métrica computada</p>
+            <p className="text-sm font-bold text-foreground">Nenhuma métrica computada</p>
             <p className="text-xs text-muted-foreground mt-1 max-w-sm">
               Adicione métricas por jogo ou importe planilhas de scouts para gerar o radar tático deste atleta.
             </p>
@@ -314,40 +348,46 @@ export default async function AthleteProfilePage({
         )}
       </Card>
 
-      {/* ─── Galeria de ação ───────────────────────────────────────────────── */}
-      {athlete.actionPhotoUrl && (
-        <div
-          className={`relative overflow-hidden rounded-2xl border border-border/50 ${
-            athlete.actionPhotoHasAlpha ? "photo-stage" : ""
-          }`}
-          style={{ aspectRatio: "16/9" }}
-        >
-          <Image
-            src={athlete.actionPhotoUrl}
-            alt={`${athlete.name} — foto de ação`}
-            fill
-            className={
-              athlete.actionPhotoHasAlpha
-                ? "object-contain object-bottom drop-shadow-[0_16px_28px_rgba(0,0,0,0.55)]"
-                : "object-cover"
-            }
-            sizes="(max-width: 768px) 100vw, 768px"
-            unoptimized
+      {/* ─── Biographical Data Grid ───────────────────────────────────────── */}
+      <Card className="rounded-2xl border border-border-strong bg-bg-surface p-6 shadow-md">
+        <h2 className="text-sm font-bold uppercase tracking-wider text-foreground mb-4 flex items-center gap-2">
+          <Calendar className="h-4 w-4 text-indigo-400" />
+          Ficha Biográfica & Biometria
+        </h2>
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+          <StatTile
+            label="Nascimento"
+            value={formatDate(athlete.birthDate)}
           />
-          <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/70 to-transparent px-5 py-4">
-            <p className="text-[10px] font-semibold uppercase tracking-widest text-white/70">
-              Foto de Ação
-            </p>
-            <p className="text-sm font-semibold text-white">{athlete.name}</p>
-          </div>
+          <StatTile label="Idade" value={athlete.birthDate ? `${formatAge(athlete.birthDate)}` : "—"} />
+          <StatTile label="Pé Dominante" value={FOOT_LABELS[athlete.footPreference]} />
+          <StatTile label="Altura" value={formatHeight(athlete.height)} />
+          <StatTile label="Peso" value={formatWeight(athlete.weight)} />
+          <StatTile label="Nacionalidade" value={athlete.nationality ?? "—"} />
         </div>
-      )}
 
-      {/* ─── Gerenciar fotos ───────────────────────────────────────────────── */}
-      <Card className="p-6 border-border bg-card">
+        {athlete.notes && (
+          <>
+            <Separator className="my-5 border-border-subtle" />
+            <div>
+              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
+                Anotações do Scout
+              </p>
+              <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-wrap bg-bg-surface-elevated p-3 rounded-xl border border-border-subtle">
+                {athlete.notes}
+              </p>
+            </div>
+          </>
+        )}
+      </Card>
+
+      {/* ─── Manage Photos ────────────────────────────────────────────────── */}
+      <Card className="rounded-2xl border border-border-strong bg-bg-surface p-6 shadow-md">
         <div className="flex items-center gap-2 mb-5">
-          <Camera className="h-4 w-4 text-muted-foreground" />
-          <h2 className="text-sm font-semibold text-foreground">Fotos do Atleta</h2>
+          <Camera className="h-4 w-4 text-indigo-400" />
+          <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
+            Fotos do Atleta & Transparência
+          </h2>
         </div>
 
         <AthletePhotoUpload
@@ -359,42 +399,14 @@ export default async function AthleteProfilePage({
         />
       </Card>
 
-      {/* Biographical data */}
-      <Card className="p-6 border-border bg-card">
-        <h2 className="text-sm font-semibold text-foreground mb-4">Dados Biográficos</h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-6">
-          <StatItem
-            label="Data de Nascimento"
-            value={formatDate(athlete.birthDate)}
-          />
-          <StatItem label="Idade" value={formatAge(athlete.birthDate)} />
-          <StatItem label="Pé Dominante" value={FOOT_LABELS[athlete.footPreference]} />
-          <StatItem label="Altura" value={formatHeight(athlete.height)} />
-          <StatItem label="Peso" value={formatWeight(athlete.weight)} />
-          <StatItem label="Nacionalidade" value={athlete.nationality ?? "—"} />
-        </div>
-
-        {athlete.notes && (
-          <>
-            <Separator className="my-5" />
-            <div>
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2">
-                Anotações
-              </p>
-              <p className="text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
-                {athlete.notes}
-              </p>
-            </div>
-          </>
-        )}
-      </Card>
-
-      {/* ─── Métricas por jogo (T04) ──────────────────────────────────────── */}
-      <Card className="p-6 border-border bg-card" id="athlete-metrics">
+      {/* ─── Matches History (T04) ────────────────────────────────────────── */}
+      <Card className="rounded-2xl border border-border-strong bg-bg-surface p-6 shadow-md" id="athlete-metrics">
         <div className="mb-5 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4 text-muted-foreground" />
-            <h2 className="text-sm font-semibold text-foreground">Métricas por Jogo</h2>
+            <BarChart3 className="h-4 w-4 text-indigo-400" />
+            <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
+              Histórico & Métricas por Jogo
+            </h2>
           </div>
           <AddMetricButton {...metricProps} usedMatchIds={history.map((h) => h.matchId)} />
         </div>

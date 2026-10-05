@@ -34,15 +34,15 @@ export function AthleteFilters({ teams }: { teams: Team[] }) {
   }
 
   return (
-    <div className="flex flex-col sm:flex-row gap-3">
+    <div className="flex flex-col sm:flex-row gap-3 rounded-xl border border-border-strong bg-bg-surface p-3 shadow-md">
       {/* Search */}
       <div className="relative flex-1 min-w-0">
         <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
         <Input
-          placeholder="Buscar atleta..."
+          placeholder="Buscar atleta por nome..."
           defaultValue={searchParams.get("search") ?? ""}
           onChange={(e) => updateParam("search", e.target.value)}
-          className="pl-9 bg-muted/50 border-none"
+          className="pl-9 h-9 text-xs bg-bg-surface-elevated border-border-strong text-foreground placeholder:text-muted-foreground/60 rounded-lg focus-visible:ring-indigo-500"
         />
       </div>
 
@@ -51,10 +51,10 @@ export function AthleteFilters({ teams }: { teams: Team[] }) {
         defaultValue={searchParams.get("position") ?? "ALL"}
         onValueChange={(v) => updateParam("position", v ?? "ALL")}
       >
-        <SelectTrigger className="w-full sm:w-44 bg-muted/50 border-none">
-          <SelectValue placeholder="Posição" />
+        <SelectTrigger className="w-full sm:w-44 h-9 text-xs bg-bg-surface-elevated border-border-strong text-foreground rounded-lg">
+          <SelectValue placeholder="Todas as posições" />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="bg-bg-surface-elevated border-border-strong">
           <SelectItem value="ALL">Todas posições</SelectItem>
           {Object.entries(POSITION_LABELS).map(([key, label]) => (
             <SelectItem key={key} value={key}>
@@ -69,10 +69,10 @@ export function AthleteFilters({ teams }: { teams: Team[] }) {
         defaultValue={searchParams.get("teamId") ?? "ALL"}
         onValueChange={(v) => updateParam("teamId", v ?? "ALL")}
       >
-        <SelectTrigger className="w-full sm:w-48 bg-muted/50 border-none">
-          <SelectValue placeholder="Clube" />
+        <SelectTrigger className="w-full sm:w-48 h-9 text-xs bg-bg-surface-elevated border-border-strong text-foreground rounded-lg">
+          <SelectValue placeholder="Todos os clubes" />
         </SelectTrigger>
-        <SelectContent>
+        <SelectContent className="bg-bg-surface-elevated border-border-strong">
           <SelectItem value="ALL">Todos os clubes</SelectItem>
           {teams.map((t) => (
             <SelectItem key={t.id} value={t.id}>

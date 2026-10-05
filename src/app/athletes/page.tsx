@@ -5,14 +5,15 @@ import { CreateAthleteButton, EditAthleteButton, DeleteAthleteButton } from "@/c
 import { AthleteFilters } from "@/components/athletes/athlete-filters";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Users, ChevronRight } from "lucide-react";
-import { POSITION_LABELS, POSITION_COLORS, formatAge } from "@/lib/domain";
+import { Users, ChevronRight, Shield, Sparkles, UserPlus } from "lucide-react";
+import { POSITION_LABELS, POSITION_COLORS, FOOT_LABELS, formatAge, formatHeight } from "@/lib/domain";
 import Link from "next/link";
+import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Atletas | The Net Scouting",
-  description: "Gerencie os atletas do seu portfólio de scouting",
+  description: "Gerencie e monitore os atletas cadastrados na plataforma",
 };
 
 export default async function AthletesPage({
@@ -34,91 +35,147 @@ export default async function AthletesPage({
 
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
+      {/* ─── Header ──────────────────────────────────────────────────────── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-subtle pb-5">
         <div>
-          <h1 className="text-2xl font-bold tracking-tight">Atletas</h1>
-          <p className="text-muted-foreground mt-1">
-            {athletes.length} {athletes.length === 1 ? "atleta encontrado" : "atletas encontrados"}
+          <div className="flex items-center gap-2">
+            <span className="inline-flex items-center gap-1.5 rounded-md bg-indigo-500/10 px-2.5 py-0.5 text-[10px] font-bold text-indigo-400 border border-indigo-500/20 uppercase tracking-wider">
+              <Users className="h-3 w-3" /> Gestão de Elenco &bull; Atletas
+            </span>
+            <span className="text-xs text-muted-foreground font-mono">
+              {athletes.length} {athletes.length === 1 ? "atleta" : "atletas"}
+            </span>
+          </div>
+          <h1 className="text-2xl font-black tracking-tight text-foreground mt-1.5">
+            Atletas Cadastrados
+          </h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Gerencie dados biométricos, fotos recortadas e histórico de atletas do sistema.
           </p>
         </div>
+
         <CreateAthleteButton teams={teamList} />
       </div>
 
-      {/* Filters */}
+      {/* ─── Filters ─────────────────────────────────────────────────────── */}
       <Suspense>
         <AthleteFilters teams={teamList} />
       </Suspense>
 
-      {/* Athletes list */}
+      {/* ─── Athletes Grid ───────────────────────────────────────────────── */}
       {athletes.length === 0 ? (
-        <Card className="flex flex-col items-center justify-center py-16 border-dashed border-border/60">
-          <Users className="h-10 w-10 text-muted-foreground/30 mb-3" />
-          <p className="text-sm font-medium text-muted-foreground">
+        <Card className="flex flex-col items-center justify-center py-20 border-dashed border-border-strong bg-bg-surface text-center rounded-xl">
+          <div className="h-12 w-12 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center mb-3">
+            <Users className="h-6 w-6 text-muted-foreground/50" />
+          </div>
+          <h3 className="text-sm font-bold text-foreground">
             {params.search || params.position || params.teamId
               ? "Nenhum atleta encontrado com esses filtros"
               : "Nenhum atleta cadastrado"}
-          </p>
-          <p className="text-xs text-muted-foreground/60 mt-1">
-            {!(params.search || params.position || params.teamId) &&
-              "Comece cadastrando o primeiro atleta"}
+          </h3>
+          <p className="text-xs text-muted-foreground/60 mt-1 max-w-sm">
+            {params.search || params.position || params.teamId
+              ? "Experimente redefinir os parâmetros de pesquisa."
+              : "Cadastre seu primeiro atleta com dados físicos e foto recortada para iniciar a análise."}
           </p>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {athletes.map((athlete) => (
-            <Card
-              key={athlete.id}
-              className="group relative p-4 border-border bg-card hover:border-primary/20 transition-all"
-            >
-              <div className="flex items-start gap-3">
-                {/* Avatar */}
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-muted text-base font-bold text-muted-foreground">
-                  {athlete.name.split(" ").map((n) => n[0]).slice(0, 2).join("")}
-                </div>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          {athletes.map((athlete) => {
+            const initials = athlete.name
+              .split(" ")
+              .map((n) => n[0])
+              .slice(0, 2)
+              .join("")
+              .toUpperCase();
 
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2">
-                    <Link
-                      href={`/athletes/${athlete.id}`}
-                      className="font-semibold text-foreground hover:text-primary transition-colors truncate"
+            return (
+              <div
+                key={athlete.id}
+                className="group relative flex flex-col justify-between rounded-xl border border-border-strong bg-bg-surface p-4 transition-all duration-200 hover:shadow-xl hover:border-indigo-500/40"
+              >
+                <div>
+                  {/* Top Bar: Position & Actions */}
+                  <div className="flex items-center justify-between gap-2">
+                    <Badge
+                      variant="outline"
+                      className={cn("text-[10px] font-bold px-2 py-0.5", POSITION_COLORS[athlete.position])}
                     >
-                      {athlete.name}
-                    </Link>
+                      {POSITION_LABELS[athlete.position]}
+                    </Badge>
+
+                    {/* Quick action buttons on hover */}
+                    <div className="flex items-center gap-1 opacity-60 group-hover:opacity-100 transition-opacity">
+                      <EditAthleteButton athlete={athlete} teams={teamList} />
+                      <DeleteAthleteButton id={athlete.id} name={athlete.name} />
+                    </div>
                   </div>
-                  <p className="text-xs text-muted-foreground truncate mt-0.5">
-                    {athlete.team.name}
-                    {athlete.nationality ? ` · ${athlete.nationality}` : ""}
-                  </p>
+
+                  {/* Portrait + Name */}
+                  <div className="mt-3.5 flex items-center gap-3">
+                    <div className="relative h-14 w-14 rounded-xl bg-gradient-to-tr from-indigo-500/20 via-indigo-500/10 to-transparent p-0.5 border border-indigo-500/30 shrink-0 overflow-hidden flex items-center justify-center">
+                      {athlete.photoUrl ? (
+                        <img
+                          src={athlete.photoUrl}
+                          alt={athlete.name}
+                          className={cn(
+                            "h-full w-full object-cover rounded-lg",
+                            athlete.photoHasAlpha && "object-contain"
+                          )}
+                        />
+                      ) : (
+                        <span className="text-sm font-black text-indigo-400 font-mono">
+                          {initials}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="min-w-0 flex-1">
+                      <Link
+                        href={`/athletes/${athlete.id}`}
+                        className="font-black text-sm text-foreground hover:text-indigo-400 transition-colors block truncate"
+                      >
+                        {athlete.name}
+                      </Link>
+                      <div className="flex items-center gap-1 text-xs text-muted-foreground truncate mt-0.5">
+                        <Shield className="h-3 w-3 shrink-0 text-indigo-400" />
+                        <span className="truncate font-semibold">{athlete.team.name}</span>
+                        {athlete.nationality && (
+                          <span className="text-[10px] opacity-70">&bull; {athlete.nationality}</span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Physical attributes */}
+                  <div className="mt-3 flex items-center gap-2 text-[11px] text-muted-foreground border-t border-border-subtle pt-2 font-mono">
+                    <span>{athlete.birthDate ? formatAge(athlete.birthDate) : "—"}</span>
+                    <span>&bull;</span>
+                    <span>{FOOT_LABELS[athlete.footPreference]}</span>
+                    {athlete.height && (
+                      <>
+                        <span>&bull;</span>
+                        <span>{formatHeight(athlete.height)}</span>
+                      </>
+                    )}
+                  </div>
                 </div>
 
-                {/* Actions */}
-                <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity shrink-0">
-                  <EditAthleteButton athlete={athlete} teams={teamList} />
-                  <DeleteAthleteButton id={athlete.id} name={athlete.name} />
-                </div>
-              </div>
-
-              <div className="mt-3 flex items-center gap-2 flex-wrap">
-                <Badge
-                  className={`text-[10px] font-medium border-0 ${POSITION_COLORS[athlete.position]}`}
-                >
-                  {POSITION_LABELS[athlete.position]}
-                </Badge>
-                {athlete.birthDate && (
-                  <span className="text-[10px] text-muted-foreground">
-                    {formatAge(athlete.birthDate)}
+                {/* Footer link */}
+                <div className="mt-4 flex items-center justify-between border-t border-border-subtle pt-2.5 text-xs">
+                  <span className="text-[10px] text-muted-foreground font-mono">
+                    ID: {athlete.id.slice(0, 8)}
                   </span>
-                )}
-                <Link
-                  href={`/athletes/${athlete.id}`}
-                  className="ml-auto flex items-center gap-1 text-[10px] text-muted-foreground/50 hover:text-primary transition-colors"
-                >
-                  Ver perfil <ChevronRight className="h-3 w-3" />
-                </Link>
+                  <Link
+                    href={`/athletes/${athlete.id}`}
+                    className="flex items-center gap-1 text-xs font-bold text-indigo-400 hover:text-indigo-300 transition-colors"
+                  >
+                    Ver perfil <ChevronRight className="h-3.5 w-3.5" />
+                  </Link>
+                </div>
               </div>
-            </Card>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

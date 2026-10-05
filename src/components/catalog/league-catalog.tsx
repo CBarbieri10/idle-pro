@@ -7,11 +7,9 @@ import {
   Search,
   Filter,
   SlidersHorizontal,
-  FileSpreadsheet,
   CheckSquare,
   Square,
   Users,
-  Eye,
   LayoutGrid,
   List,
   RotateCcw,
@@ -20,12 +18,15 @@ import {
   Shield,
   Clock,
   ArrowRight,
+  TrendingUp,
+  FileText,
+  X,
+  Compass,
 } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import {
   Select,
   SelectContent,
@@ -41,7 +42,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { type CatalogAthlete, type CatalogFilters } from "@/lib/actions/catalog";
+import { type CatalogAthlete } from "@/lib/actions/catalog";
 import { AthleteComparisonModal } from "@/components/catalog/athlete-comparison-modal";
 import {
   POSITION_LABELS,
@@ -50,10 +51,10 @@ import {
   formatHeight,
   formatWeight,
 } from "@/lib/domain";
-import { METRICS, formatMetric, metricLabel } from "@/lib/metrics";
+import { METRICS, formatMetric } from "@/lib/metrics";
 import { cn } from "@/lib/utils";
-import { Position, FootPreference } from "@prisma/client";
 import { PortfolioToggleButton } from "@/components/portfolio/portfolio-toggle-button";
+import { AthleteRaioXModal, type RaioXAthleteData } from "@/components/reports/athlete-raio-x-modal";
 
 interface TeamOption {
   id: string;
@@ -64,6 +65,40 @@ interface LeagueCatalogProps {
   initialAthletes: CatalogAthlete[];
   teams: TeamOption[];
   initialPortfolioIds?: string[];
+}
+
+function isEliteMetric(key: string, value?: number): boolean {
+  if (value == null) return false;
+  switch (key) {
+    case "goals":
+      return value >= 0.35;
+    case "assists":
+      return value >= 0.25;
+    case "xg":
+      return value >= 0.3;
+    case "shots":
+      return value >= 2.5;
+    case "shots_on_target":
+      return value >= 1.2;
+    case "dribbles_completed":
+      return value >= 2.2;
+    case "passes":
+      return value >= 35;
+    case "pass_accuracy":
+      return value >= 82;
+    case "key_passes":
+      return value >= 1.5;
+    case "progressive_passes":
+      return value >= 4.0;
+    case "tackles":
+      return value >= 2.0;
+    case "interceptions":
+      return value >= 1.4;
+    case "recoveries":
+      return value >= 4.5;
+    default:
+      return false;
+  }
 }
 
 export function LeagueCatalog({
@@ -86,14 +121,13 @@ export function LeagueCatalog({
   // Sort state
   const [sortBy, setSortBy] = useState<string>("name_asc");
 
-  // View mode: grid vs table
+  // View mode
   const [viewMode, setViewMode] = useState<"grid" | "table">("grid");
 
-  // Comparison selection (IDs of athletes selected)
+  // Comparison selection
   const [selectedAthleteIds, setSelectedAthleteIds] = useState<string[]>([]);
   const [isCompareModalOpen, setIsCompareModalOpen] = useState(false);
 
-  // Toggle athlete comparison selection
   const handleToggleSelect = (athleteId: string) => {
     setSelectedAthleteIds((prev) => {
       if (prev.includes(athleteId)) {
@@ -123,11 +157,20 @@ export function LeagueCatalog({
     setSortBy("name_asc");
   };
 
-  // Filter & Sort athletes client-side for ultra-fast reactive browsing
+  const hasActiveFilters =
+    search ||
+    positionFilter !== "ALL" ||
+    teamFilter !== "ALL" ||
+    footFilter !== "ALL" ||
+    minAge ||
+    maxAge ||
+    filterMetricKey !== "NONE" ||
+    filterMetricMin;
+
+  // Filter & Sort
   const filteredAthletes = useMemo(() => {
     let list = [...initialAthletes];
 
-    // Search
     if (search.trim()) {
       const q = search.toLowerCase();
       list = list.filter(
@@ -138,22 +181,18 @@ export function LeagueCatalog({
       );
     }
 
-    // Position
     if (positionFilter !== "ALL") {
       list = list.filter((a) => a.position === positionFilter);
     }
 
-    // Team
     if (teamFilter !== "ALL") {
       list = list.filter((a) => a.team.id === teamFilter);
     }
 
-    // Foot
     if (footFilter !== "ALL") {
       list = list.filter((a) => a.footPreference === footFilter);
     }
 
-    // Age
     if (minAge) {
       const min = parseInt(minAge, 10);
       if (!isNaN(min)) list = list.filter((a) => a.age != null && a.age >= min);
@@ -163,7 +202,6 @@ export function LeagueCatalog({
       if (!isNaN(max)) list = list.filter((a) => a.age != null && a.age <= max);
     }
 
-    // Metric Per-90 filter
     if (filterMetricKey !== "NONE" && filterMetricMin) {
       const minVal = parseFloat(filterMetricMin);
       if (!isNaN(minVal)) {
@@ -174,25 +212,26 @@ export function LeagueCatalog({
       }
     }
 
-    // Sorting
     const [type, key, direction] = sortBy.split("_");
     if (type === "name") {
       list.sort((a, b) =>
-        key === "desc" ? b.name.localeCompare(a.name) : a.name.localeCompare(b.name)
+        direction === "asc" ? a.name.localeCompare(b.name) : b.name.localeCompare(a.name)
       );
     } else if (type === "age") {
       list.sort((a, b) => {
-        const ageA = a.age ?? 999;
-        const ageB = b.age ?? 999;
-        return key === "desc" ? ageB - ageA : ageA - ageB;
+        const aVal = a.age ?? 0;
+        const bVal = b.age ?? 0;
+        return direction === "asc" ? aVal - bVal : bVal - aVal;
       });
-    } else if (type === "metric") {
-      const metricKey = key;
-      const isDesc = direction === "desc" || !direction;
+    } else if (type === "minutes") {
+      list.sort((a, b) =>
+        direction === "asc" ? a.totalMinutes - b.totalMinutes : b.totalMinutes - a.totalMinutes
+      );
+    } else if (type === "metric" && key) {
       list.sort((a, b) => {
-        const valA = a.metrics[metricKey]?.per90 ?? 0;
-        const valB = b.metrics[metricKey]?.per90 ?? 0;
-        return isDesc ? valB - valA : valA - valB;
+        const aVal = a.metrics[key]?.per90 ?? 0;
+        const bVal = b.metrics[key]?.per90 ?? 0;
+        return direction === "asc" ? aVal - bVal : bVal - aVal;
       });
     }
 
@@ -214,72 +253,85 @@ export function LeagueCatalog({
     return initialAthletes.filter((a) => selectedAthleteIds.includes(a.id));
   }, [initialAthletes, selectedAthleteIds]);
 
-  const hasActiveFilters =
-    Boolean(search) ||
-    positionFilter !== "ALL" ||
-    teamFilter !== "ALL" ||
-    footFilter !== "ALL" ||
-    Boolean(minAge) ||
-    Boolean(maxAge) ||
-    filterMetricKey !== "NONE";
-
   return (
     <div className="space-y-6">
-      {/* Header */}
-      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      {/* ─── Top Executive Banner ────────────────────────────────────────── */}
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border-subtle pb-5">
         <div>
           <div className="flex items-center gap-2">
-            <h1 className="text-2xl font-bold tracking-tight">Catálogo da Liga</h1>
-            <Badge variant="outline" className="text-xs font-mono">
-              {filteredAthletes.length} atletas
-            </Badge>
+            <span className="inline-flex items-center gap-1.5 rounded-md bg-indigo-500/10 px-2.5 py-0.5 text-[10px] font-bold text-indigo-400 border border-indigo-500/20 uppercase tracking-wider">
+              <Compass className="h-3 w-3" /> Scouting Pro &bull; Série A
+            </span>
+            <span className="text-xs text-muted-foreground font-mono">
+              {filteredAthletes.length} atletas mapeados
+            </span>
           </div>
-          <p className="text-sm text-muted-foreground mt-1">
-            Browse de atletas da liga com métricas normalizadas por 90 minutos (Per-90) e ferramenta de comparação
+          <h1 className="text-2xl font-black tracking-tight text-foreground mt-1.5">
+            Catálogo & Inteligência da Liga
+          </h1>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Filtre por atributos biométricos, minutagem e métricas canônicas normalizadas por 90 minutos.
           </p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Link
-            href="/matches/import"
-            className={cn(buttonVariants({ variant: "outline" }), "gap-1.5 text-xs")}
-          >
-            <FileSpreadsheet className="h-4 w-4" />
-            Importar Rodada (Excel)
-          </Link>
+        {/* View Switcher & Action */}
+        <div className="flex items-center gap-2.5 shrink-0">
+          <div className="flex items-center bg-bg-surface-elevated p-1 rounded-lg border border-border-strong">
+            <button
+              type="button"
+              onClick={() => setViewMode("grid")}
+              className={cn(
+                "flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-semibold transition-all",
+                viewMode === "grid"
+                  ? "bg-indigo-600 text-white shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <LayoutGrid className="h-3.5 w-3.5" />
+              Grade
+            </button>
+            <button
+              type="button"
+              onClick={() => setViewMode("table")}
+              className={cn(
+                "flex items-center gap-1 px-3 py-1.5 rounded-md text-xs font-semibold transition-all",
+                viewMode === "table"
+                  ? "bg-indigo-600 text-white shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
+              )}
+            >
+              <List className="h-3.5 w-3.5" />
+              Tabela
+            </button>
+          </div>
         </div>
       </div>
 
-      {/* Advanced Filter Toolbar */}
-      <Card className="p-4 border-border bg-card space-y-3">
-        {/* Row 1: Search, Position, Team, Layout Switcher */}
-        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 lg:grid-cols-5">
+      {/* ─── Search & Advanced Filter Suite ──────────────────────────────── */}
+      <div className="rounded-xl border border-border-strong bg-bg-surface p-4 shadow-lg space-y-3.5">
+        {/* Row 1: Search, Position, Team, Sort */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
           {/* Search */}
-          <div className="relative lg:col-span-2">
-            <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-muted-foreground" />
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
-              placeholder="Buscar por atleta, clube ou país..."
+              placeholder="Buscar por atleta, clube ou nacionalidade..."
               value={search}
               onChange={(e) => setSearch(e.target.value)}
-              className="pl-8 text-xs bg-muted/30"
+              className="pl-9 h-9 text-xs bg-bg-surface-elevated border-border-strong text-foreground placeholder:text-muted-foreground/60 rounded-lg focus-visible:ring-indigo-500"
             />
           </div>
 
           {/* Position */}
           <div>
-            <Select
-              value={positionFilter}
-              onValueChange={(v) => {
-                if (v) setPositionFilter(v);
-              }}
-            >
-              <SelectTrigger className="w-full text-xs bg-muted/30">
-                <SelectValue placeholder="Posição" />
+            <Select value={positionFilter} onValueChange={(v) => v && setPositionFilter(v)}>
+              <SelectTrigger className="h-9 text-xs bg-bg-surface-elevated border-border-strong text-foreground rounded-lg">
+                <SelectValue placeholder="Todas as posições" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">Todas as Posições</SelectItem>
-                {Object.entries(POSITION_LABELS).map(([pos, label]) => (
-                  <SelectItem key={pos} value={pos}>
+              <SelectContent className="bg-bg-surface-elevated border-border-strong">
+                <SelectItem value="ALL">Todas as posições</SelectItem>
+                {Object.entries(POSITION_LABELS).map(([key, label]) => (
+                  <SelectItem key={key} value={key}>
                     {label}
                   </SelectItem>
                 ))}
@@ -287,19 +339,14 @@ export function LeagueCatalog({
             </Select>
           </div>
 
-          {/* Club */}
+          {/* Team */}
           <div>
-            <Select
-              value={teamFilter}
-              onValueChange={(v) => {
-                if (v) setTeamFilter(v);
-              }}
-            >
-              <SelectTrigger className="w-full text-xs bg-muted/30">
-                <SelectValue placeholder="Clube" />
+            <Select value={teamFilter} onValueChange={(v) => v && setTeamFilter(v)}>
+              <SelectTrigger className="h-9 text-xs bg-bg-surface-elevated border-border-strong text-foreground rounded-lg">
+                <SelectValue placeholder="Todos os clubes" />
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="ALL">Todos os Clubes</SelectItem>
+              <SelectContent className="bg-bg-surface-elevated border-border-strong">
+                <SelectItem value="ALL">Todos os clubes</SelectItem>
                 {teams.map((t) => (
                   <SelectItem key={t.id} value={t.id}>
                     {t.name}
@@ -311,52 +358,39 @@ export function LeagueCatalog({
 
           {/* Sort By */}
           <div>
-            <Select
-              value={sortBy}
-              onValueChange={(v) => {
-                if (v) setSortBy(v);
-              }}
-            >
-              <SelectTrigger className="w-full text-xs bg-muted/30">
-                <div className="flex items-center gap-1.5 truncate">
-                  <ArrowUpDown className="h-3 w-3 text-muted-foreground" />
-                  <SelectValue />
+            <Select value={sortBy} onValueChange={(v) => v && setSortBy(v)}>
+              <SelectTrigger className="h-9 text-xs bg-bg-surface-elevated border-border-strong text-foreground rounded-lg">
+                <div className="flex items-center gap-1.5">
+                  <ArrowUpDown className="h-3.5 w-3.5 text-muted-foreground" />
+                  <SelectValue placeholder="Ordenar por..." />
                 </div>
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="bg-bg-surface-elevated border-border-strong">
                 <SelectItem value="name_asc">Nome (A - Z)</SelectItem>
                 <SelectItem value="name_desc">Nome (Z - A)</SelectItem>
-                <SelectItem value="age_asc">Idade (Mais jovem)</SelectItem>
+                <SelectItem value="age_asc">Idade (Mais jovem primeiro)</SelectItem>
                 <SelectItem value="age_desc">Idade (Mais experiente)</SelectItem>
-                <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                  Ordenar por Métrica / 90
-                </div>
-                <SelectItem value="metric_goals_desc">Gols / 90 min (Maior)</SelectItem>
-                <SelectItem value="metric_assists_desc">Assistências / 90 min (Maior)</SelectItem>
-                <SelectItem value="metric_xg_desc">xG / 90 min (Maior)</SelectItem>
-                <SelectItem value="metric_passes_desc">Passes / 90 min (Maior)</SelectItem>
-                <SelectItem value="metric_tackles_desc">Desarmes / 90 min (Maior)</SelectItem>
-                <SelectItem value="metric_rating_desc">Nota Média (Maior)</SelectItem>
+                <SelectItem value="minutes_desc">Minutagem jogada (Maior)</SelectItem>
+                <SelectItem value="metric_goals_desc">Gols / 90 (Maior)</SelectItem>
+                <SelectItem value="metric_xg_desc">xG / 90 (Maior)</SelectItem>
+                <SelectItem value="metric_key_passes_desc">Passes Decisivos / 90</SelectItem>
+                <SelectItem value="metric_passes_desc">Volume de Passes / 90</SelectItem>
+                <SelectItem value="metric_tackles_desc">Desarmes / 90</SelectItem>
               </SelectContent>
             </Select>
           </div>
         </div>
 
-        {/* Row 2: Foot, Age range, Metric Per-90 filter, Reset */}
-        <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-border/60">
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Foot */}
-            <div className="w-32">
-              <Select
-                value={footFilter}
-                onValueChange={(v) => {
-                  if (v) setFootFilter(v);
-                }}
-              >
-                <SelectTrigger className="h-7 text-xs bg-muted/30">
-                  <SelectValue placeholder="Pé" />
+        {/* Row 2: Secondary Bio Filters + Metric Slider + Reset */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pt-2 border-t border-border-subtle">
+          <div className="flex flex-wrap items-center gap-2.5">
+            {/* Dominant Foot */}
+            <div className="w-36">
+              <Select value={footFilter} onValueChange={(v) => v && setFootFilter(v)}>
+                <SelectTrigger className="h-8 text-xs bg-bg-surface-elevated border-border-strong text-foreground rounded-lg">
+                  <SelectValue placeholder="Pé dominante" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-bg-surface-elevated border-border-strong">
                   <SelectItem value="ALL">Qualquer pé</SelectItem>
                   <SelectItem value="RIGHT">Destro</SelectItem>
                   <SelectItem value="LEFT">Canhoto</SelectItem>
@@ -366,38 +400,34 @@ export function LeagueCatalog({
             </div>
 
             {/* Age Range */}
-            <div className="flex items-center gap-1 text-xs">
+            <div className="flex items-center gap-1 text-xs bg-bg-surface-elevated px-2 py-1 rounded-lg border border-border-strong">
+              <span className="text-[11px] text-muted-foreground">Idade:</span>
               <Input
-                placeholder="Idade mín."
+                placeholder="Mín."
                 type="number"
                 value={minAge}
                 onChange={(e) => setMinAge(e.target.value)}
-                className="h-7 w-20 text-xs bg-muted/30 px-2"
+                className="h-6 w-14 text-xs bg-bg-base border-none px-1 text-center font-mono"
               />
-              <span className="text-muted-foreground">—</span>
+              <span className="text-muted-foreground">&ndash;</span>
               <Input
-                placeholder="Idade máx."
+                placeholder="Máx."
                 type="number"
                 value={maxAge}
                 onChange={(e) => setMaxAge(e.target.value)}
-                className="h-7 w-20 text-xs bg-muted/30 px-2"
+                className="h-6 w-14 text-xs bg-bg-base border-none px-1 text-center font-mono"
               />
             </div>
 
-            {/* Mathematical Per-90 Filter */}
-            <div className="flex items-center gap-1.5 rounded-lg border border-primary/20 bg-primary/5 px-2 py-0.5">
-              <Sparkles className="h-3 w-3 text-primary" />
-              <span className="text-[11px] font-medium text-foreground">Filtro Per-90:</span>
-              <Select
-                value={filterMetricKey}
-                onValueChange={(v) => {
-                  if (v) setFilterMetricKey(v);
-                }}
-              >
-                <SelectTrigger className="h-6 w-36 text-[11px] bg-background border-none">
-                  <SelectValue placeholder="Escolher métrica" />
+            {/* Per-90 Advanced Math Filter */}
+            <div className="flex items-center gap-1.5 rounded-lg border border-indigo-500/30 bg-indigo-500/10 px-2.5 py-1">
+              <Sparkles className="h-3.5 w-3.5 text-indigo-400" />
+              <span className="text-[11px] font-bold text-indigo-300">Filtro Per-90:</span>
+              <Select value={filterMetricKey} onValueChange={(v) => v && setFilterMetricKey(v)}>
+                <SelectTrigger className="h-6 text-[11px] bg-bg-surface-elevated border-none text-foreground font-semibold">
+                  <SelectValue placeholder="Métrica" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="bg-bg-surface-elevated border-border-strong max-h-60">
                   <SelectItem value="NONE">Nenhuma</SelectItem>
                   {METRICS.map((m) => (
                     <SelectItem key={m.key} value={m.key}>
@@ -408,79 +438,57 @@ export function LeagueCatalog({
               </Select>
 
               {filterMetricKey !== "NONE" && (
-                <div className="flex items-center gap-1">
-                  <span className="text-xs font-mono text-muted-foreground">&gt;=</span>
+                <div className="flex items-center gap-1 ml-1">
+                  <span className="text-xs font-mono text-indigo-400">&ge;</span>
                   <Input
-                    placeholder="ex: 0.5"
+                    placeholder="0.0"
                     type="number"
                     step="0.1"
                     value={filterMetricMin}
                     onChange={(e) => setFilterMetricMin(e.target.value)}
-                    className="h-6 w-16 text-xs bg-background px-1.5 font-mono"
+                    className="h-6 w-16 text-xs bg-bg-surface-elevated px-1.5 font-mono text-center font-bold text-white border-none"
                   />
                 </div>
               )}
             </div>
-
-            {hasActiveFilters && (
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={handleResetFilters}
-                className="h-7 text-xs gap-1 text-muted-foreground hover:text-foreground"
-              >
-                <RotateCcw className="h-3 w-3" />
-                Limpar
-              </Button>
-            )}
           </div>
 
-          {/* View Mode Toggle */}
-          <div className="flex items-center gap-1 bg-muted/40 p-0.5 rounded-lg border border-border">
-            <button
-              type="button"
-              onClick={() => setViewMode("grid")}
-              className={cn(
-                "p-1 rounded text-xs transition-colors",
-                viewMode === "grid"
-                  ? "bg-background text-foreground shadow-xs font-medium"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-              title="Visualização em Grade"
+          {/* Reset Filters */}
+          {hasActiveFilters && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={handleResetFilters}
+              className="h-8 text-xs gap-1.5 text-rose-400 hover:text-rose-300 hover:bg-rose-500/10"
             >
-              <LayoutGrid className="h-3.5 w-3.5" />
-            </button>
-            <button
-              type="button"
-              onClick={() => setViewMode("table")}
-              className={cn(
-                "p-1 rounded text-xs transition-colors",
-                viewMode === "table"
-                  ? "bg-background text-foreground shadow-xs font-medium"
-                  : "text-muted-foreground hover:text-foreground"
-              )}
-              title="Visualização em Tabela"
-            >
-              <List className="h-3.5 w-3.5" />
-            </button>
-          </div>
+              <RotateCcw className="h-3.5 w-3.5" />
+              Limpar Filtros
+            </Button>
+          )}
         </div>
-      </Card>
+      </div>
 
-      {/* Athletes List / Grid */}
+      {/* ─── Athlete Catalog Listing ─────────────────────────────────────── */}
       {filteredAthletes.length === 0 ? (
-        <Card className="flex flex-col items-center justify-center py-16 border-dashed border-border/60 text-center">
-          <Users className="h-10 w-10 text-muted-foreground/30 mb-3" />
-          <p className="text-sm font-medium text-muted-foreground">Nenhum atleta encontrado</p>
-          <p className="text-xs text-muted-foreground/60 mt-1 mb-4">
-            Tente ajustar ou limpar os filtros de busca e métricas
+        <Card className="flex flex-col items-center justify-center py-20 border-dashed border-border-strong bg-bg-surface text-center rounded-xl">
+          <div className="h-12 w-12 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center mb-3">
+            <Users className="h-6 w-6 text-muted-foreground/60" />
+          </div>
+          <h3 className="text-sm font-bold text-foreground">Nenhum atleta encontrado</h3>
+          <p className="text-xs text-muted-foreground mt-1 max-w-sm">
+            Não encontramos atletas que atendam a todos os critérios e filtros numéricos Per-90 selecionados.
           </p>
-          <Button variant="outline" size="sm" onClick={handleResetFilters} className="text-xs">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleResetFilters}
+            className="mt-4 text-xs font-semibold border-border-strong"
+          >
             Limpar Filtros
           </Button>
         </Card>
       ) : viewMode === "grid" ? (
-        /* Grid View */
+        /* ─── Grid View ─────────────────────────────────────────────────── */
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
           {filteredAthletes.map((athlete) => {
             const isSelected = selectedAthleteIds.includes(athlete.id);
@@ -496,29 +504,58 @@ export function LeagueCatalog({
               .filter((m) => m.per90 > 0)
               .slice(0, 3);
 
+            // Construct RaioX athlete data for instant modal popup
+            const raioXData: RaioXAthleteData = {
+              id: athlete.id,
+              name: athlete.name,
+              position: athlete.position,
+              birthDate: athlete.birthDate,
+              nationality: athlete.nationality,
+              height: athlete.height,
+              weight: athlete.weight,
+              footPreference: athlete.footPreference,
+              photoUrl: athlete.photoUrl,
+              photoHasAlpha: athlete.photoHasAlpha,
+              team: {
+                id: athlete.team.id,
+                name: athlete.team.name,
+                shortName: null,
+              },
+              totalMinutes: athlete.totalMinutes,
+              totalMatches: athlete.totalMatches,
+              canonicalMetrics: athlete.metrics,
+            };
+
             return (
-              <Card
+              <div
                 key={athlete.id}
                 className={cn(
-                  "group relative flex flex-col justify-between p-4 border-border bg-card transition-all hover:border-primary/40",
-                  isSelected && "ring-2 ring-primary border-primary/60 bg-primary/5"
+                  "group relative flex flex-col justify-between rounded-xl border p-4 transition-all duration-200 bg-bg-surface hover:shadow-xl hover:border-indigo-500/40",
+                  isSelected
+                    ? "border-indigo-500 bg-indigo-500/5 ring-1 ring-indigo-500/50"
+                    : "border-border-strong"
                 )}
               >
-                {/* Card Top: Checkbox & Position Badge */}
+                {/* Card Top: Checkbox, Portfolio & Position */}
                 <div>
-                  <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-center justify-between gap-2">
                     <button
                       type="button"
                       onClick={() => handleToggleSelect(athlete.id)}
-                      className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                      className={cn(
+                        "flex items-center gap-1.5 text-xs rounded-md px-1.5 py-0.5 transition-colors",
+                        isSelected
+                          ? "bg-indigo-600/20 text-indigo-300 font-bold"
+                          : "text-muted-foreground hover:text-foreground"
+                      )}
                       title={isSelected ? "Desmarcar para comparação" : "Selecionar para comparar"}
                     >
                       {isSelected ? (
-                        <CheckSquare className="h-4 w-4 text-primary" />
+                        <CheckSquare className="h-4 w-4 text-indigo-400" />
                       ) : (
                         <Square className="h-4 w-4 opacity-40 group-hover:opacity-100" />
                       )}
-                      <span className="text-[11px] font-medium">Comparar</span>
+                      <span className="text-[11px]">Comparar</span>
                     </button>
 
                     <div className="flex items-center gap-1.5">
@@ -530,105 +567,154 @@ export function LeagueCatalog({
                       />
                       <Badge
                         variant="outline"
-                        className={cn("text-[10px] px-2 py-0.5", POSITION_COLORS[athlete.position])}
+                        className={cn("text-[10px] font-bold px-2 py-0.5", POSITION_COLORS[athlete.position])}
                       >
                         {POSITION_LABELS[athlete.position]}
                       </Badge>
                     </div>
                   </div>
 
-                  {/* Athlete Info */}
-                  <div className="mt-3 flex items-center gap-3">
-                    <Avatar className="h-12 w-12 border border-border shrink-0">
-                      <AvatarImage src={athlete.photoUrl ?? undefined} alt={athlete.name} />
-                      <AvatarFallback className="text-xs font-bold">{initials}</AvatarFallback>
-                    </Avatar>
+                  {/* Athlete Portrait & Info */}
+                  <div className="mt-3.5 flex items-center gap-3">
+                    {/* Photo Stage Avatar */}
+                    <div className="relative h-14 w-14 rounded-xl bg-gradient-to-tr from-indigo-500/20 via-indigo-500/10 to-transparent p-0.5 border border-indigo-500/30 shrink-0 overflow-hidden flex items-center justify-center">
+                      {athlete.photoUrl ? (
+                        <img
+                          src={athlete.photoUrl}
+                          alt={athlete.name}
+                          className={cn(
+                            "h-full w-full object-cover rounded-lg",
+                            athlete.photoHasAlpha && "object-contain"
+                          )}
+                        />
+                      ) : (
+                        <span className="text-sm font-black text-indigo-400 font-mono">
+                          {initials}
+                        </span>
+                      )}
+                    </div>
 
                     <div className="min-w-0 flex-1">
                       <Link
                         href={`/athletes/${athlete.id}`}
-                        className="font-bold text-sm text-foreground hover:text-primary transition-colors block truncate"
+                        className="font-black text-sm text-foreground hover:text-indigo-400 transition-colors block truncate"
                       >
                         {athlete.name}
                       </Link>
                       <div className="flex items-center gap-1 text-xs text-muted-foreground truncate mt-0.5">
-                        <Shield className="h-3 w-3 shrink-0" />
-                        <span className="truncate">{athlete.team.name}</span>
+                        <Shield className="h-3 w-3 shrink-0 text-indigo-400" />
+                        <span className="truncate font-semibold">{athlete.team.name}</span>
+                        {athlete.nationality && (
+                          <span className="text-[10px] opacity-70">&bull; {athlete.nationality}</span>
+                        )}
                       </div>
                     </div>
                   </div>
 
-                  {/* Physical Attributes Bar */}
-                  <div className="mt-3 flex items-center gap-2 text-[11px] text-muted-foreground border-t border-border/40 pt-2">
+                  {/* Physical Bio Bar */}
+                  <div className="mt-3 flex items-center gap-2 text-[11px] text-muted-foreground border-t border-border-subtle pt-2 font-mono">
                     <span>{athlete.age ? `${athlete.age} anos` : "—"}</span>
-                    <span>·</span>
+                    <span>&bull;</span>
                     <span>{FOOT_LABELS[athlete.footPreference]}</span>
                     {athlete.height && (
                       <>
-                        <span>·</span>
+                        <span>&bull;</span>
                         <span>{athlete.height}cm</span>
                       </>
                     )}
                   </div>
 
-                  {/* Top Canonical Metrics Badges */}
+                  {/* Top Canonical Metrics Standouts */}
                   <div className="mt-3 space-y-1.5">
                     {topMetrics.length === 0 ? (
-                      <p className="text-[11px] text-muted-foreground/60 italic">Sem métricas registradas</p>
+                      <p className="text-[11px] text-muted-foreground/60 italic font-mono">
+                        Sem métricas registradas
+                      </p>
                     ) : (
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        {topMetrics.map((m) => (
-                          <span
-                            key={m.metricName}
-                            className="inline-flex items-center gap-1 rounded-md bg-muted px-2 py-0.5 text-[10px] font-medium text-foreground"
-                          >
-                            <span className="text-muted-foreground">{m.label}:</span>
-                            <span className="font-bold font-mono text-primary">{m.per90}/90</span>
-                          </span>
-                        ))}
+                      <div className="grid grid-cols-3 gap-1">
+                        {topMetrics.map((m) => {
+                          const isElite = isEliteMetric(m.metricName, m.per90);
+                          return (
+                            <div
+                              key={m.metricName}
+                              className={cn(
+                                "rounded-md p-1 text-center border text-[10px]",
+                                isElite
+                                  ? "bg-emerald-950/20 border-emerald-500/40"
+                                  : "bg-bg-surface-elevated border-border-subtle"
+                              )}
+                            >
+                              <p className="text-[9px] text-muted-foreground truncate" title={m.label}>
+                                {m.label}
+                              </p>
+                              <p
+                                className={cn(
+                                  "font-bold font-mono tabular-nums",
+                                  isElite ? "text-emerald-400" : "text-foreground"
+                                )}
+                              >
+                                {m.per90}
+                                <span className="text-[8px] opacity-70">/90</span>
+                              </p>
+                            </div>
+                          );
+                        })}
                       </div>
                     )}
                   </div>
                 </div>
 
-                {/* Card Footer: Minutes & Link */}
-                <div className="mt-4 flex items-center justify-between border-t border-border/40 pt-2.5 text-xs">
+                {/* Card Footer: Minutes & Raio-X Button */}
+                <div className="mt-4 flex items-center justify-between border-t border-border-subtle pt-2.5 text-xs">
                   <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground font-mono">
                     <Clock className="h-3 w-3" />
                     {athlete.totalMinutes}&apos; ({athlete.totalMatches}j)
                   </span>
 
-                  <Link
-                    href={`/athletes/${athlete.id}`}
-                    className="inline-flex items-center gap-1 text-xs font-semibold text-primary hover:underline"
-                  >
-                    Ver Raio-X
-                    <ArrowRight className="h-3 w-3" />
-                  </Link>
+                  <div className="flex items-center gap-1.5">
+                    <AthleteRaioXModal
+                      athlete={raioXData}
+                      triggerButton={
+                        <button
+                          type="button"
+                          className="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-400 hover:text-indigo-300 hover:underline cursor-pointer"
+                        >
+                          <FileText className="h-3 w-3" />
+                          Raio-X
+                        </button>
+                      }
+                    />
+                    <Link
+                      href={`/athletes/${athlete.id}`}
+                      className="inline-flex items-center gap-0.5 text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors ml-1"
+                    >
+                      Perfil <ArrowRight className="h-3 w-3" />
+                    </Link>
+                  </div>
                 </div>
-              </Card>
+              </div>
             );
           })}
         </div>
       ) : (
-        /* Table View */
-        <div className="rounded-xl border border-border bg-card overflow-hidden">
+        /* ─── Table View ────────────────────────────────────────────────── */
+        <div className="rounded-xl border border-border-strong bg-bg-surface overflow-hidden shadow-lg">
           <div className="overflow-x-auto">
             <Table>
-              <TableHeader className="bg-muted/40">
+              <TableHeader className="bg-bg-surface-elevated border-b border-border-strong">
                 <TableRow>
                   <TableHead className="w-10 text-center"></TableHead>
-                  <TableHead className="text-xs">Atleta</TableHead>
-                  <TableHead className="text-xs">Clube</TableHead>
-                  <TableHead className="text-xs">Posição</TableHead>
-                  <TableHead className="text-xs text-center">Idade</TableHead>
-                  <TableHead className="text-xs text-center">Pé</TableHead>
-                  <TableHead className="text-xs text-center">Minutos</TableHead>
-                  <TableHead className="text-xs text-center">Gols / 90</TableHead>
-                  <TableHead className="text-xs text-center">Assists / 90</TableHead>
-                  <TableHead className="text-xs text-center">Passes / 90</TableHead>
-                  <TableHead className="text-xs text-center">Desarmes / 90</TableHead>
-                  <TableHead className="text-xs text-right">Ação</TableHead>
+                  <TableHead className="text-xs font-bold text-foreground">Atleta</TableHead>
+                  <TableHead className="text-xs font-bold text-foreground">Clube</TableHead>
+                  <TableHead className="text-xs font-bold text-foreground">Posição</TableHead>
+                  <TableHead className="text-xs font-bold text-foreground text-center">Idade</TableHead>
+                  <TableHead className="text-xs font-bold text-foreground text-center">Pé</TableHead>
+                  <TableHead className="text-xs font-bold text-foreground text-center">Minutos</TableHead>
+                  <TableHead className="text-xs font-bold text-foreground text-center">Gols /90</TableHead>
+                  <TableHead className="text-xs font-bold text-foreground text-center">Assist /90</TableHead>
+                  <TableHead className="text-xs font-bold text-foreground text-center">Passes /90</TableHead>
+                  <TableHead className="text-xs font-bold text-foreground text-center">Desarmes /90</TableHead>
+                  <TableHead className="text-xs font-bold text-foreground text-right">Ações</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -641,82 +727,165 @@ export function LeagueCatalog({
                     .join("")
                     .toUpperCase();
 
+                  const goals90 = athlete.metrics["goals"]?.per90;
+                  const assists90 = athlete.metrics["assists"]?.per90;
+                  const passes90 = athlete.metrics["passes"]?.per90;
+                  const tackles90 = athlete.metrics["tackles"]?.per90;
+
+                  const raioXData: RaioXAthleteData = {
+                    id: athlete.id,
+                    name: athlete.name,
+                    position: athlete.position,
+                    birthDate: athlete.birthDate,
+                    nationality: athlete.nationality,
+                    height: athlete.height,
+                    weight: athlete.weight,
+                    footPreference: athlete.footPreference,
+                    photoUrl: athlete.photoUrl,
+                    photoHasAlpha: athlete.photoHasAlpha,
+                    team: {
+                      id: athlete.team.id,
+                      name: athlete.team.name,
+                      shortName: null,
+                    },
+                    totalMinutes: athlete.totalMinutes,
+                    totalMatches: athlete.totalMatches,
+                    canonicalMetrics: athlete.metrics,
+                  };
+
                   return (
-                    <TableRow key={athlete.id} className={cn(isSelected && "bg-primary/5")}>
+                    <TableRow
+                      key={athlete.id}
+                      className={cn(
+                        "border-b border-border-subtle transition-colors hover:bg-bg-surface-highlight",
+                        isSelected && "bg-indigo-500/10"
+                      )}
+                    >
                       <TableCell className="text-center">
                         <button
                           type="button"
                           onClick={() => handleToggleSelect(athlete.id)}
                           className="text-muted-foreground hover:text-foreground"
-                          title="Comparar"
                         >
                           {isSelected ? (
-                            <CheckSquare className="h-4 w-4 text-primary" />
+                            <CheckSquare className="h-4 w-4 text-indigo-400" />
                           ) : (
                             <Square className="h-4 w-4 opacity-40 hover:opacity-100" />
                           )}
                         </button>
                       </TableCell>
 
+                      {/* Name & Photo */}
                       <TableCell>
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-8 w-8 border border-border">
-                            <AvatarImage src={athlete.photoUrl ?? undefined} alt={athlete.name} />
-                            <AvatarFallback className="text-[10px] font-bold">{initials}</AvatarFallback>
-                          </Avatar>
-                          <Link
-                            href={`/athletes/${athlete.id}`}
-                            className="font-bold text-xs hover:text-primary transition-colors"
-                          >
-                            {athlete.name}
-                          </Link>
+                        <div className="flex items-center gap-2.5">
+                          <div className="h-8 w-8 rounded-lg bg-indigo-500/20 border border-indigo-500/30 overflow-hidden flex items-center justify-center shrink-0">
+                            {athlete.photoUrl ? (
+                              <img
+                                src={athlete.photoUrl}
+                                alt={athlete.name}
+                                className={cn(
+                                  "h-full w-full object-cover",
+                                  athlete.photoHasAlpha && "object-contain"
+                                )}
+                              />
+                            ) : (
+                              <span className="text-[10px] font-bold text-indigo-400 font-mono">
+                                {initials}
+                              </span>
+                            )}
+                          </div>
+                          <div>
+                            <Link
+                              href={`/athletes/${athlete.id}`}
+                              className="font-bold text-xs text-foreground hover:text-indigo-400 block truncate"
+                            >
+                              {athlete.name}
+                            </Link>
+                          </div>
                         </div>
                       </TableCell>
 
-                      <TableCell className="text-xs">{athlete.team.shortName ?? athlete.team.name}</TableCell>
+                      <TableCell className="text-xs text-muted-foreground font-medium">
+                        {athlete.team.name}
+                      </TableCell>
 
                       <TableCell>
                         <Badge
                           variant="outline"
-                          className={cn("text-[10px] px-1.5 py-0.5", POSITION_COLORS[athlete.position])}
+                          className={cn("text-[9px] font-bold px-1.5 py-0", POSITION_COLORS[athlete.position])}
                         >
                           {POSITION_LABELS[athlete.position]}
                         </Badge>
                       </TableCell>
 
-                      <TableCell className="text-center text-xs">{athlete.age ?? "—"}</TableCell>
-                      <TableCell className="text-center text-xs">{FOOT_LABELS[athlete.footPreference]}</TableCell>
-                      <TableCell className="text-center font-mono text-xs">{athlete.totalMinutes}&apos;</TableCell>
-
-                      <TableCell className="text-center font-mono text-xs font-semibold">
-                        {athlete.metrics["goals"]?.per90 ?? 0}
+                      <TableCell className="text-xs text-center font-mono">
+                        {athlete.age ?? "—"}
                       </TableCell>
 
-                      <TableCell className="text-center font-mono text-xs font-semibold">
-                        {athlete.metrics["assists"]?.per90 ?? 0}
+                      <TableCell className="text-xs text-center text-muted-foreground">
+                        {FOOT_LABELS[athlete.footPreference]}
                       </TableCell>
 
-                      <TableCell className="text-center font-mono text-xs font-semibold">
-                        {athlete.metrics["passes"]?.per90 ?? 0}
+                      <TableCell className="text-xs text-center font-mono font-semibold">
+                        {athlete.totalMinutes}&apos;
                       </TableCell>
 
-                      <TableCell className="text-center font-mono text-xs font-semibold">
-                        {athlete.metrics["tackles"]?.per90 ?? 0}
+                      {/* Metric Per-90 Columns with Emerald Highlights */}
+                      <TableCell
+                        className={cn(
+                          "text-xs text-center font-mono tabular-nums font-bold",
+                          isEliteMetric("goals", goals90) ? "text-emerald-400" : "text-foreground"
+                        )}
+                      >
+                        {goals90 != null ? goals90.toFixed(2) : "—"}
                       </TableCell>
 
+                      <TableCell
+                        className={cn(
+                          "text-xs text-center font-mono tabular-nums font-bold",
+                          isEliteMetric("assists", assists90) ? "text-emerald-400" : "text-foreground"
+                        )}
+                      >
+                        {assists90 != null ? assists90.toFixed(2) : "—"}
+                      </TableCell>
+
+                      <TableCell
+                        className={cn(
+                          "text-xs text-center font-mono tabular-nums font-bold",
+                          isEliteMetric("passes", passes90) ? "text-emerald-400" : "text-foreground"
+                        )}
+                      >
+                        {passes90 != null ? passes90.toFixed(1) : "—"}
+                      </TableCell>
+
+                      <TableCell
+                        className={cn(
+                          "text-xs text-center font-mono tabular-nums font-bold",
+                          isEliteMetric("tackles", tackles90) ? "text-emerald-400" : "text-foreground"
+                        )}
+                      >
+                        {tackles90 != null ? tackles90.toFixed(2) : "—"}
+                      </TableCell>
+
+                      {/* Actions */}
                       <TableCell className="text-right">
                         <div className="flex items-center justify-end gap-1.5">
-                          <PortfolioToggleButton
-                            athleteId={athlete.id}
-                            athleteName={athlete.name}
-                            initialInPortfolio={initialPortfolioIds.includes(athlete.id)}
-                            variant="icon"
+                          <AthleteRaioXModal
+                            athlete={raioXData}
+                            triggerButton={
+                              <Button variant="ghost" size="sm" className="h-7 px-2 text-[10px] font-bold text-indigo-400">
+                                Raio-X
+                              </Button>
+                            }
                           />
                           <Link
                             href={`/athletes/${athlete.id}`}
-                            className="text-xs font-semibold text-primary hover:underline px-1.5"
+                            className={cn(
+                              buttonVariants({ variant: "outline", size: "sm" }),
+                              "h-7 px-2 text-[10px]"
+                            )}
                           >
-                            Perfil
+                            Ver Perfil
                           </Link>
                         </div>
                       </TableCell>
@@ -729,41 +898,49 @@ export function LeagueCatalog({
         </div>
       )}
 
-      {/* Floating Comparison Dock (when 1+ athletes selected) */}
+      {/* ─── Floating Side-by-Side Comparison Drawer ─────────────────────── */}
       {selectedAthleteIds.length > 0 && (
-        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 flex items-center gap-4 rounded-2xl border border-primary/30 bg-background/95 backdrop-blur-md px-5 py-3 shadow-2xl ring-1 ring-black/10">
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-40 bg-zinc-900 border border-indigo-500/50 shadow-2xl rounded-2xl px-5 py-3 flex items-center gap-4 text-white animate-in fade-in-0 slide-in-from-bottom-4">
           <div className="flex items-center gap-2">
-            <div className="flex -space-x-2 overflow-hidden">
-              {selectedAthletes.map((a) => (
-                <Avatar key={a.id} className="h-8 w-8 ring-2 ring-background border border-border">
-                  <AvatarImage src={a.photoUrl ?? undefined} />
-                  <AvatarFallback className="text-[10px] font-bold">{a.name[0]}</AvatarFallback>
-                </Avatar>
-              ))}
-            </div>
-            <div className="text-xs">
-              <span className="font-bold text-foreground">{selectedAthleteIds.length}</span>{" "}
-              {selectedAthleteIds.length === 1 ? "atleta selecionado" : "atletas selecionados"}
-            </div>
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-600 text-xs font-black">
+              {selectedAthleteIds.length}
+            </span>
+            <span className="text-xs font-bold text-zinc-200">
+              {selectedAthleteIds.length === 1 ? "Atleta selecionado" : "Atletas selecionados"}
+            </span>
+          </div>
+
+          <div className="flex items-center -space-x-2">
+            {selectedAthletes.map((a) => (
+              <div
+                key={a.id}
+                className="h-8 w-8 rounded-full border-2 border-zinc-900 bg-indigo-600/30 overflow-hidden flex items-center justify-center text-[10px] font-bold"
+                title={a.name}
+              >
+                {a.photoUrl ? (
+                  <img src={a.photoUrl} alt={a.name} className="h-full w-full object-cover" />
+                ) : (
+                  a.name.slice(0, 2).toUpperCase()
+                )}
+              </div>
+            ))}
           </div>
 
           <div className="flex items-center gap-2">
             <Button
-              variant="outline"
               size="sm"
-              onClick={handleClearSelection}
-              className="text-xs h-8"
+              onClick={() => setIsCompareModalOpen(true)}
+              className="h-8 text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-xs"
             >
-              Limpar
+              Comparar Lado a Lado ({selectedAthleteIds.length})
             </Button>
             <Button
+              variant="ghost"
               size="sm"
-              disabled={selectedAthleteIds.length < 2}
-              onClick={() => setIsCompareModalOpen(true)}
-              className="text-xs h-8 gap-1.5 font-bold"
+              onClick={handleClearSelection}
+              className="h-8 text-xs text-zinc-400 hover:text-white"
             >
-              <Trophy className="h-3.5 w-3.5" />
-              Comparar Lado a Lado ({selectedAthleteIds.length})
+              Limpar
             </Button>
           </div>
         </div>

@@ -112,7 +112,7 @@ export function AthleteMatchHistory({
                     outcome === "W" ? "bg-emerald-400" : outcome === "L" ? "bg-rose-400" : "bg-zinc-400"
                   )}
                 />
-                <article className="group rounded-xl border border-border/60 bg-muted/20 p-4 transition-colors hover:border-primary/30">
+                <article className="group rounded-xl border border-border-strong bg-bg-surface-elevated p-4 transition-colors hover:border-indigo-500/40">
                   <header className="flex flex-wrap items-start justify-between gap-2">
                     <div className="min-w-0">
                       <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
@@ -207,9 +207,9 @@ export function AthleteMatchHistory({
 
 function SummaryTile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl bg-gradient-to-br from-primary/10 to-transparent p-3 ring-1 ring-primary/15">
-      <p className="truncate text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">{label}</p>
-      <p className="mt-0.5 text-xl font-extrabold tabular-nums text-foreground">{value}</p>
+    <div className="rounded-xl bg-bg-surface-elevated p-3 border border-border-strong shadow-xs">
+      <p className="truncate text-[9px] font-bold uppercase tracking-wider text-muted-foreground">{label}</p>
+      <p className="mt-1 text-lg font-black font-mono tabular-nums text-foreground">{value}</p>
     </div>
   );
 }
