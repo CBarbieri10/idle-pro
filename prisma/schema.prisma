@@ -32,11 +32,12 @@ model League {
   id        String   @id @default(cuid())
   name      String
   country   String
-  season    String   // ex: "2025/2026"
+  season    String // ex: "2025/2026"
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  teams     Team[]
+  teams   Team[]
+  matches Match[]
 
   @@map("leagues")
 }
@@ -44,16 +45,18 @@ model League {
 model Team {
   id        String   @id @default(cuid())
   name      String
-  shortName String?  // ex: "FLA", "PAL"
+  shortName String? // ex: "FLA", "PAL"
   country   String
   city      String?
   leagueId  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  league    League?  @relation(fields: [leagueId], references: [id])
-  athletes  Athlete[] @relation("ClubAthletes")
-  national  Athlete[] @relation("NationalAthletes")
+  league          League?   @relation(fields: [leagueId], references: [id])
+  athletes        Athlete[] @relation("ClubAthletes")
+  national        Athlete[] @relation("NationalAthletes")
+  matches         Match[]   @relation("MatchTeam")
+  opponentMatches Match[]   @relation("MatchOpponent")
 
   @@map("teams")
 }
@@ -79,26 +82,88 @@ enum FootPreference {
 }
 
 model Athlete {
-  id              String         @id @default(cuid())
-  name            String
-  position        Position
-  birthDate       DateTime?
-  nationality     String?
-  height          Int?           // cm
-  weight          Int?           // kg
-  footPreference  FootPreference @default(RIGHT)
-  photoUrl            String?        // foto de perfil
+  id                  String         @id @default(cuid())
+  name                String
+  position            Position
+  birthDate           DateTime?
+  nationality         String?
+  height              Int? // cm
+  weight              Int? // kg
+  footPreference      FootPreference @default(RIGHT)
+  photoUrl            String? // foto de perfil
   photoHasAlpha       Boolean        @default(false) // PNG/WebP com fundo transparente
-  actionPhotoUrl      String?        // foto de ação
+  actionPhotoUrl      String? // foto de ação
   actionPhotoHasAlpha Boolean        @default(false)
-  notes           String?
-  teamId          String
-  nationalTeamId  String?
-  createdAt       DateTime       @default(now())
-  updatedAt       DateTime       @updatedAt
+  notes               String?
+  teamId              String
+  nationalTeamId      String?
+  createdAt           DateTime       @default(now())
+  updatedAt           DateTime       @updatedAt
 
-  team            Team           @relation("ClubAthletes", fields: [teamId], references: [id])
-  nationalTeam    Team?          @relation("NationalAthletes", fields: [nationalTeamId], references: [id])
+  team         Team        @relation("ClubAthletes", fields: [teamId], references: [id])
+  nationalTeam Team?       @relation("NationalAthletes", fields: [nationalTeamId], references: [id])
+  rawMetrics   RawMetric[]
 
   @@map("athletes")
+}
+
+// ─── Fase 2: Métricas ──────────────────────────────────────────────────────
+
+enum MatchVenue {
+  HOME
+  AWAY
+  NEUTRAL
+}
+
+enum MetricSource {
+  MANUAL
+  WYSCOUT
+  SOFASCORE
+  SPORTSBASE
+  OTHER
+}
+
+model Match {
+  id           String     @id @default(cuid())
+  date         DateTime
+  teamId       String // clube de referência (perspectiva do resultado)
+  opponentId   String? // adversário cadastrado (opcional)
+  opponentName String // nome exibido — sempre preenchido
+  venue        MatchVenue @default(HOME)
+  competition  String // ex: "Brasileirão Série A", "Copa do Brasil"
+  leagueId     String?
+  round        String? // ex: "Rodada 12", "Oitavas - Ida"
+  goalsFor     Int?
+  goalsAgainst Int?
+  notes        String?
+  createdAt    DateTime   @default(now())
+  updatedAt    DateTime   @updatedAt
+
+  team       Team        @relation("MatchTeam", fields: [teamId], references: [id])
+  opponent   Team?       @relation("MatchOpponent", fields: [opponentId], references: [id], onDelete: SetNull)
+  league     League?     @relation(fields: [leagueId], references: [id], onDelete: SetNull)
+  rawMetrics RawMetric[]
+
+  @@index([date])
+  @@index([teamId])
+  @@map("matches")
+}
+
+/// Métrica Bruta (ADR-002): dado exatamente como veio da fonte, em JSONB.
+model RawMetric {
+  id            String       @id @default(cuid())
+  matchId       String
+  athleteId     String
+  source        MetricSource @default(MANUAL)
+  minutesPlayed Int?
+  data          Json         @db.JsonB // { "goals": 1, "shots": 3, "Chutes para fora": 2, ... }
+  createdAt     DateTime     @default(now())
+  updatedAt     DateTime     @updatedAt
+
+  match   Match   @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  athlete Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  @@unique([matchId, athleteId, source])
+  @@index([athleteId])
+  @@map("raw_metrics")
 }

@@ -8,6 +8,7 @@ import {
   Shield,
   FileText,
   Trophy,
+  CalendarDays,
   Menu,
   X,
 } from "lucide-react";
@@ -30,6 +31,11 @@ const navItems = [
     label: "Clubes",
     href: "/teams",
     icon: Shield,
+  },
+  {
+    label: "Jogos",
+    href: "/matches",
+    icon: CalendarDays,
   },
   {
     label: "Catálogo da Liga",

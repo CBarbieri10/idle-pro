@@ -1,7 +1,10 @@
 import { getAthleteById } from "@/lib/actions/athletes";
-import { getTeams } from "@/lib/actions/teams";
+import { getTeams, getLeagues } from "@/lib/actions/teams";
+import { getAthleteMatchHistory, getMatchOptions } from "@/lib/actions/matches";
 import { EditAthleteButton, DeleteAthleteButton } from "@/components/athletes/athlete-dialogs";
 import { AthletePhotoUpload } from "@/components/athletes/athlete-photo-upload";
+import { AddMetricButton } from "@/components/matches/metric-entry";
+import { AthleteMatchHistory } from "@/components/matches/athlete-match-history";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -14,7 +17,7 @@ import {
   formatAge,
   formatDate,
 } from "@/lib/domain";
-import { ArrowLeft, Shield, Globe, Camera } from "lucide-react";
+import { ArrowLeft, Shield, Globe, Camera, BarChart3 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -51,14 +54,26 @@ export default async function AthleteProfilePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [athlete, teams] = await Promise.all([
+  const [athlete, teams, leagues, history, matchOptions] = await Promise.all([
     getAthleteById(id),
     getTeams(),
+    getLeagues(),
+    getAthleteMatchHistory(id),
+    getMatchOptions(),
   ]);
 
   if (!athlete) notFound();
 
   const teamList = teams.map((t) => ({ id: t.id, name: t.name }));
+  const leagueList = leagues.map((l) => ({ id: l.id, name: l.name }));
+  const metricProps = {
+    athleteId: athlete.id,
+    athleteTeamId: athlete.teamId,
+    position: athlete.position,
+    matches: matchOptions,
+    teams: teamList,
+    leagues: leagueList,
+  };
 
   const initials = athlete.name
     .split(" ")
@@ -249,12 +264,16 @@ export default async function AthleteProfilePage({
         )}
       </Card>
 
-      {/* Metrics placeholder (for T04) */}
-      <Card className="p-6 border-dashed border-border/60">
-        <h2 className="text-sm font-semibold text-foreground mb-2">Métricas por Jogo</h2>
-        <p className="text-xs text-muted-foreground">
-          As métricas por jogo serão exibidas aqui após a implementação do T04 (Entrada Manual de Métricas).
-        </p>
+      {/* ─── Métricas por jogo (T04) ──────────────────────────────────────── */}
+      <Card className="p-6 border-border bg-card" id="athlete-metrics">
+        <div className="mb-5 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-2">
+            <BarChart3 className="h-4 w-4 text-muted-foreground" />
+            <h2 className="text-sm font-semibold text-foreground">Métricas por Jogo</h2>
+          </div>
+          <AddMetricButton {...metricProps} usedMatchIds={history.map((h) => h.matchId)} />
+        </div>
+        <AthleteMatchHistory history={history} {...metricProps} />
       </Card>
     </div>
   );
