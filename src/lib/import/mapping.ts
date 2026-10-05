@@ -184,6 +184,34 @@ export function autoMap(grid: Grid, headerRow: number): ColumnMapping[] {
   return out;
 }
 
+export function applyTemplateToGrid(
+  grid: Grid,
+  headerRow: number,
+  templateColumns: Record<string, { header: string; target: ColumnTarget }>
+): ColumnMapping[] {
+  const header = grid[headerRow] ?? [];
+  const body = grid.slice(headerRow + 1, headerRow + 51);
+  const width = Math.max(header.length, ...body.map((r) => r.length), 0);
+  const out: ColumnMapping[] = [];
+
+  for (let i = 0; i < width; i++) {
+    const h = isBlank(header[i]) ? "" : String(header[i]).trim();
+    const norm = normalizeHeader(h);
+    const matched = templateColumns[norm];
+
+    let target: ColumnTarget;
+    if (matched) {
+      target = matched.target;
+    } else {
+      target = guessTarget(h, body.map((r) => r[i]));
+    }
+
+    out.push({ index: i, header: h || `Coluna ${i + 1}`, target });
+  }
+
+  return out;
+}
+
 // ─── Value parsers ───────────────────────────────────────────────────────────
 
 type Parsed<T> = { ok: true; value: T | null } | { ok: false };

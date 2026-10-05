@@ -5,6 +5,14 @@ import { revalidatePath } from "next/cache";
 import { MetricSource, Prisma } from "@prisma/client";
 import { normalizeName, type StagedRow } from "@/lib/import/mapping";
 
+function safeRevalidate(path: string) {
+  try {
+    revalidatePath(path);
+  } catch {
+    // Graceful fallback outside Next.js request context
+  }
+}
+
 export interface ResolvedStagedRow extends StagedRow {
   status: "READY" | "UNREGISTERED_ATHLETE" | "ERROR";
   resolvedAthleteId: string | null;
@@ -350,9 +358,9 @@ export async function executeBatchImport(
       };
     });
 
-    revalidatePath("/matches");
+    safeRevalidate("/matches");
     for (const aId of affectedAthleteIds) {
-      revalidatePath(`/athletes/${aId}`);
+      safeRevalidate(`/athletes/${aId}`);
     }
 
     return { ok: true, data: result };

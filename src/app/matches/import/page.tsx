@@ -1,4 +1,5 @@
 import { getTeams } from "@/lib/actions/teams";
+import { getMappingTemplates } from "@/lib/actions/templates";
 import { SpreadsheetImporter } from "@/components/import/spreadsheet-importer";
 import Link from "next/link";
 import { ChevronRight } from "lucide-react";
@@ -10,7 +11,10 @@ export const metadata: Metadata = {
 };
 
 export default async function ImportMatchesPage() {
-  const teams = await getTeams();
+  const [teams, templates] = await Promise.all([
+    getTeams(),
+    getMappingTemplates(),
+  ]);
   const teamOptions = teams.map((t) => ({ id: t.id, name: t.name }));
 
   return (
@@ -25,7 +29,7 @@ export default async function ImportMatchesPage() {
       </nav>
 
       {/* Main Importer Flow */}
-      <SpreadsheetImporter teams={teamOptions} />
+      <SpreadsheetImporter teams={teamOptions} initialTemplates={templates} />
     </div>
   );
 }

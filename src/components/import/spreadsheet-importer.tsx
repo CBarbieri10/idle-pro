@@ -19,6 +19,10 @@ import {
   ArrowRight,
   Database,
   Info,
+  BookmarkPlus,
+  Trash2,
+  Sparkles,
+  Check,
   X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -55,8 +59,10 @@ import {
   type ColumnTarget,
   detectHeaderRow,
   autoMap,
+  applyTemplateToGrid,
   buildStagedRows,
   templateCsv,
+  normalizeHeader,
   IDENTITY_FIELDS,
   targetLabel,
 } from "@/lib/import/mapping";
@@ -68,6 +74,12 @@ import {
   type StagingResolutionResult,
   type ImportExecutionResult,
 } from "@/lib/actions/import";
+import {
+  saveMappingTemplate,
+  deleteMappingTemplate,
+  type MappingTemplateDTO,
+  type StoredColumnsMap,
+} from "@/lib/actions/templates";
 import { METRICS, SOURCE_LABELS, VENUE_LABELS } from "@/lib/metrics";
 import { cn } from "@/lib/utils";
 import type { MetricSource } from "@prisma/client";
@@ -79,11 +91,15 @@ interface TeamOption {
 
 interface SpreadsheetImporterProps {
   teams: TeamOption[];
+  initialTemplates?: MappingTemplateDTO[];
 }
 
 type FilterTab = "all" | "ready" | "unregistered" | "errors";
 
-export function SpreadsheetImporter({ teams }: SpreadsheetImporterProps) {
+export function SpreadsheetImporter({
+  teams,
+  initialTemplates = [],
+}: SpreadsheetImporterProps) {
   const router = useRouter();
   const [isPending, startTransition] = useTransition();
 
@@ -94,12 +110,29 @@ export function SpreadsheetImporter({ teams }: SpreadsheetImporterProps) {
   const [rawGrid, setRawGrid] = useState<Grid | null>(null);
   const [headerRow, setHeaderRow] = useState<number>(0);
   const [mappings, setMappings] = useState<ColumnMapping[]>([]);
-  const [showMappingPanel, setShowMappingPanel] = useState(false);
+  const [showMappingPanel, setShowMappingPanel] = useState(true);
 
   // Configuration
   const [metricSource, setMetricSource] = useState<MetricSource>("WYSCOUT");
   const [defaultTeamId, setDefaultTeamId] = useState<string>("");
   const [defaultCompetition, setDefaultCompetition] = useState<string>("");
+
+  // Reusable Templates state (Issue #7 - T05b)
+  const [templates, setTemplates] = useState<MappingTemplateDTO[]>(initialTemplates);
+  const [selectedTemplateId, setSelectedTemplateId] = useState<string>("auto");
+  const [autoDetectedTemplate, setAutoDetectedTemplate] = useState<{
+    template: MappingTemplateDTO;
+    score: number;
+    matchedColumns: number;
+  } | null>(null);
+
+  // Save template dialog
+  const [isSaveTemplateOpen, setIsSaveTemplateOpen] = useState(false);
+  const [templateName, setTemplateName] = useState("");
+  const [templateDesc, setTemplateDesc] = useState("");
+  const [isSavingTemplate, setIsSavingTemplate] = useState(false);
+  const [saveTemplateError, setSaveTemplateError] = useState<string | null>(null);
+  const [templateSaveSuccess, setTemplateSaveSuccess] = useState<string | null>(null);
 
   // Staged & Resolved state
   const [resolution, setResolution] = useState<StagingResolutionResult | null>(null);
@@ -111,6 +144,41 @@ export function SpreadsheetImporter({ teams }: SpreadsheetImporterProps) {
   const [executionError, setExecutionError] = useState<string | null>(null);
   const [showResultModal, setShowResultModal] = useState(false);
 
+  // Auto-detect matching template from list of headers
+  const detectBestTemplate = (grid: Grid, hRow: number) => {
+    if (templates.length === 0) return null;
+
+    const row = grid[hRow] ?? [];
+    const normalizedHeaders = new Set(
+      row
+        .map((c) => normalizeHeader(c !== null && c !== undefined ? String(c).trim() : ""))
+        .filter(Boolean)
+    );
+
+    if (normalizedHeaders.size === 0) return null;
+
+    let best: { template: MappingTemplateDTO; score: number; matchedColumns: number } | null = null;
+
+    for (const t of templates) {
+      const templateKeys = Object.keys(t.columns);
+      if (templateKeys.length === 0) continue;
+
+      let matched = 0;
+      for (const k of templateKeys) {
+        if (normalizedHeaders.has(k)) matched++;
+      }
+
+      const score = matched / templateKeys.length;
+      if (matched >= 2 && score >= 0.35) {
+        if (!best || score > best.score) {
+          best = { template: t, score, matchedColumns: matched };
+        }
+      }
+    }
+
+    return best;
+  };
+
   // Handle file selection
   const handleFileChange = async (selectedFile: File) => {
     setFile(selectedFile);
@@ -118,6 +186,8 @@ export function SpreadsheetImporter({ teams }: SpreadsheetImporterProps) {
     setParseError(null);
     setResolution(null);
     setExecutionResult(null);
+    setAutoDetectedTemplate(null);
+    setTemplateSaveSuccess(null);
 
     try {
       const grid = await parseSpreadsheetFile(selectedFile);
@@ -126,18 +196,30 @@ export function SpreadsheetImporter({ teams }: SpreadsheetImporterProps) {
       }
 
       const detectedHRow = detectHeaderRow(grid);
-      const detectedMappings = autoMap(grid, detectedHRow);
-
       setRawGrid(grid);
       setHeaderRow(detectedHRow);
-      setMappings(detectedMappings);
 
-      // Initial staging build
-      const staged = buildStagedRows(grid, detectedHRow, detectedMappings, {
+      // Check if any saved template matches the headers
+      const match = detectBestTemplate(grid, detectedHRow);
+
+      let initialMappings: ColumnMapping[];
+      if (match) {
+        setAutoDetectedTemplate(match);
+        setSelectedTemplateId(match.template.id);
+        setMetricSource(match.template.source);
+        initialMappings = applyTemplateToGrid(grid, detectedHRow, match.template.columns);
+      } else {
+        setSelectedTemplateId("auto");
+        initialMappings = autoMap(grid, detectedHRow);
+      }
+
+      setMappings(initialMappings);
+
+      // Initial staging build & server resolution
+      const staged = buildStagedRows(grid, detectedHRow, initialMappings, {
         defaultCompetition: defaultCompetition.trim() || undefined,
       });
 
-      // Server resolution for registered athletes/teams
       const res = await resolveStagedImport(staged, defaultTeamId || undefined);
       setResolution(res);
     } catch (err) {
@@ -171,6 +253,108 @@ export function SpreadsheetImporter({ teams }: SpreadsheetImporterProps) {
     setMappings(next);
     recomputeStaging(next, defaultTeamId, defaultCompetition);
   };
+
+  // Select a template from the dropdown
+  const handleSelectTemplate = (templateId: string) => {
+    if (!rawGrid) return;
+    setSelectedTemplateId(templateId);
+
+    let nextMappings: ColumnMapping[];
+    if (templateId === "auto") {
+      nextMappings = autoMap(rawGrid, headerRow);
+    } else {
+      const targetTemplate = templates.find((t) => t.id === templateId);
+      if (targetTemplate) {
+        setMetricSource(targetTemplate.source);
+        nextMappings = applyTemplateToGrid(rawGrid, headerRow, targetTemplate.columns);
+      } else {
+        nextMappings = autoMap(rawGrid, headerRow);
+      }
+    }
+
+    setMappings(nextMappings);
+    recomputeStaging(nextMappings, defaultTeamId, defaultCompetition);
+  };
+
+  // Save current mappings as a new reusable template
+  const handleSaveTemplate = async () => {
+    if (!templateName.trim()) {
+      setSaveTemplateError("Nome do template é obrigatório");
+      return;
+    }
+
+    setIsSavingTemplate(true);
+    setSaveTemplateError(null);
+
+    try {
+      const columnsMap: StoredColumnsMap = {};
+      for (const m of mappings) {
+        const norm = normalizeHeader(m.header);
+        if (norm) {
+          columnsMap[norm] = {
+            header: m.header,
+            target: m.target,
+          };
+        }
+      }
+
+      const res = await saveMappingTemplate({
+        name: templateName.trim(),
+        description: templateDesc.trim() || null,
+        source: metricSource,
+        columns: columnsMap,
+      });
+
+      if (!res.ok) {
+        setSaveTemplateError(res.error);
+        return;
+      }
+
+      // Update local templates list
+      setTemplates((prev) => {
+        const existing = prev.filter((t) => t.id !== res.data.id && t.name !== res.data.name);
+        return [res.data, ...existing].sort((a, b) => a.name.localeCompare(b.name));
+      });
+
+      setSelectedTemplateId(res.data.id);
+      setIsSaveTemplateOpen(false);
+      setTemplateSaveSuccess(`Template "${res.data.name}" salvo com sucesso!`);
+      setTimeout(() => setTemplateSaveSuccess(null), 4000);
+    } catch (err) {
+      console.error(err);
+      setSaveTemplateError(err instanceof Error ? err.message : "Erro ao salvar template.");
+    } finally {
+      setIsSavingTemplate(false);
+    }
+  };
+
+  // Delete a template
+  const handleDeleteTemplate = async (templateId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!confirm("Tem certeza que deseja excluir este template?")) return;
+
+    const res = await deleteMappingTemplate(templateId);
+    if (res.ok) {
+      setTemplates((prev) => prev.filter((t) => t.id !== templateId));
+      if (selectedTemplateId === templateId) {
+        handleSelectTemplate("auto");
+      }
+    }
+  };
+
+  // Sample values preview for each column
+  const columnSamples = useMemo(() => {
+    if (!rawGrid) return [];
+    const body = rawGrid.slice(headerRow + 1, headerRow + 4);
+    return mappings.map((m) => {
+      const samples = body
+        .map((r) => r[m.index])
+        .filter((v) => v !== null && v !== undefined && String(v).trim() !== "")
+        .slice(0, 3)
+        .map((v) => String(v));
+      return samples.join(", ");
+    });
+  }, [rawGrid, headerRow, mappings]);
 
   // Handle download of CSV template
   const handleDownloadCsvTemplate = () => {
@@ -243,7 +427,7 @@ export function SpreadsheetImporter({ teams }: SpreadsheetImporterProps) {
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Importação de Métricas</h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Importe planilhas Excel (.xlsx, .xlsm) ou CSV com mapeamento automático de colunas e área de revisão
+            Importe planilhas Excel (.xlsx, .xlsm) ou CSV com mapeamento dinâmico de colunas, templates reutilizáveis e área de staging
           </p>
         </div>
         <div className="flex flex-wrap items-center gap-2">
@@ -332,7 +516,7 @@ export function SpreadsheetImporter({ teams }: SpreadsheetImporterProps) {
             {isParsing && (
               <div className="mt-3 flex items-center gap-2 text-xs text-muted-foreground">
                 <RefreshCw className="h-3.5 w-3.5 animate-spin" />
-                Processando planilha e validando atletas com o banco de dados...
+                Processando planilha e comparando cabeçalhos com templates salvos...
               </div>
             )}
 
@@ -340,6 +524,34 @@ export function SpreadsheetImporter({ teams }: SpreadsheetImporterProps) {
               <div className="mt-3 flex items-center gap-2 rounded-lg bg-destructive/10 p-3 text-xs font-medium text-destructive">
                 <AlertCircle className="h-4 w-4 shrink-0" />
                 {parseError}
+              </div>
+            )}
+
+            {/* Auto-detected Template Alert */}
+            {autoDetectedTemplate && (
+              <div className="mt-3 flex items-center justify-between gap-3 rounded-lg border border-primary/30 bg-primary/10 p-3 text-xs text-primary">
+                <div className="flex items-center gap-2">
+                  <Sparkles className="h-4 w-4 shrink-0" />
+                  <span>
+                    Template <strong>&quot;{autoDetectedTemplate.template.name}&quot;</strong> detectado automaticamente com{" "}
+                    <strong>{Math.round(autoDetectedTemplate.score * 100)}%</strong> de correspondência ({autoDetectedTemplate.matchedColumns} colunas).
+                  </span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => handleSelectTemplate("auto")}
+                  className="h-6 text-[11px] text-primary hover:bg-primary/20"
+                >
+                  Usar Auto-De/Para Padrão
+                </Button>
+              </div>
+            )}
+
+            {templateSaveSuccess && (
+              <div className="mt-3 flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 p-3 text-xs text-emerald-600 dark:text-emerald-400">
+                <Check className="h-4 w-4 shrink-0" />
+                {templateSaveSuccess}
               </div>
             )}
           </div>
@@ -419,6 +631,191 @@ export function SpreadsheetImporter({ teams }: SpreadsheetImporterProps) {
           </div>
         </div>
       </Card>
+
+      {/* Dynamic Column Mapping Panel & Templates (Issue #7 - T05b) */}
+      {rawGrid && (
+        <Card className="p-5 border-border bg-card">
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 pb-4 border-b border-border">
+            <div className="flex items-center gap-2.5">
+              <SlidersHorizontal className="h-5 w-5 text-primary" />
+              <div>
+                <h3 className="text-sm font-bold tracking-tight">Mapeamento Dinâmico de Colunas (De-Para)</h3>
+                <p className="text-xs text-muted-foreground">
+                  Mapeie ou altere o destino de cada coluna. A pré-visualização abaixo atualiza em tempo real.
+                </p>
+              </div>
+            </div>
+
+            {/* Template Selector & Save Button */}
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="w-48 sm:w-56">
+                <Select
+                  value={selectedTemplateId}
+                  onValueChange={(val) => {
+                    if (val) handleSelectTemplate(val);
+                  }}
+                >
+                  <SelectTrigger className="h-8 text-xs bg-muted/30">
+                    <SelectValue placeholder="Escolher template..." />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="auto">⚡ Auto-Detecção (Padrão)</SelectItem>
+                    {templates.length > 0 && (
+                      <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                        Templates Salvos ({templates.length})
+                      </div>
+                    )}
+                    {templates.map((tpl) => (
+                      <SelectItem key={tpl.id} value={tpl.id}>
+                        {tpl.name} ({SOURCE_LABELS[tpl.source]})
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  setTemplateName(
+                    selectedTemplateId !== "auto"
+                      ? templates.find((t) => t.id === selectedTemplateId)?.name ?? ""
+                      : file ? file.name.replace(/\.[^/.]+$/, "") : ""
+                  );
+                  setIsSaveTemplateOpen(true);
+                }}
+                className="h-8 text-xs gap-1.5"
+              >
+                <BookmarkPlus className="h-3.5 w-3.5 text-primary" />
+                Salvar Template
+              </Button>
+
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setShowMappingPanel(!showMappingPanel)}
+                className="h-8 text-xs"
+              >
+                {showMappingPanel ? "Recolher" : "Expandir"}
+                {showMappingPanel ? (
+                  <ChevronUp className="h-3.5 w-3.5 ml-1" />
+                ) : (
+                  <ChevronDown className="h-3.5 w-3.5 ml-1" />
+                )}
+              </Button>
+            </div>
+          </div>
+
+          {/* Interactive Column Mapping Table */}
+          {showMappingPanel && (
+            <div className="pt-4 space-y-3">
+              <div className="max-h-80 overflow-y-auto rounded-lg border border-border bg-background">
+                <Table>
+                  <TableHeader className="bg-muted/40 sticky top-0 z-10 backdrop-blur-sm">
+                    <TableRow>
+                      <TableHead className="w-12 text-center text-xs">#</TableHead>
+                      <TableHead className="text-xs">Coluna na Planilha</TableHead>
+                      <TableHead className="text-xs">Exemplo de Dados</TableHead>
+                      <TableHead className="text-xs">Destino no Sistema</TableHead>
+                      <TableHead className="text-xs text-right">Ações Rápidas</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {mappings.map((m) => (
+                      <TableRow key={m.index} className={cn(m.target === "ignore" && "opacity-60")}>
+                        <TableCell className="text-center font-mono text-xs text-muted-foreground">
+                          {m.index + 1}
+                        </TableCell>
+                        <TableCell className="text-xs font-semibold">
+                          {m.header || <span className="italic text-muted-foreground font-normal">Sem título</span>}
+                        </TableCell>
+                        <TableCell className="text-xs font-mono text-muted-foreground max-w-xs truncate">
+                          {columnSamples[m.index] || <span className="italic text-muted-foreground/60">—</span>}
+                        </TableCell>
+                        <TableCell>
+                          <Select
+                            value={m.target}
+                            onValueChange={(val) => {
+                              if (val) handleMappingChange(m.index, val as ColumnTarget);
+                            }}
+                          >
+                            <SelectTrigger className="h-7 w-64 text-xs bg-muted/30">
+                              <SelectValue>{targetLabel(m.target)}</SelectValue>
+                            </SelectTrigger>
+                            <SelectContent className="max-h-64">
+                              <SelectItem value="ignore">❌ Ignorar Coluna</SelectItem>
+                              <SelectItem value="raw">📦 Manter como Métrica Bruta</SelectItem>
+                              <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                                Campos de Identificação
+                              </div>
+                              {Object.entries(IDENTITY_FIELDS).map(([key, label]) => (
+                                <SelectItem key={key} value={key}>
+                                  {label}
+                                </SelectItem>
+                              ))}
+                              <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                                Métricas Canônicas
+                              </div>
+                              {METRICS.map((metric) => (
+                                <SelectItem key={metric.key} value={`metric:${metric.key}`}>
+                                  {metric.label} ({metric.short})
+                                </SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                        <TableCell className="text-right">
+                          <div className="flex items-center justify-end gap-1">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleMappingChange(m.index, "raw")}
+                              className={cn("h-6 text-[10px] px-1.5", m.target === "raw" && "text-primary font-bold")}
+                            >
+                              Bruta
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              onClick={() => handleMappingChange(m.index, "ignore")}
+                              className={cn("h-6 text-[10px] px-1.5", m.target === "ignore" && "text-destructive font-bold")}
+                            >
+                              Ignorar
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+
+              {/* Status summary of mapped mandatory fields */}
+              <div className="flex flex-wrap items-center gap-2 pt-1 text-[11px] text-muted-foreground">
+                <span className="font-semibold text-foreground">Campos-Chave:</span>
+                {["date", "athlete", "opponent", "competition"].map((field) => {
+                  const mapped = mappings.some((m) => m.target === field);
+                  return (
+                    <span
+                      key={field}
+                      className={cn(
+                        "inline-flex items-center gap-1 rounded-md px-2 py-0.5 text-[10px] font-medium border",
+                        mapped
+                          ? "border-emerald-500/30 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400"
+                          : "border-amber-500/30 bg-amber-500/10 text-amber-600 dark:text-amber-400"
+                      )}
+                    >
+                      {mapped ? <Check className="h-2.5 w-2.5" /> : <AlertTriangle className="h-2.5 w-2.5" />}
+                      {IDENTITY_FIELDS[field as keyof typeof IDENTITY_FIELDS]}
+                    </span>
+                  );
+                })}
+              </div>
+            </div>
+          )}
+        </Card>
+      )}
 
       {/* Staging & Review Area (if parsed) */}
       {resolution && (
@@ -540,96 +937,6 @@ export function SpreadsheetImporter({ teams }: SpreadsheetImporterProps) {
               </div>
             </div>
           )}
-
-          {/* Column Mapping Collapsible Panel */}
-          <div className="rounded-xl border border-border bg-card overflow-hidden">
-            <button
-              type="button"
-              onClick={() => setShowMappingPanel(!showMappingPanel)}
-              className="flex w-full items-center justify-between p-4 text-left hover:bg-muted/30 transition-colors"
-            >
-              <div className="flex items-center gap-2.5">
-                <SlidersHorizontal className="h-4 w-4 text-primary" />
-                <div>
-                  <h4 className="text-sm font-semibold">Mapeamento de Colunas (De-Para)</h4>
-                  <p className="text-xs text-muted-foreground">
-                    {mappings.filter((m) => m.target !== "ignore").length} colunas mapeadas
-                    automaticamente. Clique para revisar ou ajustar.
-                  </p>
-                </div>
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge variant="outline" className="text-[10px]">
-                  {showMappingPanel ? "Recolher" : "Personalizar"}
-                </Badge>
-                {showMappingPanel ? (
-                  <ChevronUp className="h-4 w-4 text-muted-foreground" />
-                ) : (
-                  <ChevronDown className="h-4 w-4 text-muted-foreground" />
-                )}
-              </div>
-            </button>
-
-            {showMappingPanel && (
-              <div className="border-t border-border p-4 bg-muted/10 space-y-4">
-                <div className="max-h-72 overflow-y-auto rounded-lg border border-border bg-background">
-                  <Table>
-                    <TableHeader>
-                      <TableRow>
-                        <TableHead className="w-12 text-center text-xs">#</TableHead>
-                        <TableHead className="text-xs">Cabeçalho na Planilha</TableHead>
-                        <TableHead className="text-xs">Destino no Sistema</TableHead>
-                      </TableRow>
-                    </TableHeader>
-                    <TableBody>
-                      {mappings.map((m) => (
-                        <TableRow key={m.index}>
-                          <TableCell className="text-center font-mono text-xs text-muted-foreground">
-                            {m.index + 1}
-                          </TableCell>
-                          <TableCell className="text-xs font-medium">
-                            {m.header || <span className="italic text-muted-foreground">Vazio</span>}
-                          </TableCell>
-                          <TableCell>
-                            <Select
-                              value={m.target}
-                              onValueChange={(val) => {
-                                if (val) handleMappingChange(m.index, val as ColumnTarget);
-                              }}
-                            >
-                              <SelectTrigger className="h-7 w-64 text-xs bg-muted/30">
-                                <SelectValue>{targetLabel(m.target)}</SelectValue>
-                              </SelectTrigger>
-                              <SelectContent className="max-h-60">
-                                <SelectItem value="ignore">❌ Ignorar Coluna</SelectItem>
-                                <SelectItem value="raw">📦 Manter como Métrica Bruta</SelectItem>
-                                <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                                  Campos de Identificação
-                                </div>
-                                {Object.entries(IDENTITY_FIELDS).map(([key, label]) => (
-                                  <SelectItem key={key} value={key}>
-                                    {label}
-                                  </SelectItem>
-                                ))}
-                                <div className="px-2 py-1 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                                  Métricas Canônicas
-                                </div>
-                                {METRICS.map((metric) => (
-                                  <SelectItem key={metric.key} value={`metric:${metric.key}`}>
-                                    {metric.label} ({metric.short})
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </TableCell>
-                        </TableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </div>
-              </div>
-            )}
-          </div>
 
           {/* Staging Table & Filters */}
           <div className="space-y-3">
@@ -904,6 +1211,109 @@ export function SpreadsheetImporter({ teams }: SpreadsheetImporterProps) {
           </div>
         </div>
       )}
+
+      {/* Save Template Modal (Issue #7 - T05b) */}
+      <Dialog open={isSaveTemplateOpen} onOpenChange={setIsSaveTemplateOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold">Salvar Template de Mapeamento</DialogTitle>
+            <DialogDescription className="text-xs">
+              Salve este mapeamento de colunas para reutilizá-lo sempre que importar planilhas desta plataforma.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 py-2">
+            <div>
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-1">
+                Nome do Template *
+              </label>
+              <Input
+                placeholder="Ex: Wyscout Oficial, FBREF, Sofascore..."
+                value={templateName}
+                onChange={(e) => setTemplateName(e.target.value)}
+                className="text-xs"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-1">
+                Descrição (Opcional)
+              </label>
+              <Input
+                placeholder="Ex: Formato padrão exportado da página de elenco"
+                value={templateDesc}
+                onChange={(e) => setTemplateDesc(e.target.value)}
+                className="text-xs"
+              />
+            </div>
+
+            <div>
+              <label className="text-xs font-semibold uppercase tracking-wider text-muted-foreground block mb-1">
+                Fonte Padrão
+              </label>
+              <Select
+                value={metricSource}
+                onValueChange={(v) => {
+                  if (v) setMetricSource(v as MetricSource);
+                }}
+              >
+                <SelectTrigger className="w-full text-xs">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="WYSCOUT">{SOURCE_LABELS.WYSCOUT}</SelectItem>
+                  <SelectItem value="SOFASCORE">{SOURCE_LABELS.SOFASCORE}</SelectItem>
+                  <SelectItem value="SPORTSBASE">{SOURCE_LABELS.SPORTSBASE}</SelectItem>
+                  <SelectItem value="MANUAL">{SOURCE_LABELS.MANUAL}</SelectItem>
+                  <SelectItem value="OTHER">{SOURCE_LABELS.OTHER}</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div className="rounded-lg bg-muted/40 p-3 text-xs text-muted-foreground">
+              <span className="font-semibold text-foreground">
+                {mappings.filter((m) => m.target !== "ignore").length}
+              </span>{" "}
+              colunas ativas serão gravadas neste template.
+            </div>
+
+            {saveTemplateError && (
+              <div className="rounded-lg bg-destructive/10 p-2.5 text-xs text-destructive flex items-center gap-2">
+                <AlertCircle className="h-4 w-4 shrink-0" />
+                {saveTemplateError}
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="flex-col sm:flex-row gap-2">
+            <Button
+              variant="outline"
+              onClick={() => setIsSaveTemplateOpen(false)}
+              disabled={isSavingTemplate}
+              className="w-full sm:w-auto text-xs"
+            >
+              Cancelar
+            </Button>
+            <Button
+              onClick={handleSaveTemplate}
+              disabled={isSavingTemplate || !templateName.trim()}
+              className="w-full sm:w-auto text-xs gap-1.5"
+            >
+              {isSavingTemplate ? (
+                <>
+                  <RefreshCw className="h-3.5 w-3.5 animate-spin" />
+                  Salvando...
+                </>
+              ) : (
+                <>
+                  <BookmarkPlus className="h-3.5 w-3.5" />
+                  Salvar Template
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Success / Result Feedback Modal */}
       <Dialog open={showResultModal} onOpenChange={setShowResultModal}>
