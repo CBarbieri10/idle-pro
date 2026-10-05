@@ -43,3 +43,6 @@ next-env.d.ts
 
 # Uploads (MVP local storage)
 public/uploads/
+
+# Brain knowledge base
+/CEREBRO/

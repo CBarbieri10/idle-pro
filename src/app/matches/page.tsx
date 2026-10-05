@@ -9,8 +9,9 @@ import {
   formatMatchDate,
   matchOutcome,
 } from "@/lib/metrics";
+import { buttonVariants } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { CalendarDays, Users } from "lucide-react";
+import { CalendarDays, FileSpreadsheet, Users } from "lucide-react";
 import Link from "next/link";
 import type { Metadata } from "next";
 
@@ -33,14 +34,35 @@ export default async function MatchesPage() {
             {matches.length} {matches.length === 1 ? "jogo registrado" : "jogos registrados"}
           </p>
         </div>
-        <CreateMatchButton teams={teamList} leagues={leagueList} />
+        <div className="flex items-center gap-2">
+          <Link
+            href="/matches/import"
+            className={cn(buttonVariants({ variant: "outline" }), "gap-1.5 text-xs")}
+          >
+            <FileSpreadsheet className="h-4 w-4" />
+            Importar Planilha
+          </Link>
+          <CreateMatchButton teams={teamList} leagues={leagueList} />
+        </div>
       </div>
 
       {matches.length === 0 ? (
         <Card className="flex flex-col items-center justify-center py-16 border-dashed border-border/60">
           <CalendarDays className="h-10 w-10 text-muted-foreground/30 mb-3" />
           <p className="text-sm font-medium text-muted-foreground">Nenhum jogo registrado</p>
-          <p className="text-xs text-muted-foreground/60 mt-1">Registre um jogo para lançar métricas dos atletas</p>
+          <p className="text-xs text-muted-foreground/60 mt-1 mb-4">
+            Registre um jogo manualmente ou importe via planilha Excel/CSV
+          </p>
+          <div className="flex items-center gap-2">
+            <Link
+              href="/matches/import"
+              className={cn(buttonVariants({ variant: "outline", size: "sm" }), "gap-1.5 text-xs")}
+            >
+              <FileSpreadsheet className="h-3.5 w-3.5" />
+              Importar Planilha
+            </Link>
+            <CreateMatchButton teams={teamList} leagues={leagueList} />
+          </div>
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
