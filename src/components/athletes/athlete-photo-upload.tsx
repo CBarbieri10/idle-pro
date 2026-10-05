@@ -48,6 +48,61 @@ async function sniffAlpha(file: File): Promise<boolean> {
   return false;
 }
 
+async function optimizeImageForUpload(file: File): Promise<File> {
+  // If file is already smaller than 1.5MB and valid type, keep it as is
+  if (file.size <= 1.5 * 1024 * 1024) return file;
+
+  return new Promise((resolve) => {
+    const img = new window.Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(url);
+      const maxDim = 1600;
+      let width = img.naturalWidth || img.width;
+      let height = img.naturalHeight || img.height;
+
+      if (width > maxDim || height > maxDim) {
+        if (width > height) {
+          height = Math.round((height * maxDim) / width);
+          width = maxDim;
+        } else {
+          width = Math.round((width * maxDim) / height);
+          height = maxDim;
+        }
+      }
+
+      const canvas = document.createElement("canvas");
+      canvas.width = width;
+      canvas.height = height;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) {
+        resolve(file);
+        return;
+      }
+      ctx.drawImage(img, 0, 0, width, height);
+
+      const mimeType = file.type === "image/jpeg" ? "image/jpeg" : "image/png";
+      canvas.toBlob(
+        (blob) => {
+          if (!blob) {
+            resolve(file);
+            return;
+          }
+          const optimizedFile = new File([blob], file.name, { type: mimeType });
+          resolve(optimizedFile);
+        },
+        mimeType,
+        0.92
+      );
+    };
+    img.onerror = () => {
+      URL.revokeObjectURL(url);
+      resolve(file);
+    };
+    img.src = url;
+  });
+}
+
 // ─── Photo Slot ──────────────────────────────────────────────────────────────
 
 interface PhotoSlotProps {
@@ -96,12 +151,13 @@ function PhotoSlot({
       setError("Formato não suportado. Use PNG, JPG ou WebP.");
       return;
     }
-    if (file.size > MAX_BYTES) {
+    const processedFile = await optimizeImageForUpload(file);
+    if (processedFile.size > MAX_BYTES) {
       setError("Arquivo muito grande. Máximo 5 MB.");
       return;
     }
-    const hasAlpha = await sniffAlpha(file).catch(() => false);
-    setPending({ file, url: URL.createObjectURL(file), hasAlpha });
+    const hasAlpha = await sniffAlpha(processedFile).catch(() => false);
+    setPending({ file: processedFile, url: URL.createObjectURL(processedFile), hasAlpha });
   }
 
   function confirmUpload() {

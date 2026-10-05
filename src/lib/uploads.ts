@@ -75,22 +75,43 @@ export async function saveAthletePhoto(
   buf: Buffer,
   format: ImageFormat
 ): Promise<string> {
-  const { safeId, dir } = athleteDir(athleteId);
-  await mkdir(dir, { recursive: true });
-  const filename = `${kind}-${Date.now()}.${format}`;
-  await writeFile(path.join(dir, filename), buf);
-  return `/uploads/athletes/${safeId}/${filename}`;
+  const mime = format === "jpg" ? "jpeg" : format;
+  const dataUrl = `data:image/${mime};base64,${buf.toString("base64")}`;
+
+  // On Vercel (or any serverless read-only environment), store directly as Data URL
+  if (process.env.VERCEL) {
+    return dataUrl;
+  }
+
+  try {
+    const { safeId, dir } = athleteDir(athleteId);
+    await mkdir(dir, { recursive: true });
+    const filename = `${kind}-${Date.now()}.${format}`;
+    await writeFile(path.join(dir, filename), buf);
+    return `/uploads/athletes/${safeId}/${filename}`;
+  } catch (err) {
+    console.warn("Filesystem upload failed, using Base64 Data URL fallback:", err);
+    return dataUrl;
+  }
 }
 
-/** Removes a previously stored photo. Silently ignores external/missing files. */
+/** Removes a previously stored photo. Silently ignores external/missing files and data URLs. */
 export async function deleteStoredPhoto(publicUrl: string | null | undefined) {
-  if (!publicUrl || !publicUrl.startsWith("/uploads/athletes/")) return;
-  const filePath = path.normalize(path.join(PUBLIC_DIR, publicUrl));
-  if (!filePath.startsWith(ATHLETES_UPLOAD_DIR + path.sep)) return;
-  await unlink(filePath).catch(() => {});
+  if (!publicUrl || publicUrl.startsWith("data:") || !publicUrl.startsWith("/uploads/athletes/")) return;
+  try {
+    const filePath = path.normalize(path.join(PUBLIC_DIR, publicUrl));
+    if (!filePath.startsWith(ATHLETES_UPLOAD_DIR + path.sep)) return;
+    await unlink(filePath).catch(() => {});
+  } catch {
+    // Ignore in read-only environment
+  }
 }
 
 export async function deleteAthleteUploads(athleteId: string) {
-  const { dir } = athleteDir(athleteId);
-  await rm(dir, { recursive: true, force: true });
+  try {
+    const { dir } = athleteDir(athleteId);
+    await rm(dir, { recursive: true, force: true });
+  } catch {
+    // Ignore in read-only environment
+  }
 }

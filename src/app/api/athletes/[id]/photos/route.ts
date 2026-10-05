@@ -35,60 +35,68 @@ export async function POST(
   request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
-  const session = await auth();
-  if (!session) {
-    return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
-  }
+  try {
+    const session = await auth();
+    if (!session) {
+      return NextResponse.json({ error: "Não autorizado" }, { status: 401 });
+    }
 
-  const { id } = await params;
-  const athlete = await prisma.athlete.findUnique({ where: { id } });
-  if (!athlete) {
-    return NextResponse.json({ error: "Atleta não encontrado" }, { status: 404 });
-  }
+    const { id } = await params;
+    const athlete = await prisma.athlete.findUnique({ where: { id } });
+    if (!athlete) {
+      return NextResponse.json({ error: "Atleta não encontrado" }, { status: 404 });
+    }
 
-  const formData = await request.formData().catch(() => null);
-  const kind = parseKind(formData?.get("kind"));
-  const file = formData?.get("file");
+    const formData = await request.formData().catch(() => null);
+    const kind = parseKind(formData?.get("kind"));
+    const file = formData?.get("file");
 
-  if (!kind) {
-    return NextResponse.json({ error: "Categoria de foto inválida" }, { status: 400 });
-  }
-  if (!(file instanceof File) || file.size === 0) {
-    return NextResponse.json({ error: "Nenhum arquivo enviado" }, { status: 400 });
-  }
-  if (file.size > MAX_PHOTO_BYTES) {
-    return NextResponse.json({ error: "Arquivo muito grande. Máximo 5 MB." }, { status: 413 });
-  }
+    if (!kind) {
+      return NextResponse.json({ error: "Categoria de foto inválida" }, { status: 400 });
+    }
+    if (!(file instanceof File) || file.size === 0) {
+      return NextResponse.json({ error: "Nenhum arquivo enviado" }, { status: 400 });
+    }
+    if (file.size > MAX_PHOTO_BYTES) {
+      return NextResponse.json({ error: "Arquivo muito grande. Máximo 5 MB." }, { status: 413 });
+    }
 
-  const buf = Buffer.from(await file.arrayBuffer());
-  const image = inspectImage(buf);
-  if (!image) {
+    const buf = Buffer.from(await file.arrayBuffer());
+    const image = inspectImage(buf);
+    if (!image) {
+      return NextResponse.json(
+        { error: "Formato não suportado. Use PNG, JPG ou WebP." },
+        { status: 415 }
+      );
+    }
+
+    const fields = FIELDS[kind];
+    const previousUrl = athlete[fields.url];
+    const url = await saveAthletePhoto(id, kind, buf, image.format);
+
+    const updated = await prisma.athlete.update({
+      where: { id },
+      data: { [fields.url]: url, [fields.alpha]: image.hasAlpha },
+      select: {
+        id: true,
+        photoUrl: true,
+        photoHasAlpha: true,
+        actionPhotoUrl: true,
+        actionPhotoHasAlpha: true,
+      },
+    });
+
+    await deleteStoredPhoto(previousUrl);
+    revalidate(id);
+
+    return NextResponse.json({ ...updated, format: image.format, hasAlpha: image.hasAlpha });
+  } catch (err: any) {
+    console.error("Erro no upload de foto:", err);
     return NextResponse.json(
-      { error: "Formato não suportado. Use PNG, JPG ou WebP." },
-      { status: 415 }
+      { error: err?.message || "Erro interno ao processar e salvar foto" },
+      { status: 500 }
     );
   }
-
-  const fields = FIELDS[kind];
-  const previousUrl = athlete[fields.url];
-  const url = await saveAthletePhoto(id, kind, buf, image.format);
-
-  const updated = await prisma.athlete.update({
-    where: { id },
-    data: { [fields.url]: url, [fields.alpha]: image.hasAlpha },
-    select: {
-      id: true,
-      photoUrl: true,
-      photoHasAlpha: true,
-      actionPhotoUrl: true,
-      actionPhotoHasAlpha: true,
-    },
-  });
-
-  await deleteStoredPhoto(previousUrl);
-  revalidate(id);
-
-  return NextResponse.json({ ...updated, format: image.format, hasAlpha: image.hasAlpha });
 }
 
 /** DELETE /api/athletes/:id/photos?kind=profile|action */
