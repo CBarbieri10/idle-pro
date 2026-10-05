@@ -163,3 +163,43 @@
     pointer-events: none;
   }
 }
+
+/* ─── Global Print Engine Isolation ────────────────────────────────────────── */
+@media print {
+  @page {
+    size: A4 portrait;
+    margin: 8mm 10mm 8mm 10mm;
+  }
+
+  html,
+  body {
+    background: #ffffff !important;
+    color: #09090b !important;
+    height: auto !important;
+    min-height: auto !important;
+    overflow: visible !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  /* When the Raio-X modal is active, hide everything outside the portal */
+  body.modal-raio-x-open > *:not([data-slot="dialog-portal"]) {
+    display: none !important;
+  }
+
+  body.modal-raio-x-open nav,
+  body.modal-raio-x-open aside,
+  body.modal-raio-x-open header,
+  body.modal-raio-x-open main {
+    display: none !important;
+  }
+
+  /* Hide overlays and backdrops in all print scenarios */
+  [data-slot="dialog-overlay"],
+  [data-slot="dialog-close"] {
+    display: none !important;
+  }
+}
+

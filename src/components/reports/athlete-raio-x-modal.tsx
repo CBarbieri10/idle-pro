@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   FileText,
   Printer,
@@ -67,7 +67,19 @@ interface AthleteRaioXModalProps {
 export function AthleteRaioXModal({ athlete, triggerButton }: AthleteRaioXModalProps) {
   const [isOpen, setIsOpen] = useState(false);
 
+  useEffect(() => {
+    if (isOpen) {
+      document.body.classList.add("modal-raio-x-open");
+    } else {
+      document.body.classList.remove("modal-raio-x-open");
+    }
+    return () => {
+      document.body.classList.remove("modal-raio-x-open");
+    };
+  }, [isOpen]);
+
   const handlePrint = () => {
+    document.body.classList.add("modal-raio-x-open");
     window.print();
   };
 
@@ -138,6 +150,15 @@ export function AthleteRaioXModal({ athlete, triggerButton }: AthleteRaioXModalP
                 * {
                   -webkit-print-color-adjust: exact !important;
                   print-color-adjust: exact !important;
+                }
+                body > *:not(:has(#raio-x-report-sheet)) {
+                  display: none !important;
+                }
+                body.modal-raio-x-open > *:not([data-slot="dialog-portal"]) {
+                  display: none !important;
+                }
+                main, header, nav, aside, [data-slot="dialog-overlay"], [data-slot="dialog-close"] {
+                  display: none !important;
                 }
                 .print-avoid-break {
                   break-inside: avoid !important;
