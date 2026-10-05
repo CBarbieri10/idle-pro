@@ -100,9 +100,10 @@ model Athlete {
   createdAt           DateTime       @default(now())
   updatedAt           DateTime       @updatedAt
 
-  team         Team        @relation("ClubAthletes", fields: [teamId], references: [id])
-  nationalTeam Team?       @relation("NationalAthletes", fields: [nationalTeamId], references: [id])
+  team         Team              @relation("ClubAthletes", fields: [teamId], references: [id])
+  nationalTeam Team?             @relation("NationalAthletes", fields: [nationalTeamId], references: [id])
   rawMetrics   RawMetric[]
+  canonicalMetrics CanonicalMetric[]
 
   @@map("athletes")
 }
@@ -139,10 +140,11 @@ model Match {
   createdAt    DateTime   @default(now())
   updatedAt    DateTime   @updatedAt
 
-  team       Team        @relation("MatchTeam", fields: [teamId], references: [id])
-  opponent   Team?       @relation("MatchOpponent", fields: [opponentId], references: [id], onDelete: SetNull)
-  league     League?     @relation(fields: [leagueId], references: [id], onDelete: SetNull)
-  rawMetrics RawMetric[]
+  team             Team              @relation("MatchTeam", fields: [teamId], references: [id])
+  opponent         Team?             @relation("MatchOpponent", fields: [opponentId], references: [id], onDelete: SetNull)
+  league           League?           @relation(fields: [leagueId], references: [id], onDelete: SetNull)
+  rawMetrics       RawMetric[]
+  canonicalMetrics CanonicalMetric[]
 
   @@index([date])
   @@index([teamId])
@@ -160,12 +162,36 @@ model RawMetric {
   createdAt     DateTime     @default(now())
   updatedAt     DateTime     @updatedAt
 
-  match   Match   @relation(fields: [matchId], references: [id], onDelete: Cascade)
-  athlete Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  match            Match             @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  athlete          Athlete           @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  canonicalMetrics CanonicalMetric[]
 
   @@unique([matchId, athleteId, source])
   @@index([athleteId])
   @@map("raw_metrics")
+}
+
+/// Métrica Canônica (ADR-002, Issue #8 - T06): dado padronizado e normalizado para gráficos e comparações
+model CanonicalMetric {
+  id            String   @id @default(cuid())
+  athleteId     String
+  matchId       String
+  rawMetricId   String?
+  metricName    String // ex: "goals", "assists", "passes", "xg", "tackles"
+  absoluteValue Float
+  per90Value    Float
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  athlete   Athlete    @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  match     Match      @relation(fields: [matchId], references: [id], onDelete: Cascade)
+  rawMetric RawMetric? @relation(fields: [rawMetricId], references: [id], onDelete: SetNull)
+
+  @@unique([matchId, athleteId, metricName])
+  @@index([athleteId])
+  @@index([matchId])
+  @@index([metricName])
+  @@map("canonical_metrics")
 }
 
 /// Template reutilizável de mapeamento de colunas (Issue #7 - T05b)

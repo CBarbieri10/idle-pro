@@ -68,10 +68,15 @@ export function AthleteMatchHistory({
           {summaryKeys.slice(0, 2).map((k) => {
             const { sum, n } = sums[k];
             const isCount = (METRIC_BY_KEY[k]?.unit ?? "count") === "count";
+            const per90 = totalMinutes > 0 && isCount ? ((sum / totalMinutes) * 90).toFixed(2) : null;
             return (
               <SummaryTile
                 key={k}
-                label={isCount ? `${metricLabel(k)} (total)` : `${metricLabel(k)} (média)`}
+                label={
+                  isCount
+                    ? `${metricLabel(k)} (total${per90 ? ` · ${per90}/90` : ""})`
+                    : `${metricLabel(k)} (média)`
+                }
                 value={formatMetric(k, isCount ? sum : sum / n)}
               />
             );
@@ -95,6 +100,10 @@ export function AthleteMatchHistory({
             const data = h.data as MetricData;
             const keys = sortMetricKeys(Object.keys(data), preset);
             const label = `${formatMatchDate(m.date)} vs ${m.opponentName}`;
+            const canonicalMap = new Map(
+              (h.canonicalMetrics ?? []).map((c) => [c.metricName, c])
+            );
+
             return (
               <li key={h.id} className="relative">
                 <span
@@ -160,14 +169,31 @@ export function AthleteMatchHistory({
                   </header>
 
                   <dl className="mt-3 grid grid-cols-3 gap-2 sm:grid-cols-5">
-                    {keys.map((k) => (
-                      <div key={k} className="rounded-lg bg-background/50 px-2.5 py-2">
-                        <dt className="truncate text-[10px] text-muted-foreground" title={metricLabel(k)}>
-                          {metricLabel(k)}
-                        </dt>
-                        <dd className="text-base font-bold tabular-nums text-foreground">{formatMetric(k, data[k])}</dd>
-                      </div>
-                    ))}
+                    {keys.map((k) => {
+                      const canonical = canonicalMap.get(k);
+                      const def = METRIC_BY_KEY[k];
+                      const isRate = def?.unit === "percent" || k === "rating";
+                      const showPer90 = canonical && !isRate && canonical.per90Value > 0 && h.minutesPlayed && h.minutesPlayed > 0;
+
+                      return (
+                        <div key={k} className="rounded-lg bg-background/50 px-2.5 py-2">
+                          <dt className="truncate text-[10px] text-muted-foreground" title={metricLabel(k)}>
+                            {metricLabel(k)}
+                          </dt>
+                          <dd className="text-base font-bold tabular-nums text-foreground flex items-baseline gap-1.5">
+                            <span>{formatMetric(k, data[k])}</span>
+                            {showPer90 && (
+                              <span
+                                className="text-[10px] font-semibold text-primary font-mono tracking-tight"
+                                title={`Normalizado: ${canonical.per90Value.toLocaleString("pt-BR")} a cada 90 minutos`}
+                              >
+                                {canonical.per90Value.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 2 })}/90
+                              </span>
+                            )}
+                          </dd>
+                        </div>
+                      );
+                    })}
                   </dl>
                 </article>
               </li>

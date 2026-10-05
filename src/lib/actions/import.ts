@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { MetricSource, Prisma } from "@prisma/client";
 import { normalizeName, type StagedRow } from "@/lib/import/mapping";
+import { normalizeRawMetric } from "@/lib/normalization";
 
 function safeRevalidate(path: string) {
   try {
@@ -325,7 +326,7 @@ export async function executeBatchImport(
           const athleteId = row.resolvedAthleteId!;
           affectedAthleteIds.add(athleteId);
 
-          await tx.rawMetric.upsert({
+          const rawRecord = await tx.rawMetric.upsert({
             where: {
               matchId_athleteId_source: {
                 matchId: match.id,
@@ -344,7 +345,12 @@ export async function executeBatchImport(
               minutesPlayed: row.minutesPlayed,
               data: row.data as Prisma.InputJsonObject,
             },
+            select: { id: true },
           });
+
+          // Automatically run normalization pipeline to populate canonical_metrics (Issue #8 - T06)
+          await normalizeRawMetric(tx, rawRecord.id);
+
           importedCount++;
         }
       }

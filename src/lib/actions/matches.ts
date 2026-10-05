@@ -4,6 +4,7 @@ import { prisma } from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 import { z } from "zod";
 import { MatchVenue, MetricSource, Prisma } from "@prisma/client";
+import { normalizeRawMetric } from "@/lib/normalization";
 
 export type ActionResult<T = undefined> =
   | { ok: true; data: T }
@@ -111,7 +112,12 @@ export async function getMatchOptions() {
 export async function getAthleteMatchHistory(athleteId: string) {
   return prisma.rawMetric.findMany({
     where: { athleteId },
-    include: { match: { include: matchInclude } },
+    include: {
+      match: { include: matchInclude },
+      canonicalMetrics: {
+        orderBy: { metricName: "asc" },
+      },
+    },
     orderBy: [{ match: { date: "desc" } }, { createdAt: "desc" }],
   });
 }
@@ -157,7 +163,7 @@ export async function deleteMatch(id: string): Promise<ActionResult> {
 
 // ─── Raw metric mutations ────────────────────────────────────────────────────
 
-/** Creates or replaces the metric sheet of an athlete for a match + source. */
+/** Creates or replaces the metric sheet of an athlete for a match + source, and executes normalization. */
 export async function saveRawMetric(
   input: RawMetricInput,
   existingId?: string
@@ -170,6 +176,9 @@ export async function saveRawMetric(
       ? await prisma.rawMetric.update({ where: { id: existingId, athleteId }, data: payload, select: { id: true } })
       : await prisma.rawMetric.create({ data: { ...payload, athleteId }, select: { id: true } });
 
+    // Trigger automatic normalization pipeline (Issue #8 - T06)
+    await normalizeRawMetric(prisma, saved.id);
+
     revalidateMatches([athleteId]);
     return { ok: true, data: saved };
   } catch (err) {
@@ -179,6 +188,7 @@ export async function saveRawMetric(
 
 export async function deleteRawMetric(id: string): Promise<ActionResult> {
   try {
+    await prisma.canonicalMetric.deleteMany({ where: { rawMetricId: id } });
     const deleted = await prisma.rawMetric.delete({ where: { id }, select: { athleteId: true } });
     revalidateMatches([deleted.athleteId]);
     return { ok: true, data: undefined };
