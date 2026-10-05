@@ -8,7 +8,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "db:seed": "tsx prisma/seed.ts"
+    "db:seed": "tsx prisma/seed.ts",
+    "db:showroom": "tsx prisma/seed-showroom.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
