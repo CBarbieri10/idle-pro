@@ -29,13 +29,15 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
     >
       <body className="min-h-full flex bg-background text-foreground">
         <Providers>
-          {/* Sidebar */}
-          <AppSidebar />
+          <div id="app-shell" className="flex min-h-screen w-full">
+            {/* Sidebar */}
+            <AppSidebar />
 
-          {/* Main content area */}
-          <div className="flex flex-1 flex-col min-w-0 md:ml-0">
-            <AppHeader />
-            <main className="flex-1 overflow-auto p-6">{children}</main>
+            {/* Main content area */}
+            <div className="flex flex-1 flex-col min-w-0 md:ml-0">
+              <AppHeader />
+              <main className="flex-1 overflow-auto p-6">{children}</main>
+            </div>
           </div>
         </Providers>
       </body>

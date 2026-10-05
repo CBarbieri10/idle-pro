@@ -181,17 +181,10 @@ export function RadarChart({
         >
           <defs>
             <radialGradient id="radarFillGrad" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#6366f1" stopOpacity="0.65" />
-              <stop offset="60%" stopColor="#6366f1" stopOpacity="0.45" />
-              <stop offset="100%" stopColor="#4f46e5" stopOpacity="0.25" />
+              <stop offset="0%" stopColor="#6366f1" stopOpacity="0.70" />
+              <stop offset="60%" stopColor="#6366f1" stopOpacity="0.50" />
+              <stop offset="100%" stopColor="#4f46e5" stopOpacity="0.35" />
             </radialGradient>
-            <filter id="glow">
-              <feGaussianBlur stdDeviation="2.5" result="coloredBlur" />
-              <feMerge>
-                <feMergeNode in="coloredBlur" />
-                <feMergeNode in="SourceGraphic" />
-              </feMerge>
-            </filter>
           </defs>
 
           {/* Concentric Grid Webs */}
@@ -211,7 +204,8 @@ export function RadarChart({
                 stroke="currentColor"
                 strokeOpacity={lvl === 1.0 ? 0.45 : 0.25}
                 strokeWidth={lvl === 1.0 ? 1.5 : 1}
-                className="text-border print:text-zinc-400"
+                className="text-border print:stroke-zinc-300 print:stroke-opacity-100"
+                style={{ WebkitPrintColorAdjust: "exact", printColorAdjust: "exact" }}
               />
             );
           })}
@@ -229,7 +223,8 @@ export function RadarChart({
                 stroke="currentColor"
                 strokeOpacity={0.3}
                 strokeWidth={1}
-                className="text-border print:text-zinc-400"
+                className="text-border print:stroke-zinc-300 print:stroke-opacity-100"
+                style={{ WebkitPrintColorAdjust: "exact", printColorAdjust: "exact" }}
               />
             );
           })}
@@ -241,8 +236,11 @@ export function RadarChart({
             stroke="#6366f1"
             strokeWidth="2.5"
             strokeLinejoin="round"
-            filter="url(#glow)"
-            className="transition-all duration-300"
+            className="transition-all duration-300 print:stroke-indigo-600 print:fill-indigo-500/50"
+            style={{
+              WebkitPrintColorAdjust: "exact",
+              printColorAdjust: "exact",
+            }}
           />
 
           {/* Vertex Nodes & Interactive Dots */}
@@ -263,7 +261,8 @@ export function RadarChart({
                   strokeWidth="2"
                   onMouseEnter={() => setHoveredPoint(p)}
                   onMouseLeave={() => setHoveredPoint(null)}
-                  className="transition-all"
+                  className="transition-all print:fill-indigo-600 print:stroke-white"
+                  style={{ WebkitPrintColorAdjust: "exact", printColorAdjust: "exact" }}
                 />
 
                 {/* Metric label at edge (larger, bold typography) */}
@@ -275,12 +274,14 @@ export function RadarChart({
                   fontSize={size < 300 ? 11 : 12}
                   fontWeight="700"
                   className={cn(
-                    "fill-muted-foreground print:fill-zinc-900 group-hover:fill-primary transition-colors",
+                    "fill-muted-foreground print:fill-zinc-950 group-hover:fill-primary transition-colors",
                     hoveredPoint?.key === p.key && "fill-primary font-bold"
                   )}
                   style={{
                     fontSize: size < 300 ? "11px" : "12px",
-                    fontWeight: 700,
+                    fontWeight: 800,
+                    WebkitPrintColorAdjust: "exact",
+                    printColorAdjust: "exact",
                   }}
                   onMouseEnter={() => setHoveredPoint(p)}
                   onMouseLeave={() => setHoveredPoint(null)}
