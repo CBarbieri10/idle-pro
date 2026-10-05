@@ -181,9 +181,9 @@ export function RadarChart({
         >
           <defs>
             <radialGradient id="radarFillGrad" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="var(--primary)" stopOpacity="0.45" />
-              <stop offset="70%" stopColor="var(--primary)" stopOpacity="0.25" />
-              <stop offset="100%" stopColor="var(--primary)" stopOpacity="0.05" />
+              <stop offset="0%" stopColor="#6366f1" stopOpacity="0.65" />
+              <stop offset="60%" stopColor="#6366f1" stopOpacity="0.45" />
+              <stop offset="100%" stopColor="#4f46e5" stopOpacity="0.25" />
             </radialGradient>
             <filter id="glow">
               <feGaussianBlur stdDeviation="2.5" result="coloredBlur" />
@@ -209,9 +209,9 @@ export function RadarChart({
                 points={pts}
                 fill="none"
                 stroke="currentColor"
-                strokeOpacity={lvl === 1.0 ? 0.3 : 0.15}
+                strokeOpacity={lvl === 1.0 ? 0.45 : 0.25}
                 strokeWidth={lvl === 1.0 ? 1.5 : 1}
-                className="text-border"
+                className="text-border print:text-zinc-400"
               />
             );
           })}
@@ -227,9 +227,9 @@ export function RadarChart({
                 x2={edge.x}
                 y2={edge.y}
                 stroke="currentColor"
-                strokeOpacity={0.2}
+                strokeOpacity={0.3}
                 strokeWidth={1}
-                className="text-border"
+                className="text-border print:text-zinc-400"
               />
             );
           })}
@@ -238,7 +238,7 @@ export function RadarChart({
           <polygon
             points={polygonPoints}
             fill="url(#radarFillGrad)"
-            stroke="var(--primary)"
+            stroke="#6366f1"
             strokeWidth="2.5"
             strokeLinejoin="round"
             filter="url(#glow)"
@@ -249,7 +249,7 @@ export function RadarChart({
           {pointsData.map((p, i) => {
             const fraction = Math.min(p.value / p.benchmarkMax, 1.0);
             const coord = getCoordinates(fraction, i);
-            const labelCoord = getCoordinates(1.22, i);
+            const labelCoord = getCoordinates(1.24, i);
 
             return (
               <g key={p.key} className="group cursor-pointer">
@@ -258,26 +258,30 @@ export function RadarChart({
                   cx={coord.x}
                   cy={coord.y}
                   r={hoveredPoint?.key === p.key ? 5.5 : 4}
-                  fill="var(--primary)"
-                  stroke="var(--background)"
+                  fill="#6366f1"
+                  stroke="#ffffff"
                   strokeWidth="2"
                   onMouseEnter={() => setHoveredPoint(p)}
                   onMouseLeave={() => setHoveredPoint(null)}
                   className="transition-all"
                 />
 
-                {/* Metric label at edge */}
+                {/* Metric label at edge (larger, bold typography) */}
                 <text
                   x={labelCoord.x}
                   y={labelCoord.y}
                   textAnchor="middle"
                   dominantBaseline="central"
-                  fontSize={size < 300 ? 9 : 10}
-                  fontWeight="600"
+                  fontSize={size < 300 ? 11 : 12}
+                  fontWeight="700"
                   className={cn(
-                    "fill-muted-foreground group-hover:fill-primary transition-colors",
+                    "fill-muted-foreground print:fill-zinc-900 group-hover:fill-primary transition-colors",
                     hoveredPoint?.key === p.key && "fill-primary font-bold"
                   )}
+                  style={{
+                    fontSize: size < 300 ? "11px" : "12px",
+                    fontWeight: 700,
+                  }}
                   onMouseEnter={() => setHoveredPoint(p)}
                   onMouseLeave={() => setHoveredPoint(null)}
                 >
