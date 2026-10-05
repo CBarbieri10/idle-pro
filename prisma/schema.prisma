@@ -18,6 +18,8 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  portfolios AnalystPortfolio[]
+
   @@map("users")
 }
 
@@ -104,6 +106,7 @@ model Athlete {
   nationalTeam Team?             @relation("NationalAthletes", fields: [nationalTeamId], references: [id])
   rawMetrics   RawMetric[]
   canonicalMetrics CanonicalMetric[]
+  portfolioAthletes PortfolioAthlete[]
 
   @@map("athletes")
 }
@@ -205,4 +208,37 @@ model MappingTemplate {
   updatedAt   DateTime     @updatedAt
 
   @@map("mapping_templates")
+}
+
+// ─── Fase 3: Catálogo e Portfólio do Analista (Issue #10 - T08) ─────────────
+
+model AnalystPortfolio {
+  id        String   @id @default(cuid())
+  userId    String
+  name      String   @default("Meu Portfólio")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user     User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  athletes PortfolioAthlete[]
+
+  @@unique([userId, name])
+  @@map("analyst_portfolios")
+}
+
+model PortfolioAthlete {
+  id          String   @id @default(cuid())
+  portfolioId String
+  athleteId   String
+  notes       String?
+  priority    Int      @default(1)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  portfolio AnalystPortfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  athlete   Athlete          @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  @@unique([portfolioId, athleteId])
+  @@index([athleteId])
+  @@map("portfolio_athletes")
 }

@@ -1,5 +1,6 @@
 import { getCatalogAthletes } from "@/lib/actions/catalog";
 import { getTeams } from "@/lib/actions/teams";
+import { getPortfolioAthleteIds } from "@/lib/actions/portfolio";
 import { LeagueCatalog } from "@/components/catalog/league-catalog";
 import type { Metadata } from "next";
 
@@ -9,12 +10,20 @@ export const metadata: Metadata = {
 };
 
 export default async function LeagueCatalogPage() {
-  const [catalogData, teams] = await Promise.all([
+  const [catalogData, teams, portfolioAthleteIds] = await Promise.all([
     getCatalogAthletes(),
     getTeams(),
+    getPortfolioAthleteIds(),
   ]);
 
   const teamOptions = teams.map((t) => ({ id: t.id, name: t.name }));
 
-  return <LeagueCatalog initialAthletes={catalogData.athletes} teams={teamOptions} />;
+  return (
+    <LeagueCatalog
+      initialAthletes={catalogData.athletes}
+      teams={teamOptions}
+      initialPortfolioIds={portfolioAthleteIds}
+    />
+  );
 }
+

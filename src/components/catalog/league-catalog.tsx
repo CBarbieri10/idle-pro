@@ -53,6 +53,7 @@ import {
 import { METRICS, formatMetric, metricLabel } from "@/lib/metrics";
 import { cn } from "@/lib/utils";
 import { Position, FootPreference } from "@prisma/client";
+import { PortfolioToggleButton } from "@/components/portfolio/portfolio-toggle-button";
 
 interface TeamOption {
   id: string;
@@ -62,9 +63,14 @@ interface TeamOption {
 interface LeagueCatalogProps {
   initialAthletes: CatalogAthlete[];
   teams: TeamOption[];
+  initialPortfolioIds?: string[];
 }
 
-export function LeagueCatalog({ initialAthletes, teams }: LeagueCatalogProps) {
+export function LeagueCatalog({
+  initialAthletes,
+  teams,
+  initialPortfolioIds = [],
+}: LeagueCatalogProps) {
   // Filters state
   const [search, setSearch] = useState("");
   const [positionFilter, setPositionFilter] = useState<string>("ALL");
@@ -515,12 +521,20 @@ export function LeagueCatalog({ initialAthletes, teams }: LeagueCatalogProps) {
                       <span className="text-[11px] font-medium">Comparar</span>
                     </button>
 
-                    <Badge
-                      variant="outline"
-                      className={cn("text-[10px] px-2 py-0.5", POSITION_COLORS[athlete.position])}
-                    >
-                      {POSITION_LABELS[athlete.position]}
-                    </Badge>
+                    <div className="flex items-center gap-1.5">
+                      <PortfolioToggleButton
+                        athleteId={athlete.id}
+                        athleteName={athlete.name}
+                        initialInPortfolio={initialPortfolioIds.includes(athlete.id)}
+                        variant="icon"
+                      />
+                      <Badge
+                        variant="outline"
+                        className={cn("text-[10px] px-2 py-0.5", POSITION_COLORS[athlete.position])}
+                      >
+                        {POSITION_LABELS[athlete.position]}
+                      </Badge>
+                    </div>
                   </div>
 
                   {/* Athlete Info */}
@@ -691,12 +705,20 @@ export function LeagueCatalog({ initialAthletes, teams }: LeagueCatalogProps) {
                       </TableCell>
 
                       <TableCell className="text-right">
-                        <Link
-                          href={`/athletes/${athlete.id}`}
-                          className="text-xs font-semibold text-primary hover:underline"
-                        >
-                          Perfil
-                        </Link>
+                        <div className="flex items-center justify-end gap-1.5">
+                          <PortfolioToggleButton
+                            athleteId={athlete.id}
+                            athleteName={athlete.name}
+                            initialInPortfolio={initialPortfolioIds.includes(athlete.id)}
+                            variant="icon"
+                          />
+                          <Link
+                            href={`/athletes/${athlete.id}`}
+                            className="text-xs font-semibold text-primary hover:underline px-1.5"
+                          >
+                            Perfil
+                          </Link>
+                        </div>
                       </TableCell>
                     </TableRow>
                   );
