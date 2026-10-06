@@ -13,6 +13,7 @@ import { RadarChart } from "@/components/charts/radar-chart";
 import { TacticalPitchHeatmap } from "@/components/charts/tactical-pitch-heatmap";
 import { SimilarAthletes } from "@/components/athletes/similar-athletes";
 import { AthleteRaioXModal, type RaioXAthleteData } from "@/components/reports/athlete-raio-x-modal";
+import { AthleteTelemetryModal } from "@/components/athletes/athlete-telemetry-modal";
 import { getVideoLinksByAthlete } from "@/lib/actions/video-links";
 import { AthleteVideoLinks } from "@/components/athletes/athlete-video-links";
 import { getGoalsByAthlete } from "@/lib/actions/goals";
@@ -132,6 +133,9 @@ export default async function AthleteProfilePage({
     leagues: leagueList,
   };
 
+  const rawTelemetryData =
+    (athlete.rawMetrics?.[0]?.data as Record<string, unknown>) || null;
+
   const initials = athlete.name
     .split(" ")
     .map((n) => n[0])
@@ -204,6 +208,14 @@ export default async function AthleteProfilePage({
           </Link>
 
           <AthleteRaioXModal athlete={raioXData} />
+
+          <AthleteTelemetryModal
+            athleteName={athlete.name}
+            athletePosition={POSITION_LABELS[athlete.position]}
+            teamName={athlete.team.name}
+            rawData={rawTelemetryData}
+            triggerVariant="button"
+          />
         </div>
       </div>
 
@@ -343,6 +355,19 @@ export default async function AthleteProfilePage({
                   showCategoryTabs={true}
                   colorVariant="emerald"
                 />
+                <div className="mt-4 pt-3 border-t border-[#1e2638] w-full flex flex-col sm:flex-row items-center justify-between gap-3">
+                  <div className="flex items-center gap-2 text-xs text-zinc-400">
+                    <Sparkles className="h-3.5 w-3.5 text-cyan-400" />
+                    <span>Auditoria completa da base de dados do Wyscout:</span>
+                  </div>
+                  <AthleteTelemetryModal
+                    athleteName={athlete.name}
+                    athletePosition={POSITION_LABELS[athlete.position]}
+                    teamName={athlete.team.name}
+                    rawData={rawTelemetryData}
+                    triggerVariant="button"
+                  />
+                </div>
               </div>
             ) : (
               <div className="flex flex-col items-center justify-center py-16 text-center">
@@ -498,6 +523,15 @@ export default async function AthleteProfilePage({
           </div>
         </Card>
       )}
+
+      {/* ─── Telemetria Completa dos 75 Indicadores Wyscout (Fase 6 - Etapa 2) ── */}
+      <AthleteTelemetryModal
+        athleteName={athlete.name}
+        athletePosition={POSITION_LABELS[athlete.position]}
+        teamName={athlete.team.name}
+        rawData={rawTelemetryData}
+        triggerVariant="banner"
+      />
 
       {/* ─── Parecer Tático com IA (Fase 6 - Issue #20) ──────────────────── */}
       <AthleteTacticalAiSummary

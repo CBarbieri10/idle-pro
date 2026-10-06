@@ -56,6 +56,10 @@ export async function getAthleteById(id: string) {
     include: {
       team: true,
       nationalTeam: true,
+      rawMetrics: {
+        orderBy: { createdAt: "desc" },
+        take: 1,
+      },
     },
   });
 }
