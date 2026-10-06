@@ -15,6 +15,8 @@ import { SimilarAthletes } from "@/components/athletes/similar-athletes";
 import { AthleteRaioXModal, type RaioXAthleteData } from "@/components/reports/athlete-raio-x-modal";
 import { getVideoLinksByAthlete } from "@/lib/actions/video-links";
 import { AthleteVideoLinks } from "@/components/athletes/athlete-video-links";
+import { getGoalsByAthlete } from "@/lib/actions/goals";
+import { AthleteGoals } from "@/components/athletes/athlete-goals";
 import { PortfolioToggleButton } from "@/components/portfolio/portfolio-toggle-button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -78,7 +80,7 @@ export default async function AthleteProfilePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [athlete, teams, leagues, history, matchOptions, athleteStats, inPortfolio, videoLinks] =
+  const [athlete, teams, leagues, history, matchOptions, athleteStats, inPortfolio, videoLinks, goals] =
     await Promise.all([
       getAthleteById(id),
       getTeams(),
@@ -88,6 +90,7 @@ export default async function AthleteProfilePage({
       getAthleteStatsForProfile(id),
       isAthleteInPortfolio(id),
       getVideoLinksByAthlete(id),
+      getGoalsByAthlete(id),
     ]);
 
   if (!athlete) notFound();
@@ -402,6 +405,13 @@ export default async function AthleteProfilePage({
           </div>
         </Card>
       )}
+
+      {/* ─── Metas de Desenvolvimento & KPIs (Fase 4 - Issue #12) ─────────── */}
+      <AthleteGoals
+        athleteId={athlete.id}
+        athleteName={athlete.name}
+        goals={goals}
+      />
 
       {/* ─── Videoteca Tática & Decupagens (Fase 4 - Issue #11) ───────────── */}
       <AthleteVideoLinks

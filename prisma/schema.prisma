@@ -108,6 +108,7 @@ model Athlete {
   canonicalMetrics CanonicalMetric[]
   portfolioAthletes PortfolioAthlete[]
   videoLinks   VideoLink[]
+  goals        AthleteGoal[]
 
   @@map("athletes")
 }
@@ -266,4 +267,28 @@ model VideoLink {
   @@index([category])
   @@map("video_links")
 }
+
+// ─── Fase 4: Metas de Desenvolvimento do Atleta (Issue #12 - T10) ──────────
+
+model AthleteGoal {
+  id           String   @id @default(cuid())
+  athleteId    String
+  title        String   // ex: "Alcançar 15 gols na temporada"
+  metric       String?  // métrica canônica opcional vinculada, ex: "goals", "passes", "progressive_passes"
+  currentValue Float    @default(0)
+  targetValue  Float
+  unit         String   @default("absoluto") // ex: "absoluto", "%", "gols", "passes/90"
+  category     String   // ex: "Técnica", "Tática", "Física", "Mental / Comportamental"
+  objective    String?  // objetivo textual / observação analítica
+  isCompleted  Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  athlete Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  @@index([athleteId])
+  @@index([category])
+  @@map("goals")
+}
+
 

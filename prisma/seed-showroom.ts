@@ -427,6 +427,60 @@ async function main() {
       });
       console.log("🎥 Vídeos táticos do showroom vinculados a Estêvão");
     }
+
+    // 7. Amostras de Metas de Desenvolvimento (Fase 4 - Issue #12)
+    const existingGoals = await prisma.athleteGoal.findFirst({ where: { athleteId: estevao.id } });
+    if (!existingGoals) {
+      await prisma.athleteGoal.createMany({
+        data: [
+          {
+            athleteId: estevao.id,
+            title: "Alcançar 15 Gols no Brasileirão Série A",
+            category: "Técnica",
+            metric: "goals",
+            currentValue: 12,
+            targetValue: 15,
+            unit: "gols",
+            objective: "Manter taxa de finalização de alta eficiência atacando a diagonal nas costas do lateral.",
+            isCompleted: false,
+          },
+          {
+            athleteId: estevao.id,
+            title: "Distribuir 8 Assistências Decisivas",
+            category: "Tática",
+            metric: "assists",
+            currentValue: 8,
+            targetValue: 8,
+            unit: "assists",
+            objective: "Buscar passes em profundidade e cruzamentos rasos na segunda trave.",
+            isCompleted: true,
+          },
+          {
+            athleteId: estevao.id,
+            title: "Média de 6.0 Dribles Certos por 90 min",
+            category: "Técnica",
+            metric: "dribbles_completed",
+            currentValue: 4.8,
+            targetValue: 6.0,
+            unit: "/90 min",
+            objective: "Isolar no 1v1 no terço final e explorar mudança de direção.",
+            isCompleted: false,
+          },
+          {
+            athleteId: estevao.id,
+            title: "Pico de Velocidade de Sprint (35 km/h)",
+            category: "Física",
+            metric: "sprint_speed",
+            currentValue: 34.6,
+            targetValue: 35.0,
+            unit: "km/h",
+            objective: "Aceleração em transição ofensiva com potência nos primeiros 15 metros.",
+            isCompleted: false,
+          },
+        ],
+      });
+      console.log("🎯 Metas de desenvolvimento do showroom vinculadas a Estêvão");
+    }
   }
 
   console.log("\n🎉 Showroom povoado com sucesso!");
