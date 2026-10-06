@@ -2,6 +2,8 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getAthleteById } from "@/lib/actions/athletes";
 import { getAthleteStatsForProfile } from "@/lib/actions/portfolio";
+import { getGoalsByAthlete } from "@/lib/actions/goals";
+import { getVideoLinksByAthlete } from "@/lib/actions/video-links";
 import { AthleteDossier } from "@/components/reports/dossier-builder";
 import { PrintTriggerButton } from "@/components/reports/print-trigger-button";
 import { ArrowLeft } from "lucide-react";
@@ -16,7 +18,7 @@ export async function generateMetadata({
   const athlete = await getAthleteById(id);
   if (!athlete) return { title: "Dossiê Executivo" };
   return {
-    title: `Dossiê Executivo (Capa + Raio-X) — ${athlete.name} | The Net Scouting`,
+    title: `Dossiê Executivo (4 Páginas) — ${athlete.name} | The Net Scouting`,
     description: `Relatório executivo confidencial de scouting para ${athlete.name}`,
   };
 }
@@ -27,9 +29,11 @@ export default async function AthleteRaioXPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [athlete, athleteStats] = await Promise.all([
+  const [athlete, athleteStats, goals, videoLinks] = await Promise.all([
     getAthleteById(id),
     getAthleteStatsForProfile(id),
+    getGoalsByAthlete(id),
+    getVideoLinksByAthlete(id),
   ]);
 
   if (!athlete) notFound();
@@ -55,6 +59,8 @@ export default async function AthleteRaioXPage({
     totalMatches: athleteStats?.totalMatches ?? 0,
     canonicalMetrics: athleteStats?.metrics ?? {},
     recentMatches: athleteStats?.recentMatches ?? [],
+    goals,
+    videoLinks,
   };
 
   return (

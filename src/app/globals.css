@@ -317,6 +317,16 @@
   .print-page-break {
     page-break-after: always !important;
     break-after: page !important;
+    display: block !important;
+    clear: both !important;
+  }
+
+  .dossier-page-sheet {
+    display: block !important;
+    width: 100% !important;
+    max-width: 190mm !important;
+    margin: 0 auto !important;
+    padding: 0 !important;
   }
 
   .print-avoid-break {

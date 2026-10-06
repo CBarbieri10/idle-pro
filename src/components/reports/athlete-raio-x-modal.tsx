@@ -93,9 +93,9 @@ export function AthleteRaioXModal({ athlete, triggerButton }: AthleteRaioXModalP
                   .print-page-break {
                     break-after: page !important;
                     page-break-after: always !important;
-                    height: 0 !important;
                     display: block !important;
                     clear: both !important;
+                    height: auto !important;
                   }
                   .print-avoid-break {
                     break-inside: avoid !important;

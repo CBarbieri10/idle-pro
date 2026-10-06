@@ -158,6 +158,8 @@ export default async function AthleteProfilePage({
     totalMatches: athleteStats?.totalMatches ?? 0,
     canonicalMetrics: athleteStats?.metrics ?? {},
     recentMatches: athleteStats?.recentMatches ?? [],
+    goals,
+    videoLinks,
   };
 
   const hasMetrics = athleteStats && Object.keys(athleteStats.metrics).length > 0;

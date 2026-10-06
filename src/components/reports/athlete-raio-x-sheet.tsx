@@ -42,6 +42,31 @@ export interface RaioXAthleteSheetData {
     goalsAgainst: number | null;
     minutesPlayed: number | null;
   }>;
+  goals?: Array<{
+    id: string;
+    title: string;
+    metric?: string | null;
+    currentValue: number;
+    targetValue: number;
+    unit: string;
+    category: string;
+    objective?: string | null;
+    isCompleted: boolean;
+  }>;
+  videoLinks?: Array<{
+    id?: string;
+    title?: string | null;
+    url: string;
+    category?: string;
+    notes?: string | null;
+    matchDate?: string | Date | null;
+  }>;
+  analysisNotes?: {
+    tacticalTitle?: string;
+    tacticalSummary?: string;
+    strengths?: string[];
+    weaknesses?: string[];
+  };
 }
 
 function isEliteMetric(key: string, value?: number): boolean {
@@ -318,7 +343,7 @@ export function AthleteRaioXSheet({
       {/* Document Footer */}
       <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-[10px] text-zinc-500 print-avoid-break">
         <p>Relatório oficial gerado pela Divisão de Inteligência The Net Scouting &bull; Uso exclusivo confidencial</p>
-        <p className="font-mono font-bold text-zinc-950">Página 2 de 2 &bull; Raio-X Estatístico</p>
+        <p className="font-mono font-bold text-zinc-950">Página 2 de 4 &bull; Raio-X Estatístico</p>
       </div>
     </div>
   );
