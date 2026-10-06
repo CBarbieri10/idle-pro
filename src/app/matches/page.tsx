@@ -99,11 +99,14 @@ export default async function MatchesPage() {
                   </div>
 
                   {/* Scoreboard visual */}
-                  <div className="my-5 flex items-center justify-between gap-3">
+                  <Link
+                    href={`/matches/${m.id}`}
+                    className="my-5 flex items-center justify-between gap-3 p-2 -mx-2 rounded-xl hover:bg-white/[0.04] transition-all cursor-pointer"
+                  >
                     <span className="flex-1 text-right font-black text-sm text-white truncate">
                       {m.team.name}
                     </span>
-                    <span className="rounded-xl bg-black/60 border border-white/10 px-3.5 py-1.5 text-lg font-black text-white font-mono shadow-inner shrink-0">
+                    <span className="rounded-xl bg-black/60 border border-white/10 px-3.5 py-1.5 text-lg font-black text-white font-mono shadow-inner shrink-0 group-hover:border-[#00e676]/40 transition-colors">
                       {hasScore ? `${m.goalsFor} × ${m.goalsAgainst}` : "vs"}
                     </span>
                     <span className="flex-1 font-black text-sm text-white truncate">
@@ -114,28 +117,42 @@ export default async function MatchesPage() {
                         {OUTCOME_LABELS[outcome]}
                       </span>
                     )}
-                  </div>
+                  </Link>
                 </div>
 
-                {/* Athletes with metrics tagged */}
-                <div className="pt-3 border-t border-white/10 flex flex-wrap items-center gap-1.5 text-xs">
-                  <span className="text-[11px] font-bold text-zinc-500 uppercase flex items-center gap-1 mr-1">
-                    <Users className="h-3 w-3 text-indigo-400" />
-                    Atletas:
-                  </span>
-                  {m.rawMetrics.length === 0 ? (
-                    <span className="text-zinc-500 text-[11px] italic">Sem métricas lançadas</span>
-                  ) : (
-                    m.rawMetrics.map((r) => (
-                      <Link
-                        key={r.id}
-                        href={`/athletes/${r.athlete.id}#athlete-metrics`}
-                        className="rounded-lg bg-black/40 border border-white/5 px-2 py-0.5 text-[11px] font-semibold text-zinc-300 hover:border-[#00e676]/40 hover:text-[#00e676] transition-colors"
-                      >
-                        {r.athlete.name}
-                      </Link>
-                    ))
-                  )}
+                {/* Footer with athletes and report button */}
+                <div className="pt-3 border-t border-white/10 flex items-center justify-between gap-2">
+                  <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                    <span className="text-[11px] font-bold text-zinc-500 uppercase flex items-center gap-1 mr-1">
+                      <Users className="h-3 w-3 text-indigo-400" />
+                      Atletas:
+                    </span>
+                    {m.rawMetrics.length === 0 ? (
+                      <span className="text-zinc-500 text-[11px] italic">Sem métricas</span>
+                    ) : (
+                      m.rawMetrics.slice(0, 3).map((r) => (
+                        <Link
+                          key={r.id}
+                          href={`/athletes/${r.athlete.id}#athlete-metrics`}
+                          className="rounded-lg bg-black/40 border border-white/5 px-2 py-0.5 text-[11px] font-semibold text-zinc-300 hover:border-[#00e676]/40 hover:text-[#00e676] transition-colors"
+                        >
+                          {r.athlete.name}
+                        </Link>
+                      ))
+                    )}
+                    {m.rawMetrics.length > 3 && (
+                      <span className="text-[10px] font-mono text-zinc-500">
+                        +{m.rawMetrics.length - 3}
+                      </span>
+                    )}
+                  </div>
+
+                  <Link
+                    href={`/matches/${m.id}`}
+                    className="inline-flex items-center gap-1 text-[11px] font-bold text-cyan-400 hover:text-cyan-300 shrink-0 font-mono"
+                  >
+                    <span>Match Report &rarr;</span>
+                  </Link>
                 </div>
               </Card>
             );
