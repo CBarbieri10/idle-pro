@@ -35,19 +35,17 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
               aria-hidden
               className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
             >
-              {/* High-contrast black and white stadium image */}
+              {/* High-contrast black and white stadium image with folded texture */}
               <div
-                className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-[0.16] grayscale contrast-125"
+                className="absolute inset-0 bg-cover bg-center bg-no-repeat bg-fixed opacity-45 grayscale contrast-110"
                 style={{
                   backgroundImage: "url('/images/stadium-bw-bg.jpg')",
                 }}
               />
-              {/* Folded paper and dark charcoal canvas texture */}
-              <div className="folded-canvas absolute inset-0 opacity-80 mix-blend-overlay" />
-              {/* Tactical dark gradient vignette ensuring readability */}
-              <div className="absolute inset-0 bg-gradient-to-b from-[#080a0f]/85 via-[#080a0f]/75 to-[#050608]/95" />
-              {/* Subtle top ambient glow */}
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_50%_at_50%_-15%,rgba(0,230,118,0.06),transparent_70%)]" />
+              {/* Tactical dark vignette preserving content legibility while keeping stadium and folds crisp */}
+              <div className="absolute inset-0 bg-gradient-to-b from-[#080a0f]/60 via-[#06080d]/45 to-[#040508]/85" />
+              {/* Subtle electric emerald ambient floodlight glow */}
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_45%_at_50%_-10%,rgba(0,230,118,0.08),transparent_70%)]" />
             </div>
 
             {/* Sidebar */}
@@ -56,7 +54,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             {/* Main content area */}
             <div className="relative z-10 flex flex-1 flex-col min-w-0 w-full">
               <AppHeader />
-              <main className="flex-1 min-w-0 w-full p-4 md:p-6 lg:p-8">{children}</main>
+              <main className="flex-1 min-w-0 w-full px-4 py-6 md:px-8 lg:px-10 max-w-[1720px] mx-auto">
+                {children}
+              </main>
             </div>
           </div>
         </Providers>

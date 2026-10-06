@@ -116,26 +116,26 @@ export default async function DashboardPage() {
   ];
 
   return (
-    <div className="space-y-8 w-full max-w-7xl mx-auto">
+    <div className="space-y-8 w-full">
       {/* ─── Page Header ─────────────────────────────────────────────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border/60 pb-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-6">
         <div>
-          <div className="flex items-center gap-2">
-            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-foreground">
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
               Dashboard do Analista
             </h1>
-            <Badge className="bg-primary/15 text-primary border-primary/30 text-xs">
+            <Badge className="bg-[#00e676]/15 text-[#00e676] border-[#00e676]/30 text-xs font-bold font-mono">
               Pro v2.0
             </Badge>
           </div>
-          <p className="text-sm text-muted-foreground mt-1">
+          <p className="text-xs sm:text-sm text-zinc-400 mt-1">
             Visão consolidada da operação de scouting, portfólio de atletas e inteligência de mercado
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <Link href="/league">
-            <Button size="sm" className="gap-1.5 text-xs font-semibold">
+            <Button size="sm" className="gap-2 text-xs font-bold bg-[#00e676] text-black hover:bg-[#00e676]/90 shadow-lg shadow-[#00e676]/20">
               <Trophy className="h-4 w-4" />
               Explorar Catálogo da Liga
             </Button>
@@ -144,25 +144,25 @@ export default async function DashboardPage() {
       </div>
 
       {/* ─── Operational Stats Grid ──────────────────────────────────────── */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((stat) => (
           <Link key={stat.label} href={stat.href}>
             <Card
-              className={`p-5 border bg-card transition-all hover:border-primary/40 hover:shadow-lg hover:shadow-primary/5 cursor-pointer group ${stat.bg}`}
+              className={`p-5 rounded-2xl border border-white/10 bg-[#0d121d]/80 backdrop-blur-md transition-all hover:border-[#00e676]/40 hover:bg-[#121927]/90 hover:shadow-xl cursor-pointer group`}
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider">
+                  <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
                     {stat.label}
                   </p>
-                  <p className="text-3xl font-extrabold mt-1 text-foreground">
+                  <p className="text-3xl font-black mt-1 text-white font-mono">
                     {stat.value}
                   </p>
-                  <p className="text-[11px] text-muted-foreground mt-1">
+                  <p className="text-xs text-zinc-400 mt-1">
                     {stat.subtext}
                   </p>
                 </div>
-                <div className="rounded-xl p-3 bg-background/50 border border-border/50">
+                <div className="rounded-xl p-3 bg-white/5 border border-white/10 group-hover:border-[#00e676]/40 transition-colors">
                   <stat.icon className={`h-5 w-5 ${stat.color}`} />
                 </div>
               </div>
@@ -177,45 +177,45 @@ export default async function DashboardPage() {
           <div>
             <div className="flex items-center gap-2">
               <Bookmark className="h-5 w-5 text-amber-400 fill-amber-400/20" />
-              <h2 className="text-lg font-bold text-foreground">
+              <h2 className="text-lg font-black text-white">
                 Meu Portfólio de Observação
               </h2>
-              <Badge variant="outline" className="border-amber-500/30 text-amber-400 text-xs">
+              <Badge variant="outline" className="border-amber-500/30 text-amber-400 text-xs font-bold">
                 {portfolioCount} {portfolioCount === 1 ? "atleta" : "atletas"}
               </Badge>
             </div>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-xs text-zinc-400 mt-0.5">
               Atletas pinados para acompanhamento prioritário e geração de relatórios Raio-X
             </p>
           </div>
 
           <Link
             href="/league"
-            className="text-xs font-semibold text-primary hover:underline inline-flex items-center gap-1"
+            className="text-xs font-bold text-[#00e676] hover:underline inline-flex items-center gap-1"
           >
             Adicionar mais atletas
-            <ChevronRight className="h-3 w-3" />
+            <ChevronRight className="h-3.5 w-3.5" />
           </Link>
         </div>
 
         {portfolioAthletes.length === 0 ? (
-          <Card className="flex flex-col items-center justify-center p-8 text-center border-dashed border-border/80 bg-card/50">
-            <Bookmark className="h-10 w-10 text-muted-foreground/30 mb-3" />
-            <h3 className="text-sm font-semibold text-foreground">
+          <Card className="flex flex-col items-center justify-center p-12 text-center rounded-2xl border-dashed border-white/15 bg-[#0d121d]/70 backdrop-blur-md">
+            <Bookmark className="h-10 w-10 text-zinc-600 mb-3" />
+            <h3 className="text-sm font-bold text-white">
               Seu portfólio de observação está vazio
             </h3>
-            <p className="text-xs text-muted-foreground mt-1 max-w-md">
+            <p className="text-xs text-zinc-400 mt-1 max-w-md">
               Marque atletas no Catálogo da Liga ou no perfil individual para fixá-los aqui e gerar seus relatórios Raio-X com 1 clique.
             </p>
             <Link href="/league" className="mt-4">
-              <Button variant="outline" size="sm" className="text-xs gap-1.5">
-                <Trophy className="h-3.5 w-3.5 text-primary" />
+              <Button variant="outline" size="sm" className="text-xs gap-1.5 border-white/20 hover:border-[#00e676]/50">
+                <Trophy className="h-3.5 w-3.5 text-[#00e676]" />
                 Explorar Catálogo de Jogadores
               </Button>
             </Link>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5">
             {portfolioAthletes.map((item) => {
               const a = item.athlete;
               const initials = a.name
@@ -249,14 +249,14 @@ export default async function DashboardPage() {
               return (
                 <Card
                   key={item.portfolioAthleteId}
-                  className="flex flex-col justify-between p-4 border-border bg-card transition-all hover:border-amber-500/40"
+                  className="flex flex-col justify-between p-4.5 rounded-2xl border border-white/10 bg-[#0d121d]/85 backdrop-blur-md shadow-xl transition-all hover:border-[#00e676]/50 hover:bg-[#121927]/95"
                 >
                   <div>
-                    {/* Header: Team & Pin */}
-                    <div className="flex items-start justify-between gap-2">
+                    {/* Header: Position & Pin */}
+                    <div className="flex items-center justify-between gap-2">
                       <Badge
                         variant="outline"
-                        className={`text-[10px] ${POSITION_COLORS[a.position]}`}
+                        className={`text-[10px] font-bold px-2 py-0.5 border-0 ${POSITION_COLORS[a.position]}`}
                       >
                         {POSITION_LABELS[a.position]}
                       </Badge>
@@ -270,50 +270,65 @@ export default async function DashboardPage() {
                     </div>
 
                     {/* Athlete Info */}
-                    <div className="mt-3 flex items-center gap-3">
-                      <Avatar className="h-12 w-12 border border-border shrink-0">
-                        <AvatarImage src={a.photoUrl ?? undefined} alt={a.name} />
-                        <AvatarFallback className="text-xs font-bold">{initials}</AvatarFallback>
-                      </Avatar>
+                    <div className="mt-3.5 flex items-center gap-3">
+                      <div className="relative h-12 w-12 rounded-full border-2 border-[#00e676]/60 p-0.5 bg-black/50 overflow-hidden shrink-0 shadow-[0_0_10px_rgba(0,230,118,0.2)] flex items-center justify-center">
+                        {a.photoUrl ? (
+                          <img
+                            src={a.photoUrl}
+                            alt={a.name}
+                            className="h-full w-full rounded-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-xs font-black text-[#00e676] font-mono">
+                            {initials}
+                          </span>
+                        )}
+                      </div>
 
                       <div className="min-w-0 flex-1">
                         <Link
                           href={`/athletes/${a.id}`}
-                          className="font-bold text-sm text-foreground hover:text-primary transition-colors block truncate"
+                          className="font-black text-sm text-white hover:text-[#00e676] transition-colors block truncate"
                         >
                           {a.name}
                         </Link>
-                        <div className="flex items-center gap-1 text-xs text-muted-foreground truncate mt-0.5">
-                          <Shield className="h-3 w-3 shrink-0" />
+                        <div className="flex items-center gap-1 text-xs text-zinc-400 truncate mt-0.5">
+                          <Shield className="h-3 w-3 shrink-0 text-indigo-400" />
                           <span className="truncate">{a.team.name}</span>
                         </div>
                       </div>
                     </div>
 
-                    {/* Top Per-90 Metrics Badges */}
-                    <div className="mt-3 flex flex-wrap gap-1">
+                    {/* Top Per-90 Metrics Tiles */}
+                    <div className="mt-3.5 grid grid-cols-3 gap-1.5">
                       {topMetrics.length > 0 ? (
                         topMetrics.map(([k, m]) => (
-                          <span
+                          <div
                             key={k}
-                            className="inline-flex items-center gap-1 rounded bg-muted/70 px-1.5 py-0.5 text-[10px] font-mono text-muted-foreground"
+                            className="rounded-lg bg-black/40 border border-white/5 px-2 py-1 text-center"
                           >
-                            <span>{m.label.split(" ")[0]}:</span>
-                            <span className="font-bold text-foreground">{m.per90}</span>
-                          </span>
+                            <p className="text-[9px] uppercase tracking-wider text-zinc-400 font-semibold truncate">
+                              {m.label.split(" ")[0]}
+                            </p>
+                            <p className="text-xs font-mono font-black text-white mt-0.5">
+                              {m.per90}
+                            </p>
+                          </div>
                         ))
                       ) : (
-                        <span className="text-[10px] text-muted-foreground italic">
-                          Métricas pendentes de scout
-                        </span>
+                        <div className="col-span-3 text-center py-1">
+                          <span className="text-[11px] text-zinc-500 italic">
+                            Aguardando scouts
+                          </span>
+                        </div>
                       )}
                     </div>
                   </div>
 
                   {/* Actions footer */}
-                  <div className="mt-4 pt-3 border-t border-border/40 flex items-center justify-between gap-2">
-                    <span className="text-[11px] font-mono text-muted-foreground inline-flex items-center gap-1">
-                      <Clock className="h-3 w-3" />
+                  <div className="mt-4 pt-3 border-t border-white/10 flex items-center justify-between gap-2">
+                    <span className="text-[11px] font-mono text-zinc-400 inline-flex items-center gap-1">
+                      <Clock className="h-3 w-3 text-indigo-400" />
                       {a.totalMinutes}&apos; ({a.totalMatches}j)
                     </span>
 
@@ -324,7 +339,7 @@ export default async function DashboardPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="h-7 text-[11px] gap-1 px-2 border-primary/30 text-primary hover:bg-primary/10"
+                            className="h-7 text-[11px] font-bold gap-1 px-2.5 border-[#00e676]/40 text-[#00e676] bg-[#00e676]/10 hover:bg-[#00e676]/20"
                           >
                             <FileText className="h-3 w-3" />
                             Raio-X
@@ -332,7 +347,7 @@ export default async function DashboardPage() {
                         }
                       />
                       <Link href={`/athletes/${a.id}`}>
-                        <Button variant="ghost" size="sm" className="h-7 text-[11px] px-2">
+                        <Button variant="ghost" size="sm" className="h-7 text-[11px] font-semibold text-zinc-300 hover:text-white px-2">
                           Perfil
                           <ChevronRight className="h-3 w-3 ml-0.5" />
                         </Button>
@@ -351,12 +366,12 @@ export default async function DashboardPage() {
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-primary" />
-              <h2 className="text-lg font-bold text-foreground">
+              <Sparkles className="h-5 w-5 text-[#00e676]" />
+              <h2 className="text-lg font-black text-white">
                 Destaques da Liga (Líderes Per-90)
               </h2>
             </div>
-            <p className="text-xs text-muted-foreground mt-0.5">
+            <p className="text-xs text-zinc-400 mt-0.5">
               Atalhos rápidos para os jogadores com maior produção normalizada por 90 minutos
             </p>
           </div>
@@ -364,41 +379,41 @@ export default async function DashboardPage() {
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {/* Gols / 90 */}
-          <Card className="p-4 border-border bg-card">
-            <div className="flex items-center gap-2 mb-3 pb-2 border-b border-border/50">
+          <Card className="p-4.5 rounded-2xl border border-white/10 bg-[#0d121d]/85 backdrop-blur-md shadow-xl">
+            <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/10">
               <Target className="h-4 w-4 text-emerald-400" />
-              <p className="text-xs font-bold text-foreground uppercase tracking-wider">
+              <p className="text-xs font-black text-white uppercase tracking-wider">
                 Goleadores (/90)
               </p>
             </div>
-            <div className="space-y-2.5">
+            <div className="space-y-2">
               {highlights.goals && highlights.goals.length > 0 ? (
                 highlights.goals.map((item, idx) => (
                   <Link
                     key={item.athleteId}
                     href={`/athletes/${item.athleteId}`}
-                    className="flex items-center justify-between gap-2 text-xs group hover:bg-muted/40 p-1.5 rounded-lg transition-colors"
+                    className="flex items-center justify-between gap-2 text-xs group hover:bg-white/5 p-1.5 rounded-lg transition-colors"
                   >
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className="font-mono text-xs font-bold text-muted-foreground w-4 text-center">
+                      <span className="font-mono text-xs font-bold text-zinc-400 w-4 text-center">
                         #{idx + 1}
                       </span>
                       <div className="min-w-0">
-                        <p className="font-medium text-foreground truncate group-hover:text-primary">
+                        <p className="font-bold text-white truncate group-hover:text-[#00e676] transition-colors">
                           {item.athleteName}
                         </p>
-                        <p className="text-[10px] text-muted-foreground truncate">
+                        <p className="text-[10px] text-zinc-400 truncate">
                           {item.teamName}
                         </p>
                       </div>
                     </div>
-                    <span className="font-mono font-bold text-emerald-400 shrink-0">
+                    <span className="font-mono font-black text-emerald-400 shrink-0">
                       {item.value}
                     </span>
                   </Link>
                 ))
               ) : (
-                <p className="text-xs text-muted-foreground py-2 text-center">
+                <p className="text-xs text-zinc-500 py-2 text-center">
                   Sem dados registrados
                 </p>
               )}
@@ -406,41 +421,41 @@ export default async function DashboardPage() {
           </Card>
 
           {/* Assistências / 90 */}
-          <Card className="p-4 border-border bg-card">
-            <div className="flex items-center gap-2 mb-3 pb-2 border-b border-border/50">
+          <Card className="p-4.5 rounded-2xl border border-white/10 bg-[#0d121d]/85 backdrop-blur-md shadow-xl">
+            <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/10">
               <Award className="h-4 w-4 text-sky-400" />
-              <p className="text-xs font-bold text-foreground uppercase tracking-wider">
+              <p className="text-xs font-black text-white uppercase tracking-wider">
                 Garçons (/90)
               </p>
             </div>
-            <div className="space-y-2.5">
+            <div className="space-y-2">
               {highlights.assists && highlights.assists.length > 0 ? (
                 highlights.assists.map((item, idx) => (
                   <Link
                     key={item.athleteId}
                     href={`/athletes/${item.athleteId}`}
-                    className="flex items-center justify-between gap-2 text-xs group hover:bg-muted/40 p-1.5 rounded-lg transition-colors"
+                    className="flex items-center justify-between gap-2 text-xs group hover:bg-white/5 p-1.5 rounded-lg transition-colors"
                   >
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className="font-mono text-xs font-bold text-muted-foreground w-4 text-center">
+                      <span className="font-mono text-xs font-bold text-zinc-400 w-4 text-center">
                         #{idx + 1}
                       </span>
                       <div className="min-w-0">
-                        <p className="font-medium text-foreground truncate group-hover:text-primary">
+                        <p className="font-bold text-white truncate group-hover:text-sky-400 transition-colors">
                           {item.athleteName}
                         </p>
-                        <p className="text-[10px] text-muted-foreground truncate">
+                        <p className="text-[10px] text-zinc-400 truncate">
                           {item.teamName}
                         </p>
                       </div>
                     </div>
-                    <span className="font-mono font-bold text-sky-400 shrink-0">
+                    <span className="font-mono font-black text-sky-400 shrink-0">
                       {item.value}
                     </span>
                   </Link>
                 ))
               ) : (
-                <p className="text-xs text-muted-foreground py-2 text-center">
+                <p className="text-xs text-zinc-500 py-2 text-center">
                   Sem dados registrados
                 </p>
               )}
@@ -448,41 +463,41 @@ export default async function DashboardPage() {
           </Card>
 
           {/* Passes / 90 */}
-          <Card className="p-4 border-border bg-card">
-            <div className="flex items-center gap-2 mb-3 pb-2 border-b border-border/50">
-              <Flame className="h-4 w-4 text-primary" />
-              <p className="text-xs font-bold text-foreground uppercase tracking-wider">
+          <Card className="p-4.5 rounded-2xl border border-white/10 bg-[#0d121d]/85 backdrop-blur-md shadow-xl">
+            <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/10">
+              <Flame className="h-4 w-4 text-[#00e676]" />
+              <p className="text-xs font-black text-white uppercase tracking-wider">
                 Passes (/90)
               </p>
             </div>
-            <div className="space-y-2.5">
+            <div className="space-y-2">
               {highlights.passes && highlights.passes.length > 0 ? (
                 highlights.passes.map((item, idx) => (
                   <Link
                     key={item.athleteId}
                     href={`/athletes/${item.athleteId}`}
-                    className="flex items-center justify-between gap-2 text-xs group hover:bg-muted/40 p-1.5 rounded-lg transition-colors"
+                    className="flex items-center justify-between gap-2 text-xs group hover:bg-white/5 p-1.5 rounded-lg transition-colors"
                   >
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className="font-mono text-xs font-bold text-muted-foreground w-4 text-center">
+                      <span className="font-mono text-xs font-bold text-zinc-400 w-4 text-center">
                         #{idx + 1}
                       </span>
                       <div className="min-w-0">
-                        <p className="font-medium text-foreground truncate group-hover:text-primary">
+                        <p className="font-bold text-white truncate group-hover:text-[#00e676] transition-colors">
                           {item.athleteName}
                         </p>
-                        <p className="text-[10px] text-muted-foreground truncate">
+                        <p className="text-[10px] text-zinc-400 truncate">
                           {item.teamName}
                         </p>
                       </div>
                     </div>
-                    <span className="font-mono font-bold text-primary shrink-0">
+                    <span className="font-mono font-black text-[#00e676] shrink-0">
                       {item.value}
                     </span>
                   </Link>
                 ))
               ) : (
-                <p className="text-xs text-muted-foreground py-2 text-center">
+                <p className="text-xs text-zinc-500 py-2 text-center">
                   Sem dados registrados
                 </p>
               )}
@@ -490,41 +505,41 @@ export default async function DashboardPage() {
           </Card>
 
           {/* Desarmes / 90 */}
-          <Card className="p-4 border-border bg-card">
-            <div className="flex items-center gap-2 mb-3 pb-2 border-b border-border/50">
-              <Shield className="h-4 w-4 text-chart-4" />
-              <p className="text-xs font-bold text-foreground uppercase tracking-wider">
+          <Card className="p-4.5 rounded-2xl border border-white/10 bg-[#0d121d]/85 backdrop-blur-md shadow-xl">
+            <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/10">
+              <Shield className="h-4 w-4 text-indigo-400" />
+              <p className="text-xs font-black text-white uppercase tracking-wider">
                 Desarmes (/90)
               </p>
             </div>
-            <div className="space-y-2.5">
+            <div className="space-y-2">
               {highlights.tackles && highlights.tackles.length > 0 ? (
                 highlights.tackles.map((item, idx) => (
                   <Link
                     key={item.athleteId}
                     href={`/athletes/${item.athleteId}`}
-                    className="flex items-center justify-between gap-2 text-xs group hover:bg-muted/40 p-1.5 rounded-lg transition-colors"
+                    className="flex items-center justify-between gap-2 text-xs group hover:bg-white/5 p-1.5 rounded-lg transition-colors"
                   >
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className="font-mono text-xs font-bold text-muted-foreground w-4 text-center">
+                      <span className="font-mono text-xs font-bold text-zinc-400 w-4 text-center">
                         #{idx + 1}
                       </span>
                       <div className="min-w-0">
-                        <p className="font-medium text-foreground truncate group-hover:text-primary">
+                        <p className="font-bold text-white truncate group-hover:text-indigo-400 transition-colors">
                           {item.athleteName}
                         </p>
-                        <p className="text-[10px] text-muted-foreground truncate">
+                        <p className="text-[10px] text-zinc-400 truncate">
                           {item.teamName}
                         </p>
                       </div>
                     </div>
-                    <span className="font-mono font-bold text-chart-4 shrink-0">
+                    <span className="font-mono font-black text-indigo-400 shrink-0">
                       {item.value}
                     </span>
                   </Link>
                 ))
               ) : (
-                <p className="text-xs text-muted-foreground py-2 text-center">
+                <p className="text-xs text-zinc-500 py-2 text-center">
                   Sem dados registrados
                 </p>
               )}
@@ -535,8 +550,8 @@ export default async function DashboardPage() {
 
       {/* ─── Ações Rápidas da Operação ────────────────────────────────────── */}
       <section className="space-y-4">
-        <h2 className="text-base font-bold text-foreground flex items-center gap-2">
-          <Activity className="h-4 w-4 text-primary" />
+        <h2 className="text-base font-black text-white flex items-center gap-2">
+          <Activity className="h-4 w-4 text-[#00e676]" />
           Ações Operacionais de Scouting
         </h2>
 
@@ -545,20 +560,20 @@ export default async function DashboardPage() {
             <Link
               key={link.label}
               href={link.href}
-              className="flex flex-col justify-between p-4 rounded-xl border border-border bg-card hover:border-primary/40 hover:bg-muted/30 transition-all group"
+              className="flex flex-col justify-between p-4.5 rounded-2xl border border-white/10 bg-[#0d121d]/80 backdrop-blur-md hover:border-[#00e676]/40 hover:bg-[#121927]/90 transition-all group shadow-xl"
             >
               <div>
-                <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10 text-primary mb-3 group-hover:bg-primary group-hover:text-primary-foreground transition-colors">
-                  <link.icon className="h-4 w-4" />
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-[#00e676] border border-white/10 mb-3 group-hover:bg-[#00e676] group-hover:text-black transition-colors">
+                  <link.icon className="h-5 w-5" />
                 </div>
-                <p className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">
+                <p className="text-sm font-black text-white group-hover:text-[#00e676] transition-colors">
                   {link.label}
                 </p>
-                <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+                <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
                   {link.description}
                 </p>
               </div>
-              <div className="flex items-center gap-1 mt-4 text-xs font-medium text-primary">
+              <div className="flex items-center gap-1 mt-4 text-xs font-bold text-[#00e676]">
                 <span>Acessar</span>
                 <ArrowUpRight className="h-3.5 w-3.5" />
               </div>

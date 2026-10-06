@@ -34,15 +34,15 @@ export function AthleteFilters({ teams }: { teams: Team[] }) {
   }
 
   return (
-    <div className="flex flex-col sm:flex-row gap-3 rounded-xl border border-border-strong bg-bg-surface p-3 shadow-md">
+    <div className="flex flex-col sm:flex-row gap-3 rounded-2xl border border-white/10 bg-[#0d121d]/85 backdrop-blur-md p-3.5 shadow-xl">
       {/* Search */}
       <div className="relative flex-1 min-w-0">
-        <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+        <Search className="absolute left-3.5 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-400" />
         <Input
           placeholder="Buscar atleta por nome..."
           defaultValue={searchParams.get("search") ?? ""}
           onChange={(e) => updateParam("search", e.target.value)}
-          className="pl-9 h-9 text-xs bg-bg-surface-elevated border-border-strong text-foreground placeholder:text-muted-foreground/60 rounded-lg focus-visible:ring-indigo-500"
+          className="pl-10 h-10 text-xs bg-black/40 border-white/10 text-white placeholder:text-zinc-500 rounded-xl focus-visible:ring-[#00e676]"
         />
       </div>
 
@@ -51,11 +51,11 @@ export function AthleteFilters({ teams }: { teams: Team[] }) {
         defaultValue={searchParams.get("position") ?? "ALL"}
         onValueChange={(v) => updateParam("position", v ?? "ALL")}
       >
-        <SelectTrigger className="w-full sm:w-44 h-9 text-xs bg-bg-surface-elevated border-border-strong text-foreground rounded-lg">
-          <SelectValue placeholder="Todas as posições" />
+        <SelectTrigger className="w-full sm:w-48 h-10 text-xs bg-black/40 border-white/10 text-white rounded-xl">
+          <SelectValue placeholder="Posição: Todas" />
         </SelectTrigger>
-        <SelectContent className="bg-bg-surface-elevated border-border-strong">
-          <SelectItem value="ALL">Todas posições</SelectItem>
+        <SelectContent className="bg-[#121724] border-white/10 text-white">
+          <SelectItem value="ALL">Todas as Posições</SelectItem>
           {Object.entries(POSITION_LABELS).map(([key, label]) => (
             <SelectItem key={key} value={key}>
               {label}
@@ -69,11 +69,11 @@ export function AthleteFilters({ teams }: { teams: Team[] }) {
         defaultValue={searchParams.get("teamId") ?? "ALL"}
         onValueChange={(v) => updateParam("teamId", v ?? "ALL")}
       >
-        <SelectTrigger className="w-full sm:w-48 h-9 text-xs bg-bg-surface-elevated border-border-strong text-foreground rounded-lg">
-          <SelectValue placeholder="Todos os clubes" />
+        <SelectTrigger className="w-full sm:w-52 h-10 text-xs bg-black/40 border-white/10 text-white rounded-xl">
+          <SelectValue placeholder="Clube: Todos" />
         </SelectTrigger>
-        <SelectContent className="bg-bg-surface-elevated border-border-strong">
-          <SelectItem value="ALL">Todos os clubes</SelectItem>
+        <SelectContent className="bg-[#121724] border-white/10 text-white">
+          <SelectItem value="ALL">Todos os Clubes</SelectItem>
           {teams.map((t) => (
             <SelectItem key={t.id} value={t.id}>
               {t.name}

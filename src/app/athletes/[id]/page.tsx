@@ -157,7 +157,7 @@ export default async function AthleteProfilePage({
   const hasMetrics = athleteStats && Object.keys(athleteStats.metrics).length > 0;
 
   return (
-    <div className="space-y-6 w-full max-w-7xl mx-auto">
+    <div className="space-y-6 w-full">
       {/* ─── Breadcrumb & Action Toolbar ──────────────────────────────────── */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle pb-4">
         <Link

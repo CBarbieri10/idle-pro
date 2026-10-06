@@ -254,12 +254,12 @@ export function LeagueCatalog({
   }, [initialAthletes, selectedAthleteIds]);
 
   return (
-    <div className="space-y-6 w-full max-w-7xl mx-auto">
+    <div className="space-y-6 w-full">
       {/* ─── Top Executive Banner ────────────────────────────────────────── */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border-subtle pb-5">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-5">
         <div>
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-md bg-indigo-500/10 px-2.5 py-0.5 text-[10px] font-bold text-indigo-400 border border-indigo-500/20 uppercase tracking-wider">
+            <span className="inline-flex items-center gap-1.5 rounded-md bg-[#00e676]/15 px-2.5 py-0.5 text-[10px] font-bold text-[#00e676] border border-[#00e676]/30 uppercase tracking-wider font-mono">
               <Compass className="h-3 w-3" /> Scouting Pro &bull; Série A
             </span>
             <span className="text-xs text-muted-foreground font-mono">
@@ -489,7 +489,7 @@ export function LeagueCatalog({
         </Card>
       ) : viewMode === "grid" ? (
         /* ─── Grid View ─────────────────────────────────────────────────── */
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <div className="grid grid-cols-1 gap-4.5 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
           {filteredAthletes.map((athlete) => {
             const isSelected = selectedAthleteIds.includes(athlete.id);
             const initials = athlete.name
@@ -530,10 +530,10 @@ export function LeagueCatalog({
               <div
                 key={athlete.id}
                 className={cn(
-                  "group relative flex flex-col justify-between rounded-xl border p-4 transition-all duration-200 bg-bg-surface hover:shadow-xl hover:border-indigo-500/40",
+                  "group relative flex flex-col justify-between rounded-2xl border p-4.5 transition-all duration-200 bg-[#0d121d]/85 backdrop-blur-md hover:shadow-2xl hover:border-[#00e676]/50 hover:bg-[#121927]/95",
                   isSelected
-                    ? "border-indigo-500 bg-indigo-500/5 ring-1 ring-indigo-500/50"
-                    : "border-border-strong"
+                    ? "border-[#00e676] bg-[#00e676]/10 ring-1 ring-[#00e676]/60"
+                    : "border-white/10"
                 )}
               >
                 {/* Card Top: Checkbox, Portfolio & Position */}
@@ -543,19 +543,19 @@ export function LeagueCatalog({
                       type="button"
                       onClick={() => handleToggleSelect(athlete.id)}
                       className={cn(
-                        "flex items-center gap-1.5 text-xs rounded-md px-1.5 py-0.5 transition-colors",
+                        "flex items-center gap-1.5 text-xs rounded-lg px-2 py-1 transition-colors",
                         isSelected
-                          ? "bg-indigo-600/20 text-indigo-300 font-bold"
-                          : "text-muted-foreground hover:text-foreground"
+                          ? "bg-[#00e676]/20 text-[#00e676] font-bold"
+                          : "text-zinc-400 hover:text-white"
                       )}
                       title={isSelected ? "Desmarcar para comparação" : "Selecionar para comparar"}
                     >
                       {isSelected ? (
-                        <CheckSquare className="h-4 w-4 text-indigo-400" />
+                        <CheckSquare className="h-4 w-4 text-[#00e676]" />
                       ) : (
-                        <Square className="h-4 w-4 opacity-40 group-hover:opacity-100" />
+                        <Square className="h-4 w-4 opacity-50 group-hover:opacity-100" />
                       )}
-                      <span className="text-[11px]">Comparar</span>
+                      <span className="text-[11px] font-semibold">Comparar</span>
                     </button>
 
                     <div className="flex items-center gap-1.5">
@@ -567,7 +567,7 @@ export function LeagueCatalog({
                       />
                       <Badge
                         variant="outline"
-                        className={cn("text-[10px] font-bold px-2 py-0.5", POSITION_COLORS[athlete.position])}
+                        className={cn("text-[10px] font-bold px-2 py-0.5 border-0", POSITION_COLORS[athlete.position])}
                       >
                         {POSITION_LABELS[athlete.position]}
                       </Badge>
@@ -577,18 +577,18 @@ export function LeagueCatalog({
                   {/* Athlete Portrait & Info */}
                   <div className="mt-3.5 flex items-center gap-3">
                     {/* Photo Stage Avatar */}
-                    <div className="relative h-14 w-14 rounded-xl bg-gradient-to-tr from-indigo-500/20 via-indigo-500/10 to-transparent p-0.5 border border-indigo-500/30 shrink-0 overflow-hidden flex items-center justify-center">
+                    <div className="relative h-13 w-13 rounded-full border-2 border-[#00e676]/60 p-0.5 bg-black/50 overflow-hidden shrink-0 shadow-[0_0_12px_rgba(0,230,118,0.2)] flex items-center justify-center">
                       {athlete.photoUrl ? (
                         <img
                           src={athlete.photoUrl}
                           alt={athlete.name}
                           className={cn(
-                            "h-full w-full object-cover rounded-lg",
+                            "h-full w-full object-cover rounded-full",
                             athlete.photoHasAlpha && "object-contain"
                           )}
                         />
                       ) : (
-                        <span className="text-sm font-black text-indigo-400 font-mono">
+                        <span className="text-xs font-black text-[#00e676] font-mono">
                           {initials}
                         </span>
                       )}
@@ -597,11 +597,11 @@ export function LeagueCatalog({
                     <div className="min-w-0 flex-1">
                       <Link
                         href={`/athletes/${athlete.id}`}
-                        className="font-black text-sm text-foreground hover:text-indigo-400 transition-colors block truncate"
+                        className="font-black text-sm text-white hover:text-[#00e676] transition-colors block truncate"
                       >
                         {athlete.name}
                       </Link>
-                      <div className="flex items-center gap-1 text-xs text-muted-foreground truncate mt-0.5">
+                      <div className="flex items-center gap-1 text-xs text-zinc-400 truncate mt-0.5">
                         <Shield className="h-3 w-3 shrink-0 text-indigo-400" />
                         <span className="truncate font-semibold">{athlete.team.name}</span>
                         {athlete.nationality && (
@@ -612,13 +612,13 @@ export function LeagueCatalog({
                   </div>
 
                   {/* Physical Bio Bar */}
-                  <div className="mt-3 flex items-center gap-2 text-[11px] text-muted-foreground border-t border-border-subtle pt-2 font-mono">
+                  <div className="mt-3 flex items-center gap-2 text-[11px] text-zinc-300 border-t border-white/10 pt-2 font-mono">
                     <span>{athlete.age ? `${athlete.age} anos` : "—"}</span>
-                    <span>&bull;</span>
+                    <span className="text-zinc-600">&bull;</span>
                     <span>{FOOT_LABELS[athlete.footPreference]}</span>
                     {athlete.height && (
                       <>
-                        <span>&bull;</span>
+                        <span className="text-zinc-600">&bull;</span>
                         <span>{athlete.height}cm</span>
                       </>
                     )}
@@ -627,34 +627,34 @@ export function LeagueCatalog({
                   {/* Top Canonical Metrics Standouts */}
                   <div className="mt-3 space-y-1.5">
                     {topMetrics.length === 0 ? (
-                      <p className="text-[11px] text-muted-foreground/60 italic font-mono">
+                      <p className="text-[11px] text-zinc-500 italic font-mono py-1">
                         Sem métricas registradas
                       </p>
                     ) : (
-                      <div className="grid grid-cols-3 gap-1">
+                      <div className="grid grid-cols-3 gap-1.5">
                         {topMetrics.map((m) => {
                           const isElite = isEliteMetric(m.metricName, m.per90);
                           return (
                             <div
                               key={m.metricName}
                               className={cn(
-                                "rounded-md p-1 text-center border text-[10px]",
+                                "rounded-xl p-1.5 text-center border text-[10px] bg-black/40",
                                 isElite
-                                  ? "bg-emerald-950/20 border-emerald-500/40"
-                                  : "bg-bg-surface-elevated border-border-subtle"
+                                  ? "border-emerald-500/50 bg-emerald-500/10"
+                                  : "border-white/5"
                               )}
                             >
-                              <p className="text-[9px] text-muted-foreground truncate" title={m.label}>
-                                {m.label}
+                              <p className="text-[9px] uppercase tracking-wider text-zinc-400 font-semibold truncate" title={m.label}>
+                                {m.label.split(" ")[0]}
                               </p>
                               <p
                                 className={cn(
-                                  "font-bold font-mono tabular-nums",
-                                  isElite ? "text-emerald-400" : "text-foreground"
+                                  "font-black font-mono tabular-nums text-xs mt-0.5",
+                                  isElite ? "text-[#00e676]" : "text-white"
                                 )}
                               >
                                 {m.per90}
-                                <span className="text-[8px] opacity-70">/90</span>
+                                <span className="text-[8px] opacity-60 ml-0.5">/90</span>
                               </p>
                             </div>
                           );
@@ -665,19 +665,19 @@ export function LeagueCatalog({
                 </div>
 
                 {/* Card Footer: Minutes & Raio-X Button */}
-                <div className="mt-4 flex items-center justify-between border-t border-border-subtle pt-2.5 text-xs">
-                  <span className="inline-flex items-center gap-1 text-[11px] text-muted-foreground font-mono">
-                    <Clock className="h-3 w-3" />
+                <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3 text-xs">
+                  <span className="inline-flex items-center gap-1 text-[11px] text-zinc-400 font-mono">
+                    <Clock className="h-3 w-3 text-indigo-400" />
                     {athlete.totalMinutes}&apos; ({athlete.totalMatches}j)
                   </span>
 
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-2">
                     <AthleteRaioXModal
                       athlete={raioXData}
                       triggerButton={
                         <button
                           type="button"
-                          className="inline-flex items-center gap-1 text-[11px] font-bold text-indigo-400 hover:text-indigo-300 hover:underline cursor-pointer"
+                          className="inline-flex items-center gap-1 text-[11px] font-bold text-[#00e676] hover:underline cursor-pointer"
                         >
                           <FileText className="h-3 w-3" />
                           Raio-X
@@ -686,7 +686,7 @@ export function LeagueCatalog({
                     />
                     <Link
                       href={`/athletes/${athlete.id}`}
-                      className="inline-flex items-center gap-0.5 text-[11px] font-semibold text-muted-foreground hover:text-foreground transition-colors ml-1"
+                      className="inline-flex items-center gap-0.5 text-[11px] font-bold text-zinc-300 hover:text-white transition-colors ml-1"
                     >
                       Perfil <ArrowRight className="h-3 w-3" />
                     </Link>
