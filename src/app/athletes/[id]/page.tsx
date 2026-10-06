@@ -13,6 +13,8 @@ import { RadarChart } from "@/components/charts/radar-chart";
 import { TacticalPitchHeatmap } from "@/components/charts/tactical-pitch-heatmap";
 import { SimilarAthletes } from "@/components/athletes/similar-athletes";
 import { AthleteRaioXModal, type RaioXAthleteData } from "@/components/reports/athlete-raio-x-modal";
+import { getVideoLinksByAthlete } from "@/lib/actions/video-links";
+import { AthleteVideoLinks } from "@/components/athletes/athlete-video-links";
 import { PortfolioToggleButton } from "@/components/portfolio/portfolio-toggle-button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -76,7 +78,7 @@ export default async function AthleteProfilePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [athlete, teams, leagues, history, matchOptions, athleteStats, inPortfolio] =
+  const [athlete, teams, leagues, history, matchOptions, athleteStats, inPortfolio, videoLinks] =
     await Promise.all([
       getAthleteById(id),
       getTeams(),
@@ -85,6 +87,7 @@ export default async function AthleteProfilePage({
       getMatchOptions(),
       getAthleteStatsForProfile(id),
       isAthleteInPortfolio(id),
+      getVideoLinksByAthlete(id),
     ]);
 
   if (!athlete) notFound();
@@ -399,6 +402,17 @@ export default async function AthleteProfilePage({
           </div>
         </Card>
       )}
+
+      {/* ─── Videoteca Tática & Decupagens (Fase 4 - Issue #11) ───────────── */}
+      <AthleteVideoLinks
+        athleteId={athlete.id}
+        athleteName={athlete.name}
+        videos={videoLinks}
+        matchOptions={matchOptions.map((m) => ({
+          id: m.id,
+          label: `${m.competition} • vs ${m.opponentName} (${new Date(m.date).toLocaleDateString("pt-BR")})`,
+        }))}
+      />
 
       {/* ─── Biographical Data Grid ───────────────────────────────────────── */}
       <Card className="rounded-2xl border border-border-strong bg-bg-surface p-6 shadow-md">

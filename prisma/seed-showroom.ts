@@ -400,6 +400,35 @@ async function main() {
     console.log(`⭐ Atleta processado: ${athlete.name} (${team.name}) - Per-90 computado!`);
   }
 
+  // 6. Amostras de Links de Vídeo Táticos (Fase 4 - Issue #11)
+  const estevao = await prisma.athlete.findFirst({ where: { name: { contains: "Estêvão" } } });
+  if (estevao) {
+    const existingVideos = await prisma.videoLink.findFirst({ where: { athleteId: estevao.id } });
+    if (!existingVideos) {
+      await prisma.videoLink.createMany({
+        data: [
+          {
+            athleteId: estevao.id,
+            matchId: matches[0]?.id,
+            url: "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+            title: "Gol de curva e tomada de decisão no 1v1",
+            category: "Finalização & Ataque à Área",
+            description: "Recebe na ponta direita, conduz para o meio e finaliza com precisão milimétrica no ângulo oposto.",
+          },
+          {
+            athleteId: estevao.id,
+            matchId: matches[0]?.id,
+            url: "https://drive.google.com/file/d/1example-estevao-tactical-clip/view",
+            title: "Decupagem: Saída sob pressão e quebra de linhas",
+            category: "Saída de Bola & Construção",
+            description: "Drible de proteção de costas e passe vertical progressivo de primeira quebrando o bloco de marcação.",
+          },
+        ],
+      });
+      console.log("🎥 Vídeos táticos do showroom vinculados a Estêvão");
+    }
+  }
+
   console.log("\n🎉 Showroom povoado com sucesso!");
   console.log("👉 Acesse o Dashboard e o Catálogo da Liga para ver o showroom em ação!");
 }

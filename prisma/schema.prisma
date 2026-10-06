@@ -107,6 +107,7 @@ model Athlete {
   rawMetrics   RawMetric[]
   canonicalMetrics CanonicalMetric[]
   portfolioAthletes PortfolioAthlete[]
+  videoLinks   VideoLink[]
 
   @@map("athletes")
 }
@@ -148,6 +149,7 @@ model Match {
   league           League?           @relation(fields: [leagueId], references: [id], onDelete: SetNull)
   rawMetrics       RawMetric[]
   canonicalMetrics CanonicalMetric[]
+  videoLinks       VideoLink[]
 
   @@index([date])
   @@index([teamId])
@@ -242,3 +244,26 @@ model PortfolioAthlete {
   @@index([athleteId])
   @@map("portfolio_athletes")
 }
+
+// ─── Fase 4: Análise Tática & Vídeos Externos (Issue #11 - T09) ────────────
+
+model VideoLink {
+  id          String   @id @default(cuid())
+  url         String
+  title       String?
+  category    String   // ex: "Saída de Bola", "Finalização", "1v1 Ofensivo", "Transição Defensiva", "Bolas Paradas", "Marcação Pressão"
+  description String?
+  athleteId   String
+  matchId     String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  athlete Athlete @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+  match   Match?  @relation(fields: [matchId], references: [id], onDelete: SetNull)
+
+  @@index([athleteId])
+  @@index([matchId])
+  @@index([category])
+  @@map("video_links")
+}
+
