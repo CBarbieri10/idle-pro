@@ -9,9 +9,16 @@ import type { RaioXAthleteSheetData } from "@/components/reports/athlete-raio-x-
 interface ReportCoverProps {
   athlete: RaioXAthleteSheetData;
   className?: string;
+  pageIndex?: number;
+  totalPages?: number;
 }
 
-export function ReportCover({ athlete, className }: ReportCoverProps) {
+export function ReportCover({
+  athlete,
+  className,
+  pageIndex = 1,
+  totalPages = 4,
+}: ReportCoverProps) {
   const photo = athlete.actionPhotoUrl || athlete.photoUrl;
   const initials = athlete.name
     .split(" ")
@@ -161,7 +168,7 @@ export function ReportCover({ athlete, className }: ReportCoverProps) {
         {/* Bottom Micro Footer */}
         <div className="flex items-center justify-between pt-4 mt-4 border-t border-zinc-200 text-[9px] text-zinc-500 font-mono">
           <span>The Net Scouting &bull; Sistema Integrado de Inteligência do Futebol</span>
-          <span className="font-bold text-zinc-900 uppercase">Página 1 de 4 &bull; Capa Oficial</span>
+          <span className="font-bold text-zinc-900 uppercase">Página {pageIndex} de {totalPages} &bull; Capa Oficial</span>
         </div>
       </div>
     </div>

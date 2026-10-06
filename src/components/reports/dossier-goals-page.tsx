@@ -34,11 +34,15 @@ export interface DossierGoalsPageProps {
     goals?: DossierGoalItem[];
   };
   className?: string;
+  pageIndex?: number;
+  totalPages?: number;
 }
 
 export function DossierGoalsPage({
   athlete,
   className,
+  pageIndex = 4,
+  totalPages = 4,
 }: DossierGoalsPageProps) {
   const docRef = `TNS-DOSSIER-${athlete.id.slice(0, 6).toUpperCase()}`;
 
@@ -202,7 +206,7 @@ export function DossierGoalsPage({
           <div>
             <div className="flex items-center gap-2">
               <span className="font-mono text-[9px] font-bold uppercase tracking-widest text-emerald-800 bg-emerald-50 px-2 py-0.5 rounded border border-emerald-200">
-                Página 04 &bull; Plano de Desenvolvimento
+                Página {pageIndex < 10 ? `0${pageIndex}` : pageIndex} &bull; Plano de Desenvolvimento
               </span>
               <span className="text-[10px] text-zinc-400 font-bold">&bull;</span>
               <span className="text-xs font-black uppercase text-zinc-900 font-sans">
@@ -428,7 +432,7 @@ export function DossierGoalsPage({
       <div className="pt-3 border-t border-zinc-200 flex items-center justify-between text-[10px] text-zinc-500 print-avoid-break">
         <span>The Net Scouting &bull; Sistema Integrado de Inteligência do Futebol</span>
         <span className="font-mono font-bold text-zinc-950">
-          Página 4 de 4 &bull; Metas &amp; Plano de Desenvolvimento (PDI)
+          Página {pageIndex} de {totalPages} &bull; Metas &amp; Plano de Desenvolvimento (PDI)
         </span>
       </div>
     </div>

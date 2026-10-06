@@ -35,11 +35,15 @@ export interface DossierAnalysisPageProps {
     };
   };
   className?: string;
+  pageIndex?: number;
+  totalPages?: number;
 }
 
 export function DossierAnalysisPage({
   athlete,
   className,
+  pageIndex = 3,
+  totalPages = 4,
 }: DossierAnalysisPageProps) {
   const docRef = `TNS-DOSSIER-${athlete.id.slice(0, 6).toUpperCase()}`;
 
@@ -169,7 +173,7 @@ export function DossierAnalysisPage({
           <div>
             <div className="flex items-center gap-2">
               <span className="font-mono text-[9px] font-bold uppercase tracking-widest text-indigo-700 bg-indigo-50 px-2 py-0.5 rounded border border-indigo-200">
-                Página 03 &bull; Avaliação Qualitativa
+                Página {pageIndex < 10 ? `0${pageIndex}` : pageIndex} &bull; Avaliação Qualitativa
               </span>
               <span className="text-[10px] text-zinc-400 font-bold">&bull;</span>
               <span className="text-xs font-black uppercase text-zinc-900 font-sans">
@@ -370,7 +374,7 @@ export function DossierAnalysisPage({
       <div className="pt-3 border-t border-zinc-200 flex items-center justify-between text-[10px] text-zinc-500 print-avoid-break">
         <span>The Net Scouting &bull; Divisão de Inteligência &amp; Análise Qualitativa</span>
         <span className="font-mono font-bold text-zinc-950">
-          Página 3 de 4 &bull; Análise Qualitativa &amp; Espacial
+          Página {pageIndex} de {totalPages} &bull; Análise Qualitativa &amp; Espacial
         </span>
       </div>
     </div>

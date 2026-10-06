@@ -4,7 +4,11 @@ import { getAthleteById } from "@/lib/actions/athletes";
 import { getAthleteStatsForProfile } from "@/lib/actions/portfolio";
 import { getGoalsByAthlete } from "@/lib/actions/goals";
 import { getVideoLinksByAthlete } from "@/lib/actions/video-links";
-import { AthleteDossier } from "@/components/reports/dossier-builder";
+import {
+  AthleteDossier,
+  DEFAULT_PAGE_SELECTION,
+  type DossierPageSelection,
+} from "@/components/reports/dossier-builder";
 import { PrintTriggerButton } from "@/components/reports/print-trigger-button";
 import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
@@ -25,10 +29,24 @@ export async function generateMetadata({
 
 export default async function AthleteRaioXPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ id: string }>;
+  searchParams: Promise<{ pages?: string }>;
 }) {
   const { id } = await params;
+  const search = await searchParams;
+  const pagesList = typeof search?.pages === "string" ? search.pages.split(",") : null;
+
+  const pageSelection: DossierPageSelection = pagesList
+    ? {
+        cover: pagesList.includes("cover"),
+        xray: pagesList.includes("xray"),
+        analysis: pagesList.includes("analysis"),
+        goals: pagesList.includes("goals"),
+      }
+    : DEFAULT_PAGE_SELECTION;
+
   const [athlete, athleteStats, goals, videoLinks] = await Promise.all([
     getAthleteById(id),
     getAthleteStatsForProfile(id),
@@ -82,7 +100,7 @@ export default async function AthleteRaioXPage({
 
       {/* A4 Dossier Multi-page Container */}
       <div className="max-w-[210mm] mx-auto print:p-0 print:w-full print:max-w-none">
-        <AthleteDossier athlete={raioXData} />
+        <AthleteDossier athlete={raioXData} pageSelection={pageSelection} />
       </div>
     </div>
   );

@@ -116,9 +116,13 @@ function isEliteMetric(key: string, value?: number): boolean {
 export function AthleteRaioXSheet({
   athlete,
   className,
+  pageIndex = 2,
+  totalPages = 4,
 }: {
   athlete: RaioXAthleteSheetData;
   className?: string;
+  pageIndex?: number;
+  totalPages?: number;
 }) {
   const initials = athlete.name
     .split(" ")
@@ -343,7 +347,7 @@ export function AthleteRaioXSheet({
       {/* Document Footer */}
       <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-[10px] text-zinc-500 print-avoid-break">
         <p>Relatório oficial gerado pela Divisão de Inteligência The Net Scouting &bull; Uso exclusivo confidencial</p>
-        <p className="font-mono font-bold text-zinc-950">Página 2 de 4 &bull; Raio-X Estatístico</p>
+        <p className="font-mono font-bold text-zinc-950">Página {pageIndex} de {totalPages} &bull; Raio-X Estatístico</p>
       </div>
     </div>
   );

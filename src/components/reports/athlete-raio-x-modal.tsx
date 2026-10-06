@@ -7,11 +7,17 @@ import {
   Printer,
   ExternalLink,
   X,
+  Sliders,
+  Check,
 } from "lucide-react";
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { AthleteRaioXSheet, type RaioXAthleteSheetData } from "@/components/reports/athlete-raio-x-sheet";
-import { AthleteDossier } from "@/components/reports/dossier-builder";
+import {
+  AthleteDossier,
+  DEFAULT_PAGE_SELECTION,
+  type DossierPageSelection,
+} from "@/components/reports/dossier-builder";
 import { cn } from "@/lib/utils";
 
 export type RaioXAthleteData = RaioXAthleteSheetData;
@@ -23,6 +29,8 @@ interface AthleteRaioXModalProps {
 
 export function AthleteRaioXModal({ athlete, triggerButton }: AthleteRaioXModalProps) {
   const [isOpen, setIsOpen] = useState(false);
+  const [pageSelection, setPageSelection] =
+    useState<DossierPageSelection>(DEFAULT_PAGE_SELECTION);
 
   useEffect(() => {
     if (isOpen) {
@@ -130,6 +138,13 @@ export function AthleteRaioXModal({ athlete, triggerButton }: AthleteRaioXModalP
     window.open(`/athletes/${athlete.id}/raio-x?print=true`, "_blank");
   };
 
+  const selectedCount = Object.values(pageSelection).filter(Boolean).length;
+  const activeKeys = Object.entries(pageSelection)
+    .filter(([_, v]) => v)
+    .map(([k]) => k)
+    .join(",");
+  const dossierHref = `/athletes/${athlete.id}/raio-x${activeKeys ? `?pages=${activeKeys}` : ""}`;
+
   const docRef = `TNS-RX-${athlete.id.slice(0, 6).toUpperCase()}`;
 
   return (
@@ -162,7 +177,7 @@ export function AthleteRaioXModal({ athlete, triggerButton }: AthleteRaioXModalP
             </div>
             <div className="flex items-center gap-2">
               <Link
-                href={`/athletes/${athlete.id}/raio-x`}
+                href={dossierHref}
                 target="_blank"
                 className={cn(
                   buttonVariants({ variant: "outline", size: "sm" }),
@@ -175,7 +190,8 @@ export function AthleteRaioXModal({ athlete, triggerButton }: AthleteRaioXModalP
               <Button
                 size="sm"
                 onClick={handlePrint}
-                className="h-8 gap-1.5 text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-xs"
+                disabled={selectedCount === 0}
+                className="h-8 gap-1.5 text-xs font-bold bg-indigo-600 hover:bg-indigo-500 text-white shadow-xs disabled:opacity-50"
               >
                 <Printer className="h-3.5 w-3.5" />
                 Imprimir / Salvar em PDF
@@ -191,10 +207,105 @@ export function AthleteRaioXModal({ athlete, triggerButton }: AthleteRaioXModalP
             </div>
           </div>
 
+          {/* Painel de Configuração do Relatório (Seleção de Páginas - Issue #16) */}
+          <div className="px-6 py-2.5 bg-zinc-900/90 border-b border-zinc-800 flex flex-wrap items-center justify-between gap-3 text-xs print:hidden">
+            <div className="flex items-center gap-2">
+              <Sliders className="h-3.5 w-3.5 text-indigo-400" />
+              <span className="font-bold text-zinc-200">Composição do Dossiê:</span>
+              <span className="text-[11px] font-mono text-zinc-400">
+                ({selectedCount} de 4 páginas)
+              </span>
+            </div>
+
+            {/* 4 Interactive Toggle Buttons */}
+            <div className="flex flex-wrap items-center gap-1.5">
+              <button
+                type="button"
+                onClick={() => setPageSelection((prev) => ({ ...prev, cover: !prev.cover }))}
+                className={cn(
+                  "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold transition-all border cursor-pointer",
+                  pageSelection.cover
+                    ? "bg-indigo-600/20 text-indigo-300 border-indigo-500/60 shadow-xs"
+                    : "bg-zinc-800 text-zinc-500 border-zinc-700 hover:text-zinc-300"
+                )}
+                title="Página 1: Capa Oficial"
+              >
+                <span className={cn("h-1.5 w-1.5 rounded-full", pageSelection.cover ? "bg-indigo-400" : "bg-zinc-600")} />
+                1. Capa
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPageSelection((prev) => ({ ...prev, xray: !prev.xray }))}
+                className={cn(
+                  "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold transition-all border cursor-pointer",
+                  pageSelection.xray
+                    ? "bg-indigo-600/20 text-indigo-300 border-indigo-500/60 shadow-xs"
+                    : "bg-zinc-800 text-zinc-500 border-zinc-700 hover:text-zinc-300"
+                )}
+                title="Página 2: Raio-X Estatístico"
+              >
+                <span className={cn("h-1.5 w-1.5 rounded-full", pageSelection.xray ? "bg-indigo-400" : "bg-zinc-600")} />
+                2. Raio-X
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPageSelection((prev) => ({ ...prev, analysis: !prev.analysis }))}
+                className={cn(
+                  "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold transition-all border cursor-pointer",
+                  pageSelection.analysis
+                    ? "bg-indigo-600/20 text-indigo-300 border-indigo-500/60 shadow-xs"
+                    : "bg-zinc-800 text-zinc-500 border-zinc-700 hover:text-zinc-300"
+                )}
+                title="Página 3: Análise Qualitativa e Mapa"
+              >
+                <span className={cn("h-1.5 w-1.5 rounded-full", pageSelection.analysis ? "bg-indigo-400" : "bg-zinc-600")} />
+                3. Análise / Mapa
+              </button>
+
+              <button
+                type="button"
+                onClick={() => setPageSelection((prev) => ({ ...prev, goals: !prev.goals }))}
+                className={cn(
+                  "inline-flex items-center gap-1.5 px-2.5 py-1 rounded-md text-xs font-semibold transition-all border cursor-pointer",
+                  pageSelection.goals
+                    ? "bg-indigo-600/20 text-indigo-300 border-indigo-500/60 shadow-xs"
+                    : "bg-zinc-800 text-zinc-500 border-zinc-700 hover:text-zinc-300"
+                )}
+                title="Página 4: Metas de Desenvolvimento PDI"
+              >
+                <span className={cn("h-1.5 w-1.5 rounded-full", pageSelection.goals ? "bg-indigo-400" : "bg-zinc-600")} />
+                4. Metas PDI
+              </button>
+
+              {/* Toggle All */}
+              <button
+                type="button"
+                onClick={() => {
+                  const allActive =
+                    pageSelection.cover &&
+                    pageSelection.xray &&
+                    pageSelection.analysis &&
+                    pageSelection.goals;
+                  setPageSelection({
+                    cover: !allActive,
+                    xray: !allActive,
+                    analysis: !allActive,
+                    goals: !allActive,
+                  });
+                }}
+                className="text-[10px] font-mono text-zinc-400 hover:text-white underline ml-1 cursor-pointer"
+              >
+                {selectedCount === 4 ? "Desmarcar todas" : "Marcar todas"}
+              </button>
+            </div>
+          </div>
+
           {/* Printable Dossier (Off-White Editorial A4 Canvas) */}
           <div className="p-6 bg-zinc-900/60 overflow-x-auto flex justify-center">
             <div className="w-full max-w-[210mm] bg-[#fdfcf8] text-zinc-950 shadow-2xl rounded-xl p-6 sm:p-8">
-              <AthleteDossier athlete={athlete} />
+              <AthleteDossier athlete={athlete} pageSelection={pageSelection} />
             </div>
           </div>
         </DialogContent>
