@@ -39,11 +39,12 @@ Este documento estabelece o padrão visual, tokens de design, regras de tipograf
 ## 3. Tipografia & Tratamento Numérico
 
 ### 3.1 Famílias Tipográficas
-- **Interface e Títulos:** `Geist Sans` (ou `Inter`) com tracking ajustado (`tracking-tight` para títulos, `tracking-wider` com `uppercase` para labels).
-- **Métricas e Dados:** `Geist Mono` com `tabular-nums` obrigatório em tabelas e cards para evitar tremor e desalinhamento numérico.
+- **Texto Base da Aplicação, Tabelas e Dashboards:** `Geist Sans` (`--font-geist-sans`) aplicado como padrão global (`html, body`). Foco absoluto em alta densidade de informação e máxima legibilidade de dados em modo escuro.
+- **Grandes Títulos Executivos (Headings) & Cabeçalho do PDF:** `Lora` (`--font-serif-luxury` / `font-serif`) estritamente reservada para H1, títulos nobres de seções e identificação do Dossiê Executivo A4, conferindo sofisticação editorial.
+- **Métricas e Dados:** `Geist Mono` (`--font-geist-mono`) com `tabular-nums` obrigatório em tabelas, cards e percentis para evitar tremor e desalinhamento numérico.
 
 ### 3.2 Escala e Hierarquia
-- **Títulos Executivos (H1):** `text-xl` a `text-2xl`, `font-black`, `tracking-tight`.
+- **Títulos Executivos (H1):** `text-xl` a `text-2xl`, `font-black`, `tracking-tight`, estilizados com `font-serif`.
 - **Cabeçalhos de Seção (H2/H3):** `text-xs` a `text-sm`, `font-bold`, `uppercase`, `tracking-wider`, acompanhados de ícones semânticos de 14px.
 - **Métricas Primárias (Per-90):** `font-black`, `font-mono`, `text-sm` a `text-lg`. Sufixo `/90` sempre em `text-[10px]` com opacidade atenuada (60-70%).
 - **Micro-Labels de Apoio:** `text-[10px]` ou `text-[9px]`, `font-medium`, `text-muted-foreground`.
@@ -76,9 +77,10 @@ Este documento estabelece o padrão visual, tokens de design, regras de tipograf
 
 ---
 
-## 6. Próximos Passos de Aplicação (Roadmap Visual)
+## 6. Status de Aplicação do Design System (Roadmap Visual)
 
-- **Fase 1 (Atual):** Padronização dos tokens globais, `DESIGN.md` e correção definitiva do PDF do Raio-X.
-- **Fase 2:** Repaginação da Lista e Cards de Atletas (`/athletes` e `/scouting`).
-- **Fase 3:** Repaginação do Perfil Detalhado do Atleta (`/athletes/[id]`).
-- **Fase 4:** Polimento do Dashboard do Analista (`/dashboard`) e Portfólio.
+- **[x] Fase 1 (Concluída):** Padronização dos tokens globais, `DESIGN.md` e correção definitiva do PDF do Raio-X (isolamento em clean iframe e rota dedicada `/athletes/[id]/raio-x`).
+- **[x] Fase 2 (Concluída):** Repaginação da Lista e Cards de Atletas (`/athletes`, `/league` e `/scouting`) com layout fluido widescreen (5 colunas) e frosted glass.
+- **[x] Fase 3 (Concluída):** Repaginação do Perfil Detalhado do Atleta (`/athletes/[id]`) com Dark Stage hero, campinho tático BeSoccer Pro, radar multi-eixo e similar athletes.
+- **[x] Fase 4 (Concluída):** Polimento do Dashboard do Analista (`/` e `/reports`), sidebar com radar live badge e iluminação stadium.
+- **[ ] Fase 5 (Atual / Em Desenvolvimento):** Videoteca Tática (Links externos categorizados), Módulo de Metas e Caderno Completo de Relatórios PDF.

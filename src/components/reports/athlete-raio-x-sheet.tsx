@@ -148,7 +148,7 @@ export function AthleteRaioXSheet({
             TNS
           </div>
           <div>
-            <h1 className="text-sm font-black tracking-tight uppercase leading-none text-zinc-950">
+            <h1 className="text-sm font-black tracking-tight uppercase leading-none text-zinc-950 font-serif">
               The Net Scouting
             </h1>
             <p className="text-[9px] font-bold tracking-wider text-zinc-500 uppercase mt-0.5">
@@ -191,7 +191,7 @@ export function AthleteRaioXSheet({
           {/* Bio & Key Attributes */}
           <div className="flex-1 text-left space-y-1">
             <div className="flex flex-wrap items-center justify-start gap-2">
-              <h2 className="text-lg font-black tracking-tight text-white print:text-black">
+              <h2 className="text-lg font-black tracking-tight text-white print:text-black font-serif">
                 {athlete.name}
               </h2>
               <Badge

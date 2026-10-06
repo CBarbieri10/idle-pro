@@ -90,10 +90,11 @@ export async function POST(
     revalidate(id);
 
     return NextResponse.json({ ...updated, format: image.format, hasAlpha: image.hasAlpha });
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error("Erro no upload de foto:", err);
+    const message = err instanceof Error ? err.message : "Erro interno ao processar e salvar foto";
     return NextResponse.json(
-      { error: err?.message || "Erro interno ao processar e salvar foto" },
+      { error: message },
       { status: 500 }
     );
   }

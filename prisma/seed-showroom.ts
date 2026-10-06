@@ -1,4 +1,13 @@
-import { PrismaClient, Position, FootPreference, MatchVenue, MetricSource } from "@prisma/client";
+import {
+  PrismaClient,
+  Position,
+  FootPreference,
+  MatchVenue,
+  MetricSource,
+  Team,
+  Match,
+  AnalystPortfolio,
+} from "@prisma/client";
 import { normalizeRawMetric } from "../src/lib/normalization";
 
 const prisma = new PrismaClient();
@@ -31,7 +40,7 @@ async function main() {
     { name: "Grêmio", shortName: "GRE", country: "Brasil", city: "Porto Alegre" },
   ];
 
-  const teams: Record<string, any> = {};
+  const teams: Record<string, Team> = {};
   for (const t of teamsData) {
     let team = await prisma.team.findFirst({ where: { name: t.name } });
     if (!team) {
@@ -86,7 +95,7 @@ async function main() {
     },
   ];
 
-  const matches: any[] = [];
+  const matches: Match[] = [];
   for (const m of matchesData) {
     let match = await prisma.match.findFirst({
       where: {
@@ -309,7 +318,7 @@ async function main() {
 
   // 5. Obter usuário analista para o portfólio
   const user = await prisma.user.findFirst();
-  let portfolio: any = null;
+  let portfolio: AnalystPortfolio | null = null;
   if (user) {
     portfolio = await prisma.analystPortfolio.findFirst({ where: { userId: user.id } });
     if (!portfolio) {
