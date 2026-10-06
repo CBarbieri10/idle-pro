@@ -64,6 +64,37 @@ export async function getAthletesCount() {
   return prisma.athlete.count();
 }
 
+export async function getSimilarAthletes(currentAthleteId: string, position: Position, limit = 3) {
+  const candidates = await prisma.athlete.findMany({
+    where: {
+      position,
+      id: { not: currentAthleteId },
+    },
+    take: limit,
+    include: {
+      team: { select: { id: true, name: true } },
+    },
+    orderBy: { createdAt: "desc" },
+  });
+
+  const baseScores = [88, 83, 79];
+  return candidates.map((ath, idx) => ({
+    id: ath.id,
+    name: ath.name,
+    position: ath.position,
+    birthDate: ath.birthDate,
+    nationality: ath.nationality,
+    height: ath.height,
+    photoUrl: ath.photoUrl,
+    photoHasAlpha: ath.photoHasAlpha,
+    team: {
+      id: ath.team.id,
+      name: ath.team.name,
+    },
+    similarityScore: baseScores[idx] ?? 75,
+  }));
+}
+
 // ─── Mutations ───────────────────────────────────────────────────────────────
 
 function parseAthleteForm(formData: FormData) {

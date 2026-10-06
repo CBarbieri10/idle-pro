@@ -254,7 +254,7 @@ export function LeagueCatalog({
   }, [initialAthletes, selectedAthleteIds]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full max-w-7xl mx-auto">
       {/* ─── Top Executive Banner ────────────────────────────────────────── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-border-subtle pb-5">
         <div>

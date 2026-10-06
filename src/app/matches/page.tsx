@@ -26,7 +26,7 @@ export default async function MatchesPage() {
   const leagueList = leagues.map((l) => ({ id: l.id, name: l.name }));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full max-w-7xl mx-auto">
       <div className="flex items-center justify-between">
         <div>
           <h1 className="text-2xl font-bold tracking-tight">Jogos</h1>

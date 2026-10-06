@@ -34,9 +34,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             <AppSidebar />
 
             {/* Main content area */}
-            <div className="flex flex-1 flex-col min-w-0 md:ml-0">
+            <div className="flex flex-1 flex-col min-w-0 w-full">
               <AppHeader />
-              <main className="flex-1 overflow-auto p-6">{children}</main>
+              <main className="flex-1 min-w-0 w-full p-4 md:p-6 lg:p-8">{children}</main>
             </div>
           </div>
         </Providers>

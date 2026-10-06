@@ -86,6 +86,7 @@ interface RadarChartProps {
   size?: number;
   className?: string;
   showCategoryTabs?: boolean;
+  colorVariant?: "emerald" | "indigo";
 }
 
 export function RadarChart({
@@ -93,17 +94,16 @@ export function RadarChart({
   size = 320,
   className,
   showCategoryTabs = true,
+  colorVariant = "emerald",
 }: RadarChartProps) {
   const [activeCategory, setActiveCategory] = useState<RadarCategory>("GERAL");
   const [hoveredPoint, setHoveredPoint] = useState<RadarMetricPoint | null>(null);
 
-  const radius = size * 0.36;
+  const radius = size * 0.35;
   const center = size / 2;
 
-  // Selected metric keys for active category
   const selectedKeys = RADAR_PRESETS[activeCategory];
 
-  // Points computed for current category
   const pointsData: RadarMetricPoint[] = useMemo(() => {
     return selectedKeys.map((key) => {
       const def = METRIC_BY_KEY[key];
@@ -125,9 +125,7 @@ export function RadarChart({
   const numPoints = pointsData.length;
   const angleStep = (Math.PI * 2) / numPoints;
 
-  // Compute (x, y) coordinates for a given fraction (0 to 1) at index i
   const getCoordinates = (fraction: number, index: number) => {
-    // Start from top (- PI / 2)
     const angle = index * angleStep - Math.PI / 2;
     const r = Math.min(Math.max(fraction, 0.05), 1.05) * radius;
     return {
@@ -136,10 +134,8 @@ export function RadarChart({
     };
   };
 
-  // Concentric web polygons (25%, 50%, 75%, 100%)
   const webLevels = [0.25, 0.5, 0.75, 1.0];
 
-  // Data polygon points string
   const polygonPoints = pointsData
     .map((p, i) => {
       const fraction = Math.min(p.value / p.benchmarkMax, 1.0);
@@ -148,24 +144,30 @@ export function RadarChart({
     })
     .join(" ");
 
+  const isEmerald = colorVariant === "emerald";
+  const strokeColor = isEmerald ? "#00e676" : "#6366f1";
+  const fillColor = isEmerald ? "url(#radarFillEmerald)" : "url(#radarFillIndigo)";
+
   return (
     <div className={cn("flex flex-col items-center", className)}>
       {/* Category Tabs */}
       {showCategoryTabs && (
-        <div className="flex flex-wrap items-center justify-center gap-1 mb-2 bg-muted/40 p-1 rounded-xl border border-border">
+        <div className="flex flex-wrap items-center justify-center gap-1 mb-2 bg-[#0d111a] p-1 rounded-xl border border-[#1e2638]">
           {(["GERAL", "ATAQUE", "PASSE", "DEFESA"] as RadarCategory[]).map((cat) => (
             <button
               key={cat}
               type="button"
               onClick={() => setActiveCategory(cat)}
               className={cn(
-                "px-2.5 py-1 text-[11px] font-semibold rounded-lg transition-all",
+                "px-2.5 py-1 text-[11px] font-bold rounded-lg transition-all",
                 activeCategory === cat
-                  ? "bg-primary text-primary-foreground shadow-xs"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? isEmerald
+                    ? "bg-[#00e676] text-black shadow-xs font-black"
+                    : "bg-indigo-600 text-white shadow-xs"
+                  : "text-zinc-400 hover:text-white"
               )}
             >
-              {cat === "GERAL" ? "DNA Geral" : cat[0] + cat.slice(1).toLowerCase()}
+              {cat === "GERAL" ? "Geral" : cat[0] + cat.slice(1).toLowerCase()}
             </button>
           ))}
         </div>
@@ -180,10 +182,15 @@ export function RadarChart({
           className="overflow-visible select-none"
         >
           <defs>
-            <radialGradient id="radarFillGrad" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#6366f1" stopOpacity="0.70" />
-              <stop offset="60%" stopColor="#6366f1" stopOpacity="0.50" />
-              <stop offset="100%" stopColor="#4f46e5" stopOpacity="0.35" />
+            <radialGradient id="radarFillEmerald" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#00e676" stopOpacity="0.45" />
+              <stop offset="60%" stopColor="#00e676" stopOpacity="0.30" />
+              <stop offset="100%" stopColor="#00b0ff" stopOpacity="0.12" />
+            </radialGradient>
+            <radialGradient id="radarFillIndigo" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#6366f1" stopOpacity="0.65" />
+              <stop offset="60%" stopColor="#6366f1" stopOpacity="0.45" />
+              <stop offset="100%" stopColor="#4f46e5" stopOpacity="0.25" />
             </radialGradient>
           </defs>
 
@@ -202,9 +209,9 @@ export function RadarChart({
                 points={pts}
                 fill="none"
                 stroke="currentColor"
-                strokeOpacity={lvl === 1.0 ? 0.45 : 0.25}
+                strokeOpacity={lvl === 1.0 ? 0.45 : 0.20}
                 strokeWidth={lvl === 1.0 ? 1.5 : 1}
-                className="text-border print:stroke-zinc-300 print:stroke-opacity-100"
+                className="text-zinc-600 print:stroke-zinc-300 print:stroke-opacity-100"
                 style={{ WebkitPrintColorAdjust: "exact", printColorAdjust: "exact" }}
               />
             );
@@ -221,9 +228,9 @@ export function RadarChart({
                 x2={edge.x}
                 y2={edge.y}
                 stroke="currentColor"
-                strokeOpacity={0.3}
+                strokeOpacity={0.25}
                 strokeWidth={1}
-                className="text-border print:stroke-zinc-300 print:stroke-opacity-100"
+                className="text-zinc-600 print:stroke-zinc-300 print:stroke-opacity-100"
                 style={{ WebkitPrintColorAdjust: "exact", printColorAdjust: "exact" }}
               />
             );
@@ -232,22 +239,23 @@ export function RadarChart({
           {/* Athlete Data Polygon */}
           <polygon
             points={polygonPoints}
-            fill="url(#radarFillGrad)"
-            stroke="#6366f1"
+            fill={fillColor}
+            stroke={strokeColor}
             strokeWidth="2.5"
             strokeLinejoin="round"
-            className="transition-all duration-300 print:stroke-indigo-600 print:fill-indigo-500/50"
+            className="transition-all duration-300 print:stroke-emerald-600 print:fill-emerald-500/40"
             style={{
               WebkitPrintColorAdjust: "exact",
               printColorAdjust: "exact",
             }}
           />
 
-          {/* Vertex Nodes & Interactive Dots */}
+          {/* Vertex Nodes, Percentile Badges & Interactive Dots */}
           {pointsData.map((p, i) => {
             const fraction = Math.min(p.value / p.benchmarkMax, 1.0);
             const coord = getCoordinates(fraction, i);
-            const labelCoord = getCoordinates(1.24, i);
+            const labelCoord = getCoordinates(1.26, i);
+            const percentile = Math.round(fraction * 100);
 
             return (
               <g key={p.key} className="group cursor-pointer">
@@ -255,31 +263,48 @@ export function RadarChart({
                 <circle
                   cx={coord.x}
                   cy={coord.y}
-                  r={hoveredPoint?.key === p.key ? 5.5 : 4}
-                  fill="#6366f1"
+                  r={hoveredPoint?.key === p.key ? 5.5 : 3.5}
+                  fill={strokeColor}
                   stroke="#ffffff"
-                  strokeWidth="2"
+                  strokeWidth="1.5"
                   onMouseEnter={() => setHoveredPoint(p)}
                   onMouseLeave={() => setHoveredPoint(null)}
-                  className="transition-all print:fill-indigo-600 print:stroke-white"
+                  className="transition-all print:fill-emerald-600 print:stroke-white"
                   style={{ WebkitPrintColorAdjust: "exact", printColorAdjust: "exact" }}
                 />
 
-                {/* Metric label at edge (larger, bold typography) */}
+                {/* Percentile number badge at vertex (BeSoccer Pro Model) */}
+                <text
+                  x={coord.x}
+                  y={coord.y - 8}
+                  textAnchor="middle"
+                  className={cn(
+                    "text-[9px] font-black font-mono select-none drop-shadow-sm",
+                    isEmerald ? "fill-[#00e676]" : "fill-indigo-400"
+                  )}
+                  style={{
+                    fontSize: "9px",
+                    fontWeight: 900,
+                  }}
+                >
+                  {percentile}
+                </text>
+
+                {/* Metric label at edge */}
                 <text
                   x={labelCoord.x}
                   y={labelCoord.y}
                   textAnchor="middle"
                   dominantBaseline="central"
-                  fontSize={size < 300 ? 11 : 12}
+                  fontSize={size < 300 ? 10 : 11}
                   fontWeight="700"
                   className={cn(
-                    "fill-muted-foreground print:fill-zinc-950 group-hover:fill-primary transition-colors",
-                    hoveredPoint?.key === p.key && "fill-primary font-bold"
+                    "fill-zinc-400 print:fill-zinc-950 group-hover:fill-white transition-colors",
+                    hoveredPoint?.key === p.key && "fill-white font-black"
                   )}
                   style={{
-                    fontSize: size < 300 ? "11px" : "12px",
-                    fontWeight: 800,
+                    fontSize: size < 300 ? "10px" : "11px",
+                    fontWeight: 700,
                     WebkitPrintColorAdjust: "exact",
                     printColorAdjust: "exact",
                   }}
@@ -295,12 +320,12 @@ export function RadarChart({
 
         {/* Floating Tooltip if vertex hovered */}
         {hoveredPoint && (
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-background/95 border border-primary/40 rounded-lg px-2.5 py-1 text-xs shadow-lg backdrop-blur-xs text-center pointer-events-none">
-            <p className="font-bold text-foreground text-[11px]">{hoveredPoint.label}</p>
-            <p className="text-primary font-mono text-[11px]">
+          <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-zinc-950/95 border border-[#00e676]/60 rounded-lg px-2.5 py-1 text-xs shadow-xl backdrop-blur-xs text-center pointer-events-none z-10">
+            <p className="font-bold text-white text-[11px]">{hoveredPoint.label}</p>
+            <p className="text-[#00e676] font-mono text-[11px]">
               {hoveredPoint.value.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 2 })}{" "}
               {hoveredPoint.unit}
-              <span className="text-muted-foreground text-[10px] ml-1">
+              <span className="text-zinc-400 text-[10px] ml-1">
                 ({Math.round((hoveredPoint.value / hoveredPoint.benchmarkMax) * 100)}% ref)
               </span>
             </p>
@@ -308,8 +333,8 @@ export function RadarChart({
         )}
       </div>
 
-      <p className="text-[10px] text-muted-foreground/60 text-center mt-1">
-        Normalizado sobre percentis de referência da liga profissional
+      <p className="text-[10px] text-zinc-500 font-mono text-center mt-1">
+        *Métricas normalizadas por percentil da liga profissional
       </p>
     </div>
   );

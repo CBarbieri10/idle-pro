@@ -82,7 +82,7 @@ export function AppSidebar() {
           flex flex-col
           transition-transform duration-300 ease-in-out
           ${mobileOpen ? "translate-x-0" : "-translate-x-full"}
-          md:translate-x-0 md:static
+          md:translate-x-0 md:sticky md:top-0 md:h-screen md:shrink-0
         `}
       >
         {/* Brand */}

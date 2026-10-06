@@ -15,7 +15,7 @@ export default async function TeamsPage() {
   const [teams, leagues] = await Promise.all([getTeams(), getLeagues()]);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full max-w-7xl mx-auto">
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>

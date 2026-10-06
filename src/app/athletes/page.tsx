@@ -34,7 +34,7 @@ export default async function AthletesPage({
   const teamList = teams.map((t) => ({ id: t.id, name: t.name }));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full max-w-7xl mx-auto">
       {/* ─── Header ──────────────────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-border-subtle pb-5">
         <div>

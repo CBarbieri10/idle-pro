@@ -18,7 +18,7 @@ export default async function ImportMatchesPage() {
   const teamOptions = teams.map((t) => ({ id: t.id, name: t.name }));
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 w-full max-w-7xl mx-auto">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-1.5 text-xs text-muted-foreground">
         <Link href="/matches" className="hover:text-foreground transition-colors">

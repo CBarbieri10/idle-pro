@@ -32,7 +32,7 @@ export default async function ReportsPage() {
   ]);
 
   return (
-    <div className="space-y-8 max-w-6xl">
+    <div className="space-y-8 w-full max-w-7xl mx-auto">
       {/* ─── Header ──────────────────────────────────────────────────────── */}
       <div className="border-b border-border/60 pb-6">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">

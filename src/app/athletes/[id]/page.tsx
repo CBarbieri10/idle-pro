@@ -1,4 +1,4 @@
-import { getAthleteById } from "@/lib/actions/athletes";
+import { getAthleteById, getSimilarAthletes } from "@/lib/actions/athletes";
 import { getTeams, getLeagues } from "@/lib/actions/teams";
 import { getAthleteMatchHistory, getMatchOptions } from "@/lib/actions/matches";
 import {
@@ -10,6 +10,8 @@ import { AthletePhotoUpload } from "@/components/athletes/athlete-photo-upload";
 import { AddMetricButton } from "@/components/matches/metric-entry";
 import { AthleteMatchHistory } from "@/components/matches/athlete-match-history";
 import { RadarChart } from "@/components/charts/radar-chart";
+import { TacticalPitchHeatmap } from "@/components/charts/tactical-pitch-heatmap";
+import { SimilarAthletes } from "@/components/athletes/similar-athletes";
 import { AthleteRaioXModal, type RaioXAthleteData } from "@/components/reports/athlete-raio-x-modal";
 import { PortfolioToggleButton } from "@/components/portfolio/portfolio-toggle-button";
 import { Badge } from "@/components/ui/badge";
@@ -87,6 +89,30 @@ export default async function AthleteProfilePage({
 
   if (!athlete) notFound();
 
+  const similarAthletes = await getSimilarAthletes(athlete.id, athlete.position, 3);
+
+  // Extract totals for quick indicators
+  const totalGoals = Math.round(
+    (athleteStats?.metrics["goals"]?.per90 ?? 0) *
+      ((athleteStats?.totalMinutes ?? 0) / 90)
+  );
+  const totalAssists = Math.round(
+    (athleteStats?.metrics["assists"]?.per90 ?? 0) *
+      ((athleteStats?.totalMinutes ?? 0) / 90)
+  );
+  const totalYellowCards = history.reduce((sum, h) => {
+    const card = h.canonicalMetrics.find(
+      (m) => m.metricName === "yellow_cards" || m.metricName === "cartoes_amarelos"
+    );
+    return sum + (card?.absoluteValue ?? 0);
+  }, 0);
+  const totalRedCards = history.reduce((sum, h) => {
+    const card = h.canonicalMetrics.find(
+      (m) => m.metricName === "red_cards" || m.metricName === "cartoes_vermelhos"
+    );
+    return sum + (card?.absoluteValue ?? 0);
+  }, 0);
+
   const teamList = teams.map((t) => ({ id: t.id, name: t.name }));
   const leagueList = leagues.map((l) => ({ id: l.id, name: l.name }));
   const metricProps = {
@@ -131,7 +157,7 @@ export default async function AthleteProfilePage({
   const hasMetrics = athleteStats && Object.keys(athleteStats.metrics).length > 0;
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto">
+    <div className="space-y-6 w-full max-w-7xl mx-auto">
       {/* ─── Breadcrumb & Action Toolbar ──────────────────────────────────── */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle pb-4">
         <Link
@@ -256,97 +282,123 @@ export default async function AthleteProfilePage({
         </div>
       </section>
 
-      {/* ─── Tactical Spider Radar & Key Highlights ───────────────────────── */}
-      <Card className="rounded-2xl border border-border-strong bg-bg-surface p-6 shadow-xl overflow-hidden">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-6 pb-4 border-b border-border-subtle">
-          <div>
-            <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded bg-indigo-600 flex items-center justify-center text-white">
-                <Fingerprint className="h-4 w-4" />
+      {/* ─── Tactical Center: Radar + Heatmap Pitch (BeSoccer Pro Model) ──── */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+        {/* Left: Tactical Radar & Similar Players (7 cols) */}
+        <div className="lg:col-span-7 space-y-6">
+          <Card className="rounded-2xl border border-[#1e2638] bg-[#0c0f17] p-6 shadow-xl tactical-canvas">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-4 border-b border-[#1e2638]">
+              <div>
+                <div className="flex items-center gap-2">
+                  <div className="h-6 w-6 rounded bg-[#00e676]/20 border border-[#00e676]/40 flex items-center justify-center text-[#00e676]">
+                    <Fingerprint className="h-4 w-4" />
+                  </div>
+                  <h2 className="text-base font-black text-white">
+                    Impressão Digital Tática (Radar Multidimensional)
+                  </h2>
+                </div>
+                <p className="text-xs text-zinc-400 mt-0.5">
+                  Métricas Per-90 calibradas em relação aos padrões de referência da liga profissional.
+                </p>
               </div>
-              <h2 className="text-base font-black text-foreground">
-                Impressão Digital Tática (Radar Multidimensional)
-              </h2>
-            </div>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Métricas Per-90 calibradas em relação aos padrões de referência da liga profissional.
-            </p>
-          </div>
 
-          <Badge variant="outline" className="border-indigo-500/30 text-indigo-400 gap-1 text-[11px] font-bold">
-            <Sparkles className="h-3 w-3" />
-            Normalização Per-90
-          </Badge>
+              <Badge variant="outline" className="border-[#00e676]/30 text-[#00e676] bg-[#00e676]/10 gap-1 text-[11px] font-bold">
+                <Sparkles className="h-3 w-3" />
+                *Métricas por percentil
+              </Badge>
+            </div>
+
+            {hasMetrics ? (
+              <div className="flex flex-col items-center justify-center py-2">
+                <RadarChart
+                  metrics={athleteStats.metrics}
+                  size={360}
+                  showCategoryTabs={true}
+                  colorVariant="emerald"
+                />
+              </div>
+            ) : (
+              <div className="flex flex-col items-center justify-center py-16 text-center">
+                <Fingerprint className="h-10 w-10 text-muted-foreground/30 mb-2" />
+                <p className="text-sm font-bold text-foreground">Nenhuma métrica computada</p>
+                <p className="text-xs text-muted-foreground mt-1 max-w-sm">
+                  Adicione métricas por jogo ou importe planilhas de scouts para gerar o radar tático deste atleta.
+                </p>
+              </div>
+            )}
+          </Card>
+
+          {/* Similar Players row */}
+          <SimilarAthletes
+            athletes={similarAthletes}
+            currentPositionName={POSITION_LABELS[athlete.position]}
+          />
         </div>
 
-        {hasMetrics ? (
-          <div className="flex flex-col lg:flex-row items-center justify-around gap-8">
-            {/* SVG Radar */}
-            <div className="flex-1 flex justify-center py-2">
-              <RadarChart
-                metrics={athleteStats.metrics}
-                size={340}
-                showCategoryTabs={true}
-              />
-            </div>
+        {/* Right: Pitch Heatmap + 5 Quick Metrics + Biometrics & Market Matrix (5 cols) */}
+        <div className="lg:col-span-5 space-y-6">
+          <TacticalPitchHeatmap
+            position={athlete.position}
+            athleteName={athlete.name}
+            totalMatches={athleteStats?.totalMatches ?? 0}
+            totalMinutes={athleteStats?.totalMinutes ?? 0}
+            goals={totalGoals}
+            assists={totalAssists}
+            yellowCards={totalYellowCards}
+            redCards={totalRedCards}
+            age={athlete.birthDate ? formatAge(athlete.birthDate) : null}
+            height={athlete.height}
+            weight={athlete.weight}
+            footPreference={athlete.footPreference}
+          />
+        </div>
+      </div>
 
-            {/* Quick summary column */}
-            <div className="w-full lg:w-80 space-y-4">
-              <div className="rounded-xl border border-border-strong bg-bg-surface-elevated p-4 shadow-sm">
-                <p className="text-xs font-bold uppercase tracking-wider text-foreground mb-3 flex items-center justify-between">
-                  <span className="flex items-center gap-1.5">
-                    <BarChart3 className="h-3.5 w-3.5 text-indigo-400" />
-                    Top Destaques Estatísticos
-                  </span>
-                  <span className="text-[10px] text-muted-foreground font-mono">Per-90</span>
-                </p>
-
-                <div className="space-y-2">
-                  {Object.entries(athleteStats.metrics)
-                    .filter(([, m]) => m.per90 > 0)
-                    .sort(([, a], [, b]) => b.per90 - a.per90)
-                    .slice(0, 6)
-                    .map(([k, m]) => {
-                      const isHigh = m.per90 >= 2.0 || k === "goals" || k === "xg" || k === "key_passes";
-                      return (
-                        <div
-                          key={k}
-                          className="flex items-center justify-between text-xs border-b border-border-subtle/60 pb-1.5 last:border-none last:pb-0"
-                        >
-                          <span className="text-muted-foreground truncate max-w-[160px]">
-                            {m.label}
-                          </span>
-                          <span
-                            className={cn(
-                              "font-mono font-black tabular-nums text-xs",
-                              isHigh ? "text-emerald-400" : "text-foreground"
-                            )}
-                          >
-                            {m.per90}
-                            <span className="text-[9px] text-muted-foreground ml-0.5">/90</span>
-                          </span>
-                        </div>
-                      );
-                    })}
-                </div>
+      {/* ─── Top Destaques Estatísticos ────────────────────────────────────── */}
+      {hasMetrics && (
+        <Card className="rounded-2xl border border-border-strong bg-bg-surface p-6 shadow-xl">
+          <div className="flex items-center justify-between pb-3 mb-4 border-b border-border-subtle">
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 rounded bg-indigo-600 flex items-center justify-center text-white">
+                <BarChart3 className="h-3.5 w-3.5" />
               </div>
-
-              {/* Tactical Coach / Analyst Insight Card */}
-              <div className="rounded-xl border border-indigo-500/20 bg-indigo-500/5 p-3.5 text-[11px] text-muted-foreground leading-relaxed">
-                💡 <span className="font-bold text-foreground">Dica do Analista:</span> Use as abas do radar (Ataque, Passe, Defesa) para isolar sub-dimensões e comparar o volume de ações com o equilíbrio tático.
-              </div>
+              <h3 className="text-sm font-black uppercase tracking-wider text-foreground">
+                Destaques de Performance Per-90 Minutos
+              </h3>
             </div>
+            <span className="text-xs font-mono text-muted-foreground">Normalizado</span>
           </div>
-        ) : (
-          <div className="flex flex-col items-center justify-center py-16 text-center">
-            <Fingerprint className="h-10 w-10 text-muted-foreground/30 mb-2" />
-            <p className="text-sm font-bold text-foreground">Nenhuma métrica computada</p>
-            <p className="text-xs text-muted-foreground mt-1 max-w-sm">
-              Adicione métricas por jogo ou importe planilhas de scouts para gerar o radar tático deste atleta.
-            </p>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+            {Object.entries(athleteStats.metrics)
+              .filter(([, m]) => m.per90 > 0)
+              .sort(([, a], [, b]) => b.per90 - a.per90)
+              .slice(0, 6)
+              .map(([k, m]) => {
+                const isHigh = m.per90 >= 2.0 || k === "goals" || k === "xg" || k === "key_passes";
+                return (
+                  <div
+                    key={k}
+                    className="rounded-xl border border-border-strong bg-bg-surface-elevated p-3 text-center"
+                  >
+                    <p className="text-[10px] text-muted-foreground font-bold uppercase truncate">
+                      {m.label}
+                    </p>
+                    <p
+                      className={cn(
+                        "mt-1 font-mono font-black text-lg tabular-nums",
+                        isHigh ? "text-emerald-400" : "text-foreground"
+                      )}
+                    >
+                      {m.per90}
+                    </p>
+                    <span className="text-[9px] text-muted-foreground font-mono">/90 min</span>
+                  </div>
+                );
+              })}
           </div>
-        )}
-      </Card>
+        </Card>
+      )}
 
       {/* ─── Biographical Data Grid ───────────────────────────────────────── */}
       <Card className="rounded-2xl border border-border-strong bg-bg-surface p-6 shadow-md">
