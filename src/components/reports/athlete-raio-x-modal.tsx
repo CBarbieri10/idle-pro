@@ -11,6 +11,7 @@ import {
 import { Button, buttonVariants } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 import { AthleteRaioXSheet, type RaioXAthleteSheetData } from "@/components/reports/athlete-raio-x-sheet";
+import { AthleteDossier } from "@/components/reports/dossier-builder";
 import { cn } from "@/lib/utils";
 
 export type RaioXAthleteData = RaioXAthleteSheetData;
@@ -36,7 +37,7 @@ export function AthleteRaioXModal({ athlete, triggerButton }: AthleteRaioXModalP
 
   const handlePrint = () => {
     // 1. Clean Iframe Print: isolates the document from modal dialog transforms & scroll clipping
-    const reportEl = document.getElementById("raio-x-report-sheet");
+    const reportEl = document.getElementById("executive-dossier-container") || document.getElementById("raio-x-report-sheet");
     if (reportEl) {
       try {
         const iframe = document.createElement("iframe");
@@ -60,7 +61,7 @@ export function AthleteRaioXModal({ athlete, triggerButton }: AthleteRaioXModalP
             <html lang="pt-BR">
               <head>
                 <meta charset="utf-8" />
-                <title>The Net Scouting - Dossiê Raio-X - ${athlete.name}</title>
+                <title>The Net Scouting - Dossiê Executivo - ${athlete.name}</title>
                 ${styles}
                 <style>
                   @page {
@@ -72,7 +73,7 @@ export function AthleteRaioXModal({ athlete, triggerButton }: AthleteRaioXModalP
                     print-color-adjust: exact !important;
                   }
                   html, body {
-                    background: #ffffff !important;
+                    background: #fdfcf8 !important;
                     color: #09090b !important;
                     margin: 0 !important;
                     padding: 0 !important;
@@ -80,12 +81,21 @@ export function AthleteRaioXModal({ athlete, triggerButton }: AthleteRaioXModalP
                     height: auto !important;
                     overflow: visible !important;
                   }
+                  #executive-dossier-container,
                   #raio-x-report-sheet {
                     width: 100% !important;
                     max-width: 190mm !important;
                     margin: 0 auto !important;
                     padding: 0 !important;
                     display: block !important;
+                    background: #fdfcf8 !important;
+                  }
+                  .print-page-break {
+                    break-after: page !important;
+                    page-break-after: always !important;
+                    height: 0 !important;
+                    display: block !important;
+                    clear: both !important;
                   }
                   .print-avoid-break {
                     break-inside: avoid !important;
@@ -181,10 +191,10 @@ export function AthleteRaioXModal({ athlete, triggerButton }: AthleteRaioXModalP
             </div>
           </div>
 
-          {/* Printable Sheet (White A4 Canvas) */}
+          {/* Printable Dossier (Off-White Editorial A4 Canvas) */}
           <div className="p-6 bg-zinc-900/60 overflow-x-auto flex justify-center">
-            <div className="w-full max-w-[210mm] bg-white text-zinc-950 shadow-2xl rounded-xl p-6">
-              <AthleteRaioXSheet athlete={athlete} />
+            <div className="w-full max-w-[210mm] bg-[#fdfcf8] text-zinc-950 shadow-2xl rounded-xl p-6 sm:p-8">
+              <AthleteDossier athlete={athlete} />
             </div>
           </div>
         </DialogContent>

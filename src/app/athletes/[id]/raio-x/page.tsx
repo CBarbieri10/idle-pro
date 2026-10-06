@@ -2,10 +2,9 @@ import { notFound } from "next/navigation";
 import Link from "next/link";
 import { getAthleteById } from "@/lib/actions/athletes";
 import { getAthleteStatsForProfile } from "@/lib/actions/portfolio";
-import { AthleteRaioXSheet } from "@/components/reports/athlete-raio-x-sheet";
+import { AthleteDossier } from "@/components/reports/dossier-builder";
 import { PrintTriggerButton } from "@/components/reports/print-trigger-button";
-import { ArrowLeft, Printer } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowLeft } from "lucide-react";
 import type { Metadata } from "next";
 
 export async function generateMetadata({
@@ -15,9 +14,9 @@ export async function generateMetadata({
 }): Promise<Metadata> {
   const { id } = await params;
   const athlete = await getAthleteById(id);
-  if (!athlete) return { title: "Dossiê Raio-X" };
+  if (!athlete) return { title: "Dossiê Executivo" };
   return {
-    title: `Dossiê Raio-X — ${athlete.name} | The Net Scouting`,
+    title: `Dossiê Executivo (Capa + Raio-X) — ${athlete.name} | The Net Scouting`,
     description: `Relatório executivo confidencial de scouting para ${athlete.name}`,
   };
 }
@@ -59,7 +58,7 @@ export default async function AthleteRaioXPage({
   };
 
   return (
-    <div className="min-h-screen bg-zinc-950 text-foreground py-6 px-4 print:p-0 print:bg-white print:text-black">
+    <div className="min-h-screen bg-zinc-950 text-foreground py-6 px-4 print:p-0 print:bg-[#fdfcf8] print:text-black">
       {/* Top action bar (hidden during print) */}
       <div className="max-w-[210mm] mx-auto mb-6 flex items-center justify-between print:hidden">
         <Link
@@ -75,9 +74,9 @@ export default async function AthleteRaioXPage({
         </div>
       </div>
 
-      {/* A4 Sheet Container */}
-      <div className="max-w-[210mm] mx-auto bg-white text-black shadow-2xl rounded-xl p-8 print:p-0 print:shadow-none print:rounded-none print:w-full print:max-w-none">
-        <AthleteRaioXSheet athlete={raioXData} />
+      {/* A4 Dossier Multi-page Container */}
+      <div className="max-w-[210mm] mx-auto print:p-0 print:w-full print:max-w-none">
+        <AthleteDossier athlete={raioXData} />
       </div>
     </div>
   );

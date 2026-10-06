@@ -255,7 +255,7 @@
 
   html,
   body {
-    background: #ffffff !important;
+    background: #fdfcf8 !important;
     color: #09090b !important;
     height: auto !important;
     min-height: auto !important;
@@ -294,25 +294,29 @@
     padding: 0 !important;
     border: none !important;
     box-shadow: none !important;
-    background: #ffffff !important;
+    background: #fdfcf8 !important;
     color: #09090b !important;
     overflow: visible !important;
     display: block !important;
   }
 
   /* The Executive Dossier container */
+  #executive-dossier-container,
   #raio-x-report-sheet {
     display: block !important;
     width: 100% !important;
     max-width: 190mm !important;
     margin: 0 auto !important;
     padding: 0 !important;
-    background: #ffffff !important;
+    background: #fdfcf8 !important;
     color: #09090b !important;
     box-shadow: none !important;
     border: none !important;
-    break-inside: avoid !important;
-    page-break-inside: avoid !important;
+  }
+
+  .print-page-break {
+    page-break-after: always !important;
+    break-after: page !important;
   }
 
   .print-avoid-break {
@@ -320,4 +324,5 @@
     page-break-inside: avoid !important;
   }
 }
+
 
