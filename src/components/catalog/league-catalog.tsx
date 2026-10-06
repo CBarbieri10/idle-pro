@@ -631,30 +631,33 @@ export function LeagueCatalog({
                         Sem métricas registradas
                       </p>
                     ) : (
-                      <div className="grid grid-cols-3 gap-1.5">
+                      <div className="grid grid-cols-3 gap-2">
                         {topMetrics.map((m) => {
                           const isElite = isEliteMetric(m.metricName, m.per90);
                           return (
                             <div
                               key={m.metricName}
                               className={cn(
-                                "rounded-xl p-1.5 text-center border text-[10px] bg-black/40",
+                                "rounded-xl p-2 text-center border shadow-[0_4px_12px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.06)] transition-all",
                                 isElite
-                                  ? "border-emerald-500/50 bg-emerald-500/10"
-                                  : "border-white/5"
+                                  ? "border-emerald-500/60 bg-gradient-to-b from-emerald-950/60 to-emerald-950/30"
+                                  : "border-white/[0.12] bg-gradient-to-b from-[#131b2a]/95 to-[#080e18]/95"
                               )}
                             >
-                              <p className="text-[9px] uppercase tracking-wider text-zinc-400 font-semibold truncate" title={m.label}>
-                                {m.label.split(" ")[0]}
+                              <p
+                                className="text-[11px] uppercase tracking-wider text-zinc-300 font-extrabold truncate block"
+                                title={m.label}
+                              >
+                                {m.label.length > 9 ? m.label.slice(0, 8) + ".." : m.label}
                               </p>
                               <p
                                 className={cn(
-                                  "font-black font-mono tabular-nums text-xs mt-0.5",
+                                  "font-black font-mono tabular-nums text-sm sm:text-[15px] mt-1 leading-none drop-shadow-sm",
                                   isElite ? "text-[#00e676]" : "text-white"
                                 )}
                               >
                                 {m.per90}
-                                <span className="text-[8px] opacity-60 ml-0.5">/90</span>
+                                <span className="text-[9px] opacity-60 ml-0.5">/90</span>
                               </p>
                             </div>
                           );

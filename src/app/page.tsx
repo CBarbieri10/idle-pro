@@ -144,25 +144,25 @@ export default async function DashboardPage() {
       </div>
 
       {/* ─── Operational Stats Grid ──────────────────────────────────────── */}
-      <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-4">
+      <div className="grid grid-cols-1 gap-4.5 sm:grid-cols-2 xl:grid-cols-4">
         {stats.map((stat) => (
           <Link key={stat.label} href={stat.href}>
             <Card
-              className={`p-5 rounded-2xl border border-white/10 bg-[#0d121d]/80 backdrop-blur-md transition-all hover:border-[#00e676]/40 hover:bg-[#121927]/90 hover:shadow-xl cursor-pointer group`}
+              className="p-5.5 rounded-2xl border border-white/[0.14] bg-gradient-to-br from-[#0e1524]/95 via-[#0a0f1a]/95 to-[#060a12]/98 backdrop-blur-2xl shadow-[0_10px_30px_rgba(0,0,0,0.6),inset_0_1px_1px_rgba(255,255,255,0.08)] transition-all duration-300 hover:border-[#00e676]/60 hover:shadow-[0_15px_35px_rgba(0,0,0,0.8),0_0_25px_rgba(0,230,118,0.18)] hover:-translate-y-0.5 cursor-pointer group"
             >
               <div className="flex items-start justify-between">
                 <div>
-                  <p className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
+                  <p className="text-[13px] font-extrabold text-zinc-300 uppercase tracking-widest leading-none">
                     {stat.label}
                   </p>
-                  <p className="text-3xl font-black mt-1 text-white font-mono">
+                  <p className="text-4xl font-black mt-2 text-white font-mono tracking-tight drop-shadow-sm">
                     {stat.value}
                   </p>
-                  <p className="text-xs text-zinc-400 mt-1">
+                  <p className="text-[13px] text-zinc-400 mt-1.5 font-medium">
                     {stat.subtext}
                   </p>
                 </div>
-                <div className="rounded-xl p-3 bg-white/5 border border-white/10 group-hover:border-[#00e676]/40 transition-colors">
+                <div className="rounded-2xl p-3.5 bg-gradient-to-br from-white/[0.08] to-white/[0.02] border border-white/[0.12] shadow-inner group-hover:border-[#00e676]/50 group-hover:bg-[#00e676]/10 transition-all duration-300">
                   <stat.icon className={`h-5 w-5 ${stat.color}`} />
                 </div>
               </div>
@@ -300,24 +300,27 @@ export default async function DashboardPage() {
                     </div>
 
                     {/* Top Per-90 Metrics Tiles */}
-                    <div className="mt-3.5 grid grid-cols-3 gap-1.5">
+                    <div className="mt-3.5 grid grid-cols-3 gap-2">
                       {topMetrics.length > 0 ? (
                         topMetrics.map(([k, m]) => (
                           <div
                             key={k}
-                            className="rounded-lg bg-black/40 border border-white/5 px-2 py-1 text-center"
+                            className="rounded-xl bg-gradient-to-b from-[#131b2a]/95 to-[#080e18]/95 border border-white/[0.12] px-2 py-2 text-center shadow-[0_4px_12px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-[#00e676]/40 transition-all"
                           >
-                            <p className="text-[9px] uppercase tracking-wider text-zinc-400 font-semibold truncate">
-                              {m.label.split(" ")[0]}
+                            <p
+                              className="text-[11px] uppercase tracking-wider text-zinc-300 font-extrabold truncate block"
+                              title={m.label}
+                            >
+                              {m.label.length > 9 ? m.label.slice(0, 8) + ".." : m.label}
                             </p>
-                            <p className="text-xs font-mono font-black text-white mt-0.5">
+                            <p className="text-[15px] font-mono font-black text-[#00e676] mt-1 leading-none drop-shadow-sm">
                               {m.per90}
                             </p>
                           </div>
                         ))
                       ) : (
-                        <div className="col-span-3 text-center py-1">
-                          <span className="text-[11px] text-zinc-500 italic">
+                        <div className="col-span-3 text-center py-2 rounded-xl bg-black/40 border border-white/5">
+                          <span className="text-xs text-zinc-400 italic">
                             Aguardando scouts
                           </span>
                         </div>

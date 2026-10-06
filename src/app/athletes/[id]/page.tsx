@@ -61,11 +61,11 @@ export async function generateMetadata({
 
 function StatTile({ label, value }: { label: string; value: string }) {
   return (
-    <div className="rounded-xl border border-border-subtle bg-bg-surface-elevated p-3">
-      <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+    <div className="rounded-xl border border-white/[0.12] bg-gradient-to-b from-[#131b2a]/95 to-[#080e18]/95 p-3.5 shadow-[0_4px_16px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-[#00e676]/40 transition-all">
+      <p className="text-xs font-extrabold uppercase tracking-wider text-zinc-300">
         {label}
       </p>
-      <p className="text-sm font-black text-foreground font-mono mt-1">{value}</p>
+      <p className="text-base font-black text-[#00e676] font-mono mt-1 drop-shadow-sm">{value}</p>
     </div>
   );
 }
