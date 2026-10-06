@@ -81,6 +81,12 @@ export default async function AthleteRaioXPage({
     videoLinks,
     idgScore: athlete.idgScore,
     stabilityCategory: athlete.stabilityCategory,
+    analysisNotes: {
+      tacticalTitle: athlete.tacticalTitle ?? undefined,
+      tacticalSummary: athlete.tacticalSummary ?? undefined,
+      strengths: athlete.tacticalStrengths.length > 0 ? athlete.tacticalStrengths : undefined,
+      weaknesses: athlete.tacticalWeaknesses.length > 0 ? athlete.tacticalWeaknesses : undefined,
+    },
   };
 
   return (

@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { signOut, useSession } from "next-auth/react";
+import { ScoutingCopilotDrawer } from "@/components/ai/scouting-copilot-drawer";
 
 export function AppHeader() {
   const { data: session } = useSession();
@@ -33,6 +34,8 @@ export function AppHeader() {
 
       {/* Right side */}
       <div className="flex items-center gap-3 ml-auto">
+        <ScoutingCopilotDrawer />
+
         <Button
           variant="ghost"
           size="icon"

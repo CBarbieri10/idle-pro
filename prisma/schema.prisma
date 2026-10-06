@@ -105,6 +105,10 @@ model Athlete {
   notes               String?
   idgScore            Float? // Índice de Desempenho Global (%)
   stabilityCategory   StabilityCategory? // HIGH (<15%), MODERATE (15-30%), LOW (>30%)
+  tacticalTitle       String?
+  tacticalSummary     String?
+  tacticalStrengths   String[]           @default([])
+  tacticalWeaknesses  String[]           @default([])
   teamId              String
   nationalTeamId      String?
   createdAt           DateTime           @default(now())

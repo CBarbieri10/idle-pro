@@ -19,6 +19,7 @@ import { getGoalsByAthlete } from "@/lib/actions/goals";
 import { AthleteGoals } from "@/components/athletes/athlete-goals";
 import { PortfolioToggleButton } from "@/components/portfolio/portfolio-toggle-button";
 import { StabilityBadge } from "@/components/athletes/stability-badge";
+import { AthleteTacticalAiSummary } from "@/components/athletes/athlete-tactical-ai-summary";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -163,6 +164,12 @@ export default async function AthleteProfilePage({
     videoLinks,
     idgScore: athlete.idgScore,
     stabilityCategory: athlete.stabilityCategory,
+    analysisNotes: {
+      tacticalTitle: athlete.tacticalTitle ?? undefined,
+      tacticalSummary: athlete.tacticalSummary ?? undefined,
+      strengths: athlete.tacticalStrengths.length > 0 ? athlete.tacticalStrengths : undefined,
+      weaknesses: athlete.tacticalWeaknesses.length > 0 ? athlete.tacticalWeaknesses : undefined,
+    },
   };
 
   const hasMetrics = athleteStats && Object.keys(athleteStats.metrics).length > 0;
@@ -491,6 +498,16 @@ export default async function AthleteProfilePage({
           </div>
         </Card>
       )}
+
+      {/* ─── Parecer Tático com IA (Fase 6 - Issue #20) ──────────────────── */}
+      <AthleteTacticalAiSummary
+        athleteId={athlete.id}
+        athleteName={athlete.name}
+        initialTitle={athlete.tacticalTitle}
+        initialSummary={athlete.tacticalSummary}
+        initialStrengths={athlete.tacticalStrengths}
+        initialWeaknesses={athlete.tacticalWeaknesses}
+      />
 
       {/* ─── Metas de Desenvolvimento & KPIs (Fase 4 - Issue #12) ─────────── */}
       <AthleteGoals

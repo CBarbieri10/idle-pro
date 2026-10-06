@@ -8,9 +8,12 @@ export default auth((req) => {
   // Public routes that don't require authentication
   const isAuthRoute = nextUrl.pathname.startsWith("/login");
   const isApiAuthRoute = nextUrl.pathname.startsWith("/api/auth");
+  const isApiChatRoute =
+    nextUrl.pathname.startsWith("/api/chat") ||
+    nextUrl.pathname.startsWith("/api/ai");
 
-  // Allow auth API routes always
-  if (isApiAuthRoute) return NextResponse.next();
+  // Allow auth API routes and AI chat route
+  if (isApiAuthRoute || isApiChatRoute) return NextResponse.next();
 
   // If on login page and already logged in → redirect to dashboard
   if (isAuthRoute) {

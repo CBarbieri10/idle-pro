@@ -345,6 +345,34 @@ async function main() {
       },
       pinToPortfolio: false,
     },
+    {
+      name: "Ayrton Lucas",
+      position: Position.LEFT_BACK,
+      teamName: "Flamengo",
+      birthDate: new Date("1997-06-19"),
+      nationality: "Brasil",
+      height: 180,
+      weight: 73,
+      footPreference: FootPreference.LEFT,
+      notes: "Lateral esquerdo de amplitude máxima e chegada contínua à linha de fundo. Alto volume de cruzamentos precisos e recomposição física veloz.",
+      idgScore: 12.8,
+      stabilityCategory: StabilityCategory.HIGH,
+      matchIndex: 0, // Palmeiras x Flamengo
+      minutesPlayed: 90,
+      stats: {
+        crosses: 6,
+        tackles: 4,
+        interceptions: 3,
+        progressive_passes: 5,
+        key_passes: 3,
+        dribbles_completed: 3,
+        passes: 48,
+        pass_accuracy: 86,
+        rating: 8.3,
+      },
+      pinToPortfolio: true,
+      portfolioNote: "Referência no corredor esquerdo com IDG altamente estável e grande produção ofensiva.",
+    },
   ];
 
   // 5. Obter usuário analista para o portfólio
