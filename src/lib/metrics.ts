@@ -26,6 +26,7 @@ export const METRICS: MetricDef[] = [
   { key: "shots", label: "Finalizações", short: "Fin", unit: "count", group: "Ataque" },
   { key: "shots_on_target", label: "Finalizações no Alvo", short: "FnA", unit: "count", group: "Ataque" },
   { key: "xg", label: "Gols Esperados (xG)", short: "xG", unit: "decimal", group: "Ataque" },
+  { key: "xg_per_shot", label: "xG por Finalização", short: "xG/Fin", unit: "decimal", group: "Ataque", max: 1 },
   { key: "dribbles_completed", label: "Dribles Certos", short: "Dri", unit: "count", group: "Ataque" },
   { key: "key_passes", label: "Passes Decisivos", short: "PD", unit: "count", group: "Ataque" },
   // Passe
@@ -36,7 +37,9 @@ export const METRICS: MetricDef[] = [
   { key: "crosses_accurate", label: "Cruzamentos Certos", short: "Cru", unit: "count", group: "Passe" },
   // Defesa
   { key: "tackles", label: "Desarmes", short: "Des", unit: "count", group: "Defesa" },
+  { key: "padj_tackles", label: "Desarmes PAdj (Posse)", short: "Des PAdj", unit: "decimal", group: "Defesa" },
   { key: "interceptions", label: "Interceptações", short: "Int", unit: "count", group: "Defesa" },
+  { key: "padj_interceptions", label: "Interceptações PAdj", short: "Int PAdj", unit: "decimal", group: "Defesa" },
   { key: "clearances", label: "Cortes", short: "Cor", unit: "count", group: "Defesa" },
   { key: "aerial_duels_won", label: "Duelos Aéreos Ganhos", short: "DA", unit: "count", group: "Defesa" },
   { key: "ground_duels_won", label: "Duelos no Chão Ganhos", short: "DC", unit: "count", group: "Defesa" },

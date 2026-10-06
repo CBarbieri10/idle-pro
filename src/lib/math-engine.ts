@@ -314,3 +314,46 @@ export const STABILITY_CONFIG: Record<
     dotClass: "bg-rose-500",
   },
 };
+
+/**
+ * 🛡️ Normalização Defensiva por Posse (PAdj - Possession-Adjusted)
+ *
+ * Fórmula Sigmoide (StatsBomb / Trainor):
+ * PAdj_Action = Action * (2 / (1 + Math.exp(-0.1 * (50 - Posse_Adversaria))))
+ *
+ * Ajusta o volume de ações defensivas (desarmes, interceptações) com base na posse
+ * de bola adversária, compensando o fato de que defensores de equipes com alto
+ * domínio de bola têm muito menos oportunidades absolutas de disputar a posse.
+ *
+ * @param actionValue Valor da ação defensiva (bruto ou per90)
+ * @param opponentPossession Posse de bola da equipe adversária em % (0 a 100). Default: 50.
+ */
+export function calculatePAdj(
+  actionValue: number,
+  opponentPossession: number = 50
+): number {
+  if (!Number.isFinite(actionValue) || actionValue <= 0) return 0;
+  const clampedOppPossession = Math.max(10, Math.min(90, opponentPossession));
+  const factor = 2 / (1 + Math.exp(-0.1 * (50 - clampedOppPossession)));
+  const result = actionValue * factor;
+  return Math.round(result * 100) / 100;
+}
+
+/**
+ * 🎯 Eficiência Ofensiva: xG por Finalização (xG / Shot)
+ *
+ * Mede a qualidade média das chances finalizadas pelo atleta (shot quality).
+ * Incorpora o tratamento do Zero Técnico para evitar divisões por zero ou valores anômalos.
+ *
+ * @param xg Gols esperados totais do atleta
+ * @param shots Total de finalizações tentadas
+ */
+export function calculateXgPerShot(xg: number, shots: number): number {
+  if (!Number.isFinite(xg) || xg <= 0 || !Number.isFinite(shots) || shots <= 0) {
+    return 0;
+  }
+  const denominator = shots < ZERO_TECNICO ? ZERO_TECNICO : shots;
+  const ratio = xg / denominator;
+  return Math.round(ratio * 100) / 100;
+}
+

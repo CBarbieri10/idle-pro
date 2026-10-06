@@ -56,7 +56,7 @@ async function main() {
   }
   console.log(`✅ ${Object.keys(teams).length} clubes prontos`);
 
-  // 3. Jogos da Rodada
+  // 3. Jogos da Rodada com Dados de Posse de Bola (Issue #18 - PAdj)
   const matchesData = [
     {
       teamId: teams["Palmeiras"].id,
@@ -67,6 +67,8 @@ async function main() {
       round: "Rodada 18",
       goalsFor: 2,
       goalsAgainst: 1,
+      possession: 58.0,
+      opponentPossession: 42.0,
       date: new Date("2026-08-15T16:00:00Z"),
       leagueId: league.id,
     },
@@ -79,6 +81,8 @@ async function main() {
       round: "Rodada 18",
       goalsFor: 3,
       goalsAgainst: 0,
+      possession: 64.0,
+      opponentPossession: 36.0,
       date: new Date("2026-08-15T18:30:00Z"),
       leagueId: league.id,
     },
@@ -91,6 +95,8 @@ async function main() {
       round: "Rodada 18",
       goalsFor: 1,
       goalsAgainst: 1,
+      possession: 52.0,
+      opponentPossession: 48.0,
       date: new Date("2026-08-16T16:00:00Z"),
       leagueId: league.id,
     },
@@ -107,10 +113,18 @@ async function main() {
     });
     if (!match) {
       match = await prisma.match.create({ data: m });
+    } else {
+      match = await prisma.match.update({
+        where: { id: match.id },
+        data: {
+          possession: m.possession,
+          opponentPossession: m.opponentPossession,
+        },
+      });
     }
     matches.push(match);
   }
-  console.log(`✅ ${matches.length} partidas registradas`);
+  console.log(`✅ ${matches.length} partidas registradas com posse de bola`);
 
   // 4. Atletas e Scouts Reais
   const athletesData = [

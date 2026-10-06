@@ -111,6 +111,12 @@ function isEliteMetric(key: string, value?: number): boolean {
       return value >= 3.0;
     case "recoveries":
       return value >= 4.5;
+    case "xg_per_shot":
+      return value >= 0.16;
+    case "padj_tackles":
+      return value >= 2.0;
+    case "padj_interceptions":
+      return value >= 1.4;
     default:
       return false;
   }
@@ -311,13 +317,15 @@ export function AthleteRaioXSheet({
               <span>Ataque &bull; Produção Ofensiva</span>
               <span className="text-[9px] font-mono text-zinc-500 font-normal">Per-90</span>
             </h4>
-            <div className="grid grid-cols-3 gap-1.5">
+            <div className="grid grid-cols-4 gap-1.5">
               <MetricTile metricKey="goals" label="Gols" per90={metrics["goals"]?.per90} total={metrics["goals"]?.total} />
               <MetricTile metricKey="assists" label="Assistências" per90={metrics["assists"]?.per90} total={metrics["assists"]?.total} />
               <MetricTile metricKey="xg" label="xG" per90={metrics["xg"]?.per90} total={metrics["xg"]?.total} />
+              <MetricTile metricKey="xg_per_shot" label="xG/Fin" per90={metrics["xg_per_shot"]?.per90} isEfficiency />
               <MetricTile metricKey="shots" label="Finalizações" per90={metrics["shots"]?.per90} total={metrics["shots"]?.total} />
               <MetricTile metricKey="shots_on_target" label="No Alvo" per90={metrics["shots_on_target"]?.per90} total={metrics["shots_on_target"]?.total} />
               <MetricTile metricKey="dribbles_completed" label="Dribles" per90={metrics["dribbles_completed"]?.per90} total={metrics["dribbles_completed"]?.total} />
+              <MetricTile metricKey="key_passes" label="Decisivos" per90={metrics["key_passes"]?.per90} total={metrics["key_passes"]?.total} />
             </div>
           </div>
 
@@ -344,8 +352,18 @@ export function AthleteRaioXSheet({
               <span className="text-[9px] font-mono text-zinc-500 font-normal">Per-90</span>
             </h4>
             <div className="grid grid-cols-3 gap-1.5">
-              <MetricTile metricKey="tackles" label="Desarmes" per90={metrics["tackles"]?.per90} total={metrics["tackles"]?.total} />
-              <MetricTile metricKey="interceptions" label="Interceptações" per90={metrics["interceptions"]?.per90} total={metrics["interceptions"]?.total} />
+              <MetricTile
+                metricKey="padj_tackles"
+                label={metrics["padj_tackles"] ? "Desarmes (PAdj)" : "Desarmes"}
+                per90={metrics["padj_tackles"]?.per90 ?? metrics["tackles"]?.per90}
+                total={metrics["padj_tackles"]?.total ?? metrics["tackles"]?.total}
+              />
+              <MetricTile
+                metricKey="padj_interceptions"
+                label={metrics["padj_interceptions"] ? "Intercept. (PAdj)" : "Interceptações"}
+                per90={metrics["padj_interceptions"]?.per90 ?? metrics["interceptions"]?.per90}
+                total={metrics["padj_interceptions"]?.total ?? metrics["interceptions"]?.total}
+              />
               <MetricTile metricKey="clearances" label="Cortes" per90={metrics["clearances"]?.per90} total={metrics["clearances"]?.total} />
               <MetricTile metricKey="aerial_duels_won" label="Duelos Aéreos" per90={metrics["aerial_duels_won"]?.per90} total={metrics["aerial_duels_won"]?.total} />
               <MetricTile metricKey="ground_duels_won" label="Duelos Chão" per90={metrics["ground_duels_won"]?.per90} total={metrics["ground_duels_won"]?.total} />
@@ -370,12 +388,14 @@ function MetricTile({
   per90,
   total,
   isPercent,
+  isEfficiency,
 }: {
   metricKey: string;
   label: string;
   per90?: number;
   total?: number;
   isPercent?: boolean;
+  isEfficiency?: boolean;
 }) {
   const isElite = isEliteMetric(metricKey, per90);
 
@@ -404,11 +424,11 @@ function MetricTile({
         )}
       >
         {formattedValue}
-        {!isPercent && per90 != null && (
+        {!isPercent && !isEfficiency && per90 != null && (
           <span className="text-[9px] font-bold text-zinc-500 ml-0.5">/90</span>
         )}
       </p>
-      {total != null && !isPercent && (
+      {total != null && !isPercent && !isEfficiency && (
         <p className="text-[8px] text-zinc-400 font-mono mt-0.5">
           tot: {total}
         </p>

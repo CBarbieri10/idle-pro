@@ -147,11 +147,13 @@ model Match {
   competition  String // ex: "Brasileirão Série A", "Copa do Brasil"
   leagueId     String?
   round        String? // ex: "Rodada 12", "Oitavas - Ida"
-  goalsFor     Int?
-  goalsAgainst Int?
-  notes        String?
-  createdAt    DateTime   @default(now())
-  updatedAt    DateTime   @updatedAt
+  goalsFor           Int?
+  goalsAgainst       Int?
+  possession         Float? // posse de bola do clube de referência (%) ex: 55.0
+  opponentPossession Float? // posse de bola do adversário (%) ex: 45.0
+  notes              String?
+  createdAt          DateTime   @default(now())
+  updatedAt          DateTime   @updatedAt
 
   team             Team              @relation("MatchTeam", fields: [teamId], references: [id])
   opponent         Team?             @relation("MatchOpponent", fields: [opponentId], references: [id], onDelete: SetNull)

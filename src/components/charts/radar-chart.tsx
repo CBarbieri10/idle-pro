@@ -20,6 +20,7 @@ const BENCHMARKS: Record<string, number> = {
   shots: 3.8,
   shots_on_target: 1.8,
   xg: 0.75,
+  xg_per_shot: 0.25,
   dribbles_completed: 3.2,
   key_passes: 2.5,
   passes: 65,
@@ -28,7 +29,9 @@ const BENCHMARKS: Record<string, number> = {
   long_balls_accurate: 5.0,
   crosses_accurate: 2.2,
   tackles: 4.0,
+  padj_tackles: 4.2,
   interceptions: 2.8,
+  padj_interceptions: 3.0,
   clearances: 4.5,
   aerial_duels_won: 3.5,
   ground_duels_won: 5.5,
@@ -56,6 +59,7 @@ const RADAR_PRESETS = {
     "shots",
     "shots_on_target",
     "xg",
+    "xg_per_shot",
     "dribbles_completed",
     "key_passes",
     "assists",
@@ -106,18 +110,40 @@ export function RadarChart({
 
   const pointsData: RadarMetricPoint[] = useMemo(() => {
     return selectedKeys.map((key) => {
-      const def = METRIC_BY_KEY[key];
-      const benchmark = BENCHMARKS[key] ?? 5;
-      const m = metrics[key];
+      // Ajuste de Justiça Tática (Issue #18): se houver PAdj disponível, prefere para evitar distorção
+      const effectiveKey =
+        key === "tackles" && metrics["padj_tackles"]
+          ? "padj_tackles"
+          : key === "interceptions" && metrics["padj_interceptions"]
+          ? "padj_interceptions"
+          : key;
+
+      const def = METRIC_BY_KEY[effectiveKey] ?? METRIC_BY_KEY[key];
+      const benchmark = BENCHMARKS[effectiveKey] ?? BENCHMARKS[key] ?? 5;
+      const m = metrics[effectiveKey] ?? metrics[key];
       const val = m?.per90 ?? 0;
 
+      const displayLabel =
+        effectiveKey === "padj_tackles"
+          ? "Desarmes PAdj"
+          : effectiveKey === "padj_interceptions"
+          ? "Intercept. PAdj"
+          : def?.label ?? metricLabel(key);
+
       return {
-        key,
-        label: def?.label ?? metricLabel(key),
+        key: effectiveKey,
+        label: displayLabel,
         short: def?.short ?? key,
         value: val,
         benchmarkMax: benchmark,
-        unit: def?.unit === "percent" ? "%" : def?.key === "rating" ? "nota" : "/90",
+        unit:
+          def?.unit === "percent"
+            ? "%"
+            : def?.key === "rating"
+            ? "nota"
+            : def?.key === "xg_per_shot"
+            ? "ratio"
+            : "/90",
       };
     });
   }, [metrics, selectedKeys]);

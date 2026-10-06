@@ -2,6 +2,7 @@ import { prisma } from "@/lib/prisma";
 import { Prisma, type MetricSource } from "@prisma/client";
 import { METRIC_BY_KEY, type MetricData } from "@/lib/metrics";
 import { normalizeHeader } from "@/lib/import/mapping";
+import { calculatePAdj, calculateXgPerShot } from "@/lib/math-engine";
 
 export interface NormalizedCanonicalValue {
   metricName: string;
@@ -50,6 +51,9 @@ const CANONICAL_ALIASES: Record<string, string> = {
   xg: "xg",
   golsesperados: "xg",
   expectedgoals: "xg",
+  xgpershot: "xg_per_shot",
+  xgshot: "xg_per_shot",
+  xgporshot: "xg_per_shot",
   driblescertos: "dribles_completed",
   dribles: "dribles_completed",
   successfuldribbles: "dribles_completed",
@@ -68,8 +72,12 @@ const CANONICAL_ALIASES: Record<string, string> = {
   crosses: "crosses_accurate",
   desarmes: "tackles",
   tackles: "tackles",
+  padjtackles: "padj_tackles",
+  padjdesarmes: "padj_tackles",
   interceptacoes: "interceptions",
   int: "interceptions",
+  padjinterceptions: "padj_interceptions",
+  padjinterceptacoes: "padj_interceptions",
   cortes: "clearances",
   clearances: "clearances",
   duelosaereosganhos: "aerial_duels_won",
@@ -96,6 +104,10 @@ const CANONICAL_ALIASES: Record<string, string> = {
   avaliacao: "rating",
 };
 
+export interface MatchNormalizationContext {
+  opponentPossession?: number | null;
+}
+
 /**
  * Extracts and maps raw metric JSON data into canonical metric records.
  * Calculates both absoluteValue and per90Value.
@@ -103,7 +115,8 @@ const CANONICAL_ALIASES: Record<string, string> = {
 export function extractCanonicalMetrics(
   rawData: MetricData,
   minutesPlayed: number | null | undefined,
-  _source?: MetricSource
+  _source?: MetricSource,
+  matchContext?: MatchNormalizationContext
 ): NormalizedCanonicalValue[] {
   const result = new Map<string, number>();
 
@@ -127,8 +140,8 @@ export function extractCanonicalMetrics(
     }
   }
 
-  // 2. Compound rules (ADR-002)
-  // e.g. shots = shots_on_target + shots_off_target if shots not explicitly present
+  // 2. Compound and Advanced Scientific Rules (Issue #18)
+  // 2a. shots = shots_on_target + shots_off_target if shots not explicitly present
   if (!result.has("shots")) {
     const onTarget = Number(rawData["shots_on_target"] ?? rawData["chutes_no_alvo"] ?? 0);
     const offTarget = Number(rawData["shots_off_target"] ?? rawData["chutes_fora"] ?? 0);
@@ -137,12 +150,51 @@ export function extractCanonicalMetrics(
     }
   }
 
+  // 2b. Eficiência Ofensiva (xG / Shot)
+  if (!result.has("xg_per_shot")) {
+    const xgVal = result.get("xg") ?? Number(rawData["xg"] ?? rawData["gols_esperados"] ?? 0);
+    const shotsVal = result.get("shots") ?? Number(rawData["shots"] ?? rawData["finalizacoes"] ?? 0);
+    if (shotsVal > 0 && xgVal > 0) {
+      result.set("xg_per_shot", calculateXgPerShot(xgVal, shotsVal));
+    }
+  }
+
+  // 2c. Normalização Defensiva por Posse (PAdj)
+  // Identifica posse de bola adversária da partida ou do JSON
+  let oppPoss = matchContext?.opponentPossession ?? null;
+  if (oppPoss === null || oppPoss === undefined) {
+    if (typeof rawData["opponent_possession"] === "number") {
+      oppPoss = rawData["opponent_possession"];
+    } else if (typeof rawData["posse_adversaria"] === "number") {
+      oppPoss = rawData["posse_adversaria"];
+    } else if (typeof rawData["possession"] === "number") {
+      oppPoss = 100 - rawData["possession"];
+    } else if (typeof rawData["posse"] === "number") {
+      oppPoss = 100 - rawData["posse"];
+    }
+  }
+  const opponentPossessionFinal = typeof oppPoss === "number" && oppPoss > 0 ? oppPoss : 50;
+
+  if (!result.has("padj_tackles") && result.has("tackles")) {
+    const rawTackles = result.get("tackles")!;
+    result.set("padj_tackles", calculatePAdj(rawTackles, opponentPossessionFinal));
+  }
+
+  if (!result.has("padj_interceptions") && result.has("interceptions")) {
+    const rawInterceptions = result.get("interceptions")!;
+    result.set("padj_interceptions", calculatePAdj(rawInterceptions, opponentPossessionFinal));
+  }
+
   // 3. Convert mapped canonical metrics with Per-90 calculation
   const output: NormalizedCanonicalValue[] = [];
 
   for (const [metricName, absoluteValue] of result.entries()) {
     const def = METRIC_BY_KEY[metricName];
-    const isRateOrPercentage = def?.unit === "percent" || metricName === "rating";
+    // Taxas de eficiência, percentuais e notas não sofrem diluição per-90 linear
+    const isRateOrPercentage =
+      def?.unit === "percent" ||
+      metricName === "rating" ||
+      metricName === "xg_per_shot";
 
     const per90Value = isRateOrPercentage
       ? Math.round(absoluteValue * 100) / 100
@@ -176,15 +228,26 @@ export async function normalizeRawMetric(
       minutesPlayed: true,
       source: true,
       data: true,
+      match: {
+        select: {
+          possession: true,
+          opponentPossession: true,
+        },
+      },
     },
   });
 
   if (!raw) return 0;
 
+  const oppPoss =
+    raw.match?.opponentPossession ??
+    (typeof raw.match?.possession === "number" ? 100 - raw.match.possession : null);
+
   const canonicalItems = extractCanonicalMetrics(
     raw.data as MetricData,
     raw.minutesPlayed,
-    raw.source
+    raw.source,
+    { opponentPossession: oppPoss }
   );
 
   for (const item of canonicalItems) {

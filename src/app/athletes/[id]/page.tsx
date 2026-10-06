@@ -420,6 +420,78 @@ export default async function AthleteProfilePage({
         </Card>
       )}
 
+      {/* ─── Inteligência Científica: Eficiência & PAdj (Fase 6 - Issue #18) ─── */}
+      {hasMetrics && (athleteStats.metrics["xg_per_shot"] || athleteStats.metrics["padj_tackles"] || athleteStats.metrics["padj_interceptions"]) && (
+        <Card className="rounded-2xl border border-indigo-500/20 bg-gradient-to-r from-indigo-950/20 via-bg-surface to-bg-surface p-5 shadow-lg">
+          <div className="flex flex-wrap items-center justify-between gap-2 pb-3 mb-3 border-b border-border-subtle">
+            <div className="flex items-center gap-2">
+              <div className="h-6 w-6 rounded bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400">
+                <Sparkles className="h-3.5 w-3.5" />
+              </div>
+              <h3 className="text-xs font-black uppercase tracking-wider text-foreground">
+                Inteligência Científica & Ajuste Tático
+              </h3>
+            </div>
+            <span className="text-[10px] font-mono text-indigo-300/80 bg-indigo-500/10 px-2 py-0.5 rounded-full border border-indigo-500/20">
+              PAdj Sigmoide &bull; xG/Shot
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            {athleteStats.metrics["xg_per_shot"] && (
+              <div className="rounded-xl border border-border-strong bg-bg-surface-elevated p-3">
+                <div className="flex items-center justify-between text-[10px] text-muted-foreground font-bold uppercase">
+                  <span>Qualidade de Finalização</span>
+                  <span className="text-rose-400 font-mono">xG/Fin</span>
+                </div>
+                <div className="flex items-baseline gap-2 mt-1">
+                  <span className="font-mono font-black text-xl text-foreground">
+                    {athleteStats.metrics["xg_per_shot"].per90.toFixed(2)}
+                  </span>
+                  <span className="text-[10px] text-zinc-400 font-sans">
+                    {athleteStats.metrics["xg_per_shot"].per90 >= 0.18 ? "🔥 Alta Letalidade" : "Volume Periférico"}
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {athleteStats.metrics["padj_tackles"] && (
+              <div className="rounded-xl border border-border-strong bg-bg-surface-elevated p-3">
+                <div className="flex items-center justify-between text-[10px] text-muted-foreground font-bold uppercase">
+                  <span>Desarmes Ajustados por Posse</span>
+                  <span className="text-emerald-400 font-mono">PAdj</span>
+                </div>
+                <div className="flex items-baseline gap-2 mt-1">
+                  <span className="font-mono font-black text-xl text-emerald-400">
+                    {athleteStats.metrics["padj_tackles"].per90.toFixed(1)}
+                  </span>
+                  <span className="text-[10px] text-zinc-400 font-mono">
+                    /90 (bruto: {athleteStats.metrics["tackles"]?.per90.toFixed(1) ?? "—"})
+                  </span>
+                </div>
+              </div>
+            )}
+
+            {athleteStats.metrics["padj_interceptions"] && (
+              <div className="rounded-xl border border-border-strong bg-bg-surface-elevated p-3">
+                <div className="flex items-center justify-between text-[10px] text-muted-foreground font-bold uppercase">
+                  <span>Interceptações Ajustadas</span>
+                  <span className="text-emerald-400 font-mono">PAdj</span>
+                </div>
+                <div className="flex items-baseline gap-2 mt-1">
+                  <span className="font-mono font-black text-xl text-emerald-400">
+                    {athleteStats.metrics["padj_interceptions"].per90.toFixed(1)}
+                  </span>
+                  <span className="text-[10px] text-zinc-400 font-mono">
+                    /90 (bruto: {athleteStats.metrics["interceptions"]?.per90.toFixed(1) ?? "—"})
+                  </span>
+                </div>
+              </div>
+            )}
+          </div>
+        </Card>
+      )}
+
       {/* ─── Metas de Desenvolvimento & KPIs (Fase 4 - Issue #12) ─────────── */}
       <AthleteGoals
         athleteId={athlete.id}
