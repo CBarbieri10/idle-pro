@@ -18,6 +18,7 @@ import { AthleteVideoLinks } from "@/components/athletes/athlete-video-links";
 import { getGoalsByAthlete } from "@/lib/actions/goals";
 import { AthleteGoals } from "@/components/athletes/athlete-goals";
 import { PortfolioToggleButton } from "@/components/portfolio/portfolio-toggle-button";
+import { StabilityBadge } from "@/components/athletes/stability-badge";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -160,6 +161,8 @@ export default async function AthleteProfilePage({
     recentMatches: athleteStats?.recentMatches ?? [],
     goals,
     videoLinks,
+    idgScore: athlete.idgScore,
+    stabilityCategory: athlete.stabilityCategory,
   };
 
   const hasMetrics = athleteStats && Object.keys(athleteStats.metrics).length > 0;
@@ -247,11 +250,20 @@ export default async function AthleteProfilePage({
           <div className="min-w-0 flex-1 pb-1">
             <div className="flex items-start justify-between gap-4">
               <div className="min-w-0">
-                <Badge
-                  className={`mb-2 text-[10px] font-bold px-2 py-0.5 border-0 ${POSITION_COLORS[athlete.position]}`}
-                >
-                  {POSITION_LABELS[athlete.position]}
-                </Badge>
+                <div className="flex flex-wrap items-center gap-2 mb-2">
+                  <Badge
+                    className={`text-[10px] font-bold px-2 py-0.5 border-0 ${POSITION_COLORS[athlete.position]}`}
+                  >
+                    {POSITION_LABELS[athlete.position]}
+                  </Badge>
+                  {(athlete.idgScore !== undefined && athlete.idgScore !== null || athlete.stabilityCategory) && (
+                    <StabilityBadge
+                      idgScore={athlete.idgScore}
+                      category={athlete.stabilityCategory}
+                      size="sm"
+                    />
+                  )}
+                </div>
                 <h1 className="truncate text-2xl font-black tracking-tight text-white sm:text-3xl">
                   {athlete.name}
                 </h1>

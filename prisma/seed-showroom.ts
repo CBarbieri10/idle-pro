@@ -7,6 +7,7 @@ import {
   Team,
   Match,
   AnalystPortfolio,
+  StabilityCategory,
 } from "@prisma/client";
 import { normalizeRawMetric } from "../src/lib/normalization";
 
@@ -123,6 +124,8 @@ async function main() {
       weight: 68,
       footPreference: FootPreference.LEFT,
       notes: "Extremo desequilibrante no 1v1. Tomada de decisão madura, condução em velocidade e finalização com curva.",
+      idgScore: 11.4,
+      stabilityCategory: StabilityCategory.HIGH,
       matchIndex: 0, // Palmeiras x Flamengo
       minutesPlayed: 88,
       stats: {
@@ -151,6 +154,8 @@ async function main() {
       weight: 78,
       footPreference: FootPreference.LEFT,
       notes: "Ponta de força física aliada a drible curto. Proteção de bola de costas para a marcação e potência em chutes cruzados.",
+      idgScore: 21.8,
+      stabilityCategory: StabilityCategory.MODERATE,
       matchIndex: 1, // Botafogo x São Paulo
       minutesPlayed: 82,
       stats: {
@@ -178,6 +183,8 @@ async function main() {
       weight: 79,
       footPreference: FootPreference.LEFT,
       notes: "Médio interior de alto ritmo. Retenção de bola sob pressão, condução pelo centro e visão vertical de passe.",
+      idgScore: 18.2,
+      stabilityCategory: StabilityCategory.MODERATE,
       matchIndex: 0, // Palmeiras x Flamengo
       minutesPlayed: 90,
       stats: {
@@ -204,6 +211,8 @@ async function main() {
       weight: 74,
       footPreference: FootPreference.RIGHT,
       notes: "Volante de cobertura defensiva impecável. Leitura de espaços, pressão imediata pós-perda e desarme limpo.",
+      idgScore: 9.8,
+      stabilityCategory: StabilityCategory.HIGH,
       matchIndex: 0, // Palmeiras x Flamengo
       minutesPlayed: 90,
       stats: {
@@ -230,6 +239,8 @@ async function main() {
       weight: 84,
       footPreference: FootPreference.RIGHT,
       notes: "Zagueiro dominante no jogo aéreo e nas disputas de 1 contra 1. Velocidade de recuperação e desarmes firmes.",
+      idgScore: 12.2,
+      stabilityCategory: StabilityCategory.HIGH,
       matchIndex: 1, // Botafogo x São Paulo
       minutesPlayed: 90,
       stats: {
@@ -254,6 +265,8 @@ async function main() {
       weight: 70,
       footPreference: FootPreference.LEFT,
       notes: "Cérebro criativo da equipe. Capacidade de quebrar linhas com passes entre defensores e cobranças venenosas de bola parada.",
+      idgScore: 13.6,
+      stabilityCategory: StabilityCategory.HIGH,
       matchIndex: 2, // Cruzeiro x Grêmio
       minutesPlayed: 90,
       stats: {
@@ -281,6 +294,8 @@ async function main() {
       weight: 73,
       footPreference: FootPreference.RIGHT,
       notes: "Motor incansável do meio-campo. Marcação individual agressiva e infiltração na área adversária.",
+      idgScore: 34.5,
+      stabilityCategory: StabilityCategory.LOW,
       matchIndex: 2, // Cruzeiro x Grêmio
       minutesPlayed: 90,
       stats: {
@@ -303,6 +318,8 @@ async function main() {
       weight: 92,
       footPreference: FootPreference.RIGHT,
       notes: "Goleiro de envergadura massiva. Reflexos excepcionais à queima-roupa e segurança nas saídas do gol.",
+      idgScore: 31.9,
+      stabilityCategory: StabilityCategory.LOW,
       matchIndex: 1, // Botafogo x São Paulo
       minutesPlayed: 90,
       stats: {
@@ -346,6 +363,16 @@ async function main() {
           weight: aData.weight,
           footPreference: aData.footPreference,
           notes: aData.notes,
+          idgScore: aData.idgScore,
+          stabilityCategory: aData.stabilityCategory,
+        },
+      });
+    } else {
+      athlete = await prisma.athlete.update({
+        where: { id: athlete.id },
+        data: {
+          idgScore: aData.idgScore,
+          stabilityCategory: aData.stabilityCategory,
         },
       });
     }

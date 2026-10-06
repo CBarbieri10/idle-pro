@@ -13,7 +13,8 @@ import {
   formatAge,
 } from "@/lib/domain";
 import { cn } from "@/lib/utils";
-import type { Position, FootPreference } from "@prisma/client";
+import type { Position, FootPreference, StabilityCategory } from "@prisma/client";
+import { StabilityBadge } from "@/components/athletes/stability-badge";
 
 export interface RaioXAthleteSheetData {
   id: string;
@@ -27,6 +28,8 @@ export interface RaioXAthleteSheetData {
   photoUrl: string | null;
   photoHasAlpha: boolean;
   actionPhotoUrl?: string | null;
+  idgScore?: number | null;
+  stabilityCategory?: StabilityCategory | null;
   team: {
     id: string;
     name: string;
@@ -229,6 +232,14 @@ export function AthleteRaioXSheet({
               >
                 {POSITION_LABELS[athlete.position]}
               </Badge>
+              {(athlete.idgScore !== undefined && athlete.idgScore !== null || athlete.stabilityCategory) && (
+                <StabilityBadge
+                  idgScore={athlete.idgScore}
+                  category={athlete.stabilityCategory}
+                  variant="print"
+                  size="xs"
+                />
+              )}
             </div>
 
             <div className="flex items-center justify-start gap-1.5 text-xs text-zinc-600 print:text-zinc-700">

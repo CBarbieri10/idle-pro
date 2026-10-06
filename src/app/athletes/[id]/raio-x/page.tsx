@@ -79,6 +79,8 @@ export default async function AthleteRaioXPage({
     recentMatches: athleteStats?.recentMatches ?? [],
     goals,
     videoLinks,
+    idgScore: athlete.idgScore,
+    stabilityCategory: athlete.stabilityCategory,
   };
 
   return (

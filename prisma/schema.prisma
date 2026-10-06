@@ -83,24 +83,32 @@ enum FootPreference {
   BOTH
 }
 
+enum StabilityCategory {
+  HIGH
+  MODERATE
+  LOW
+}
+
 model Athlete {
-  id                  String         @id @default(cuid())
+  id                  String             @id @default(cuid())
   name                String
   position            Position
   birthDate           DateTime?
   nationality         String?
   height              Int? // cm
   weight              Int? // kg
-  footPreference      FootPreference @default(RIGHT)
+  footPreference      FootPreference     @default(RIGHT)
   photoUrl            String? // foto de perfil
-  photoHasAlpha       Boolean        @default(false) // PNG/WebP com fundo transparente
+  photoHasAlpha       Boolean            @default(false) // PNG/WebP com fundo transparente
   actionPhotoUrl      String? // foto de ação
-  actionPhotoHasAlpha Boolean        @default(false)
+  actionPhotoHasAlpha Boolean            @default(false)
   notes               String?
+  idgScore            Float? // Índice de Desempenho Global (%)
+  stabilityCategory   StabilityCategory? // HIGH (<15%), MODERATE (15-30%), LOW (>30%)
   teamId              String
   nationalTeamId      String?
-  createdAt           DateTime       @default(now())
-  updatedAt           DateTime       @updatedAt
+  createdAt           DateTime           @default(now())
+  updatedAt           DateTime           @updatedAt
 
   team         Team              @relation("ClubAthletes", fields: [teamId], references: [id])
   nationalTeam Team?             @relation("NationalAthletes", fields: [nationalTeamId], references: [id])
