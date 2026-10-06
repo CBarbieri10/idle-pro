@@ -276,6 +276,14 @@ export function LeagueCatalog({
 
         {/* View Switcher & Action */}
         <div className="flex items-center gap-2.5 shrink-0">
+          <Link
+            href="/league/lab"
+            className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border border-emerald-500/30 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 text-xs font-bold transition-all shadow-xs"
+          >
+            <Sparkles className="h-3.5 w-3.5 text-emerald-400" />
+            Laboratório 2D (Moneyball)
+          </Link>
+
           <div className="flex items-center bg-bg-surface-elevated p-1 rounded-lg border border-border-strong">
             <button
               type="button"

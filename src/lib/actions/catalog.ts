@@ -24,6 +24,8 @@ export type CatalogAthlete = {
   footPreference: FootPreference;
   photoUrl: string | null;
   photoHasAlpha: boolean;
+  idgScore?: number | null;
+  stabilityCategory?: string | null;
   team: {
     id: string;
     name: string;
@@ -114,9 +116,9 @@ export async function getCatalogAthletes(
 
     for (const [k, v] of Object.entries(metricSums)) {
       const def = METRIC_BY_KEY[k];
-      const isRate = def?.unit === "percent" || k === "rating";
+      const isRate = def?.unit === "percent" || k === "rating" || k === "xg_per_shot";
 
-      // If rate/percentage, average the values. If count, calculate weighted per-90
+      // If rate/percentage/ratio, average the values. If count, calculate weighted per-90
       const per90 = isRate
         ? v.count > 0
           ? Math.round((v.total / v.count) * 100) / 100
@@ -146,6 +148,8 @@ export async function getCatalogAthletes(
       footPreference: a.footPreference,
       photoUrl: a.photoUrl,
       photoHasAlpha: a.photoHasAlpha,
+      idgScore: a.idgScore,
+      stabilityCategory: a.stabilityCategory,
       team: a.team,
       totalMinutes,
       totalMatches,
