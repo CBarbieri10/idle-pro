@@ -13,7 +13,8 @@ import {
   X,
   TrendingUp,
   Video,
-  Swords
+  Swords,
+  Circle
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -25,7 +26,8 @@ const menuGroups = [
       { label: "Dashboard", href: "/", icon: LayoutDashboard },
       { label: "Atletas", href: "/athletes", icon: Users },
       { label: "Clubes", href: "/teams", icon: Shield },
-      { label: "Jogos", href: "/matches", icon: CalendarDays },
+      { label: "Partidas", href: "/matches", icon: Circle },
+      { label: "Agenda", href: "/agenda", icon: CalendarDays },
       { label: "Catálogo da Liga", href: "/league", icon: Trophy },
     ],
   },

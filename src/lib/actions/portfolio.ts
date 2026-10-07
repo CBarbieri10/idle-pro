@@ -65,7 +65,7 @@ export async function getPortfolioAthletes() {
     include: {
       athlete: {
         include: {
-          team: { select: { id: true, name: true, shortName: true } },
+          team: { select: { id: true, name: true, shortName: true, logoUrl: true } },
           rawMetrics: {
             select: {
               id: true,
@@ -221,7 +221,7 @@ export async function getAthleteStatsForProfile(athleteId: string) {
   const athlete = await prisma.athlete.findUnique({
     where: { id: athleteId },
     include: {
-      team: { select: { id: true, name: true, shortName: true } },
+      team: { select: { id: true, name: true, shortName: true, logoUrl: true } },
       rawMetrics: {
         select: {
           id: true,
@@ -347,6 +347,7 @@ export async function getAnalystHighlights() {
       athleteName: string;
       athletePosition: string;
       teamName: string;
+      teamLogo?: string | null;
       photoUrl: string | null;
       value: number;
     }>
@@ -362,7 +363,7 @@ export async function getAnalystHighlights() {
             name: true,
             position: true,
             photoUrl: true,
-            team: { select: { name: true } },
+            team: { select: { name: true, logoUrl: true } },
           },
         },
       },
@@ -380,6 +381,7 @@ export async function getAnalystHighlights() {
           athleteName: r.athlete.name,
           athletePosition: r.athlete.position,
           teamName: r.athlete.team.name,
+          teamLogo: r.athlete.team.logoUrl,
           photoUrl: r.athlete.photoUrl,
           value: r.per90Value,
         });

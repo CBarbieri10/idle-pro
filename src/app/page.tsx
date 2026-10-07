@@ -292,8 +292,12 @@ export default async function DashboardPage() {
                         >
                           {a.name}
                         </Link>
-                        <div className="flex items-center gap-1 text-xs text-zinc-400 truncate mt-0.5">
-                          <Shield className="h-3 w-3 shrink-0 text-indigo-400" />
+                        <div className="flex items-center gap-1.5 text-xs text-zinc-400 truncate mt-0.5">
+                          {a.team.logoUrl ? (
+                            <img src={a.team.logoUrl} alt={a.team.name} className="h-4 w-4 rounded-full object-contain shrink-0" />
+                          ) : (
+                            <Shield className="h-3 w-3 shrink-0 text-indigo-400" />
+                          )}
                           <span className="truncate">{a.team.name}</span>
                         </div>
                       </div>
@@ -405,7 +409,8 @@ export default async function DashboardPage() {
                         <p className="font-bold text-white truncate group-hover:text-[#00e676] transition-colors">
                           {item.athleteName}
                         </p>
-                        <p className="text-[10px] text-zinc-400 truncate">
+                        <p className="text-[10px] text-zinc-400 truncate flex items-center gap-1">
+                          {item.teamLogo && <img src={item.teamLogo} className="h-3 w-3 rounded-full object-contain shrink-0" />}
                           {item.teamName}
                         </p>
                       </div>
@@ -447,7 +452,8 @@ export default async function DashboardPage() {
                         <p className="font-bold text-white truncate group-hover:text-sky-400 transition-colors">
                           {item.athleteName}
                         </p>
-                        <p className="text-[10px] text-zinc-400 truncate">
+                        <p className="text-[10px] text-zinc-400 truncate flex items-center gap-1">
+                          {item.teamLogo && <img src={item.teamLogo} className="h-3 w-3 rounded-full object-contain shrink-0" />}
                           {item.teamName}
                         </p>
                       </div>
@@ -489,7 +495,8 @@ export default async function DashboardPage() {
                         <p className="font-bold text-white truncate group-hover:text-[#00e676] transition-colors">
                           {item.athleteName}
                         </p>
-                        <p className="text-[10px] text-zinc-400 truncate">
+                        <p className="text-[10px] text-zinc-400 truncate flex items-center gap-1">
+                          {item.teamLogo && <img src={item.teamLogo} className="h-3 w-3 rounded-full object-contain shrink-0" />}
                           {item.teamName}
                         </p>
                       </div>
@@ -531,7 +538,8 @@ export default async function DashboardPage() {
                         <p className="font-bold text-white truncate group-hover:text-indigo-400 transition-colors">
                           {item.athleteName}
                         </p>
-                        <p className="text-[10px] text-zinc-400 truncate">
+                        <p className="text-[10px] text-zinc-400 truncate flex items-center gap-1">
+                          {item.teamLogo && <img src={item.teamLogo} className="h-3 w-3 rounded-full object-contain shrink-0" />}
                           {item.teamName}
                         </p>
                       </div>

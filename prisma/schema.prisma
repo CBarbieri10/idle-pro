@@ -50,6 +50,7 @@ model Team {
   shortName String? // ex: "FLA", "PAL"
   country   String
   city      String?
+  logoUrl   String?
   leagueId  String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
