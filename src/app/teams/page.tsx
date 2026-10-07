@@ -55,8 +55,12 @@ export default async function TeamsPage() {
               <div>
                 <div className="flex items-start justify-between">
                   <div className="flex items-center gap-3 min-w-0">
-                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/5 border border-white/10 group-hover:border-[#00e676]/40 transition-colors">
-                      <Shield className="h-5 w-5 text-[#00e676]" />
+                    <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl transition-colors overflow-hidden">
+                      {team.logoUrl ? (
+                        <img src={team.logoUrl} alt={team.name} className="h-full w-full object-contain" />
+                      ) : (
+                        <Shield className="h-5 w-5 text-[#00e676]" />
+                      )}
                     </div>
                     <div className="min-w-0">
                       <p className="font-black text-sm text-white group-hover:text-[#00e676] transition-colors truncate">

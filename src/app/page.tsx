@@ -294,7 +294,7 @@ export default async function DashboardPage() {
                         </Link>
                         <div className="flex items-center gap-1.5 text-xs text-zinc-400 truncate mt-0.5">
                           {a.team.logoUrl ? (
-                            <img src={a.team.logoUrl} alt={a.team.name} className="h-4 w-4 rounded-full object-contain shrink-0" />
+                            <img src={a.team.logoUrl} alt={a.team.name} className="h-4 w-4 object-contain shrink-0" />
                           ) : (
                             <Shield className="h-3 w-3 shrink-0 text-indigo-400" />
                           )}

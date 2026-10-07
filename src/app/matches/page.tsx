@@ -85,9 +85,15 @@ export default function MatchesPage() {
     return "border-l-4 border-l-transparent";
   };
 
-  // Helper to generate a placeholder team logo URL using ui-avatars
+  // Helper to generate a team logo URL using the local SVGs
   const getTeamLogo = (teamName: string) => {
-    return `https://ui-avatars.com/api/?name=${encodeURIComponent(teamName)}&background=random&color=fff&rounded=true&bold=true&font-size=0.4`;
+    const slug = teamName
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .replace(/\s+/g, "-")
+      .replace(/[^a-z0-9\-]/g, "");
+    return `/logos/${slug}.svg`;
   };
 
   return (
@@ -209,7 +215,7 @@ export default function MatchesPage() {
                           <div className="flex-1 flex flex-col gap-1.5">
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
-                                <img src={getTeamLogo(match.home)} alt={match.home} className="h-4 w-4 rounded-full shadow-sm" />
+                                <img src={getTeamLogo(match.home)} alt={match.home} className="h-4 w-4" />
                                 <span className={`text-sm font-medium ${match.status === "finished" && match.homeScore! > match.awayScore! ? 'text-white font-bold' : 'text-zinc-300'}`}>{match.home}</span>
                               </div>
                               {match.status === "finished" && (
@@ -218,7 +224,7 @@ export default function MatchesPage() {
                             </div>
                             <div className="flex items-center justify-between">
                               <div className="flex items-center gap-2">
-                                <img src={getTeamLogo(match.away)} alt={match.away} className="h-4 w-4 rounded-full shadow-sm" />
+                                <img src={getTeamLogo(match.away)} alt={match.away} className="h-4 w-4" />
                                 <span className={`text-sm font-medium ${match.status === "finished" && match.awayScore! > match.homeScore! ? 'text-white font-bold' : 'text-zinc-300'}`}>{match.away}</span>
                               </div>
                               {match.status === "finished" && (
@@ -261,7 +267,7 @@ export default function MatchesPage() {
                 {/* Scoreboard Header */}
                 <div className="flex items-center justify-center gap-12 mb-12">
                   <div className="flex flex-col items-center gap-3 w-32">
-                    <img src={getTeamLogo(selectedMatchStats.home)} className="h-20 w-20 shadow-2xl rounded-full border-2 border-white/10" />
+                    <img src={getTeamLogo(selectedMatchStats.home)} className="h-20 w-20" />
                     <span className="text-lg font-bold text-white text-center">{selectedMatchStats.home}</span>
                   </div>
                   <div className="flex flex-col items-center gap-1">
@@ -271,7 +277,7 @@ export default function MatchesPage() {
                     </div>
                   </div>
                   <div className="flex flex-col items-center gap-3 w-32">
-                    <img src={getTeamLogo(selectedMatchStats.away)} className="h-20 w-20 shadow-2xl rounded-full border-2 border-white/10" />
+                    <img src={getTeamLogo(selectedMatchStats.away)} className="h-20 w-20" />
                     <span className="text-lg font-bold text-white text-center">{selectedMatchStats.away}</span>
                   </div>
                 </div>
@@ -340,7 +346,7 @@ export default function MatchesPage() {
                             <td className={`py-3 pl-2 text-[11px] font-bold text-zinc-500 ${getZoneBorder(row.zone)}`}>{row.pos}</td>
                             <td className="py-3">
                               <div className="flex items-center gap-3">
-                                <img src={getTeamLogo(row.team)} className="h-6 w-6 rounded-full shadow-sm" alt={row.team} />
+                                <img src={getTeamLogo(row.team)} className="h-6 w-6" alt={row.team} />
                                 <span className="font-bold text-zinc-200 group-hover:text-white transition-colors drop-shadow-sm">{row.team}</span>
                               </div>
                             </td>
@@ -394,14 +400,14 @@ export default function MatchesPage() {
                       <div className="flex-1 flex flex-col gap-2.5 ml-4 border-l border-white/10 pl-5">
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <img src={getTeamLogo(match.home)} className="h-6 w-6 rounded-full shadow-sm" alt={match.home} />
+                            <img src={getTeamLogo(match.home)} className="h-6 w-6" alt={match.home} />
                             <span className="text-sm font-bold text-white drop-shadow-sm">{match.home}</span>
                           </div>
                           <span className="text-sm font-black text-zinc-600">-</span>
                         </div>
                         <div className="flex items-center justify-between">
                           <div className="flex items-center gap-3">
-                            <img src={getTeamLogo(match.away)} className="h-6 w-6 rounded-full shadow-sm" alt={match.away} />
+                            <img src={getTeamLogo(match.away)} className="h-6 w-6" alt={match.away} />
                             <span className="text-sm font-bold text-white drop-shadow-sm">{match.away}</span>
                           </div>
                           <span className="text-sm font-black text-zinc-600">-</span>
