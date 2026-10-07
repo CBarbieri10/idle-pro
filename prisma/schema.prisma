@@ -54,6 +54,8 @@ model Team {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  isMyTeam  Boolean   @default(false)
+
   league          League?   @relation(fields: [leagueId], references: [id])
   athletes        Athlete[] @relation("ClubAthletes")
   national        Athlete[] @relation("NationalAthletes")
@@ -270,6 +272,8 @@ model VideoLink {
   description String?
   athleteId   String
   matchId     String?
+  startTime   Int?     // em segundos
+  endTime     Int?     // em segundos
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
 
