@@ -1,15 +1,23 @@
 import { getMyTeam } from "@/lib/actions/performance";
 import Link from "next/link";
 import { ArrowDown, ArrowUp, ShieldAlert } from "lucide-react";
+import { prisma } from "@/lib/prisma";
+import { SquadTeamSelector } from "./squad-team-selector";
 
 export default async function SquadPage() {
   const team = await getMyTeam();
 
   if (!team) {
+    const allTeams = await prisma.team.findMany({ orderBy: { name: "asc" } });
+    
     return (
-      <div className="p-8">
-        <h1 className="text-3xl font-black text-white">Sala de Guerra</h1>
-        <p className="text-zinc-400 mt-2">Nenhum clube foi definido como o seu elenco oficial.</p>
+      <div className="p-8 max-w-3xl mx-auto mt-20 text-center space-y-6">
+        <h1 className="text-4xl font-black text-white tracking-tight">Sala de Guerra</h1>
+        <p className="text-zinc-400 text-lg">Nenhum clube foi definido como o seu elenco oficial para monitoramento de performance.</p>
+        
+        <div className="p-8 rounded-3xl border border-white/10 bg-gradient-to-b from-white/[0.03] to-transparent backdrop-blur-xl shadow-2xl mt-8">
+           <SquadTeamSelector teams={allTeams.map(t => ({ id: t.id, name: t.name }))} />
+        </div>
       </div>
     );
   }
