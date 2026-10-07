@@ -14,6 +14,7 @@ import { TacticalPitchHeatmap } from "@/components/charts/tactical-pitch-heatmap
 import { SimilarAthletes } from "@/components/athletes/similar-athletes";
 import { AthleteRaioXModal, type RaioXAthleteData } from "@/components/reports/athlete-raio-x-modal";
 import { AthleteTelemetryModal } from "@/components/athletes/athlete-telemetry-modal";
+import { AthleteMatchLog, type AthleteMatchEntry } from "@/components/athletes/athlete-match-log";
 import { getVideoLinksByAthlete } from "@/lib/actions/video-links";
 import { AthleteVideoLinks } from "@/components/athletes/athlete-video-links";
 import { getGoalsByAthlete } from "@/lib/actions/goals";
@@ -177,6 +178,62 @@ export default async function AthleteProfilePage({
   };
 
   const hasMetrics = athleteStats && Object.keys(athleteStats.metrics).length > 0;
+
+  const matchLogEntries: AthleteMatchEntry[] = history.map((h) => {
+    const rawData = h.data as Record<string, unknown> | null;
+    const getCanonical = (name: string): number => {
+      const found = h.canonicalMetrics.find((c) => c.metricName === name);
+      return found ? found.absoluteValue : 0;
+    };
+
+    const numVal = (key: string): number => {
+      if (!rawData) return 0;
+      const v = rawData[key];
+      if (typeof v === "number") return v;
+      if (typeof v === "string") {
+        const p = parseFloat(v.replace(",", "."));
+        return isNaN(p) ? 0 : p;
+      }
+      return 0;
+    };
+
+    const goals = getCanonical("goals") || numVal("Gols");
+    const assists = getCanonical("assists") || numVal("Assistências");
+    const xg = getCanonical("xg") || numVal("xG (Gols esperados)");
+    const shots = getCanonical("shots") || numVal("Chutes");
+    const shotsOnTarget = getCanonical("shots_on_target") || numVal("Chutes no alvo");
+    const passes = getCanonical("passes") || numVal("Passes");
+    let passAccuracy = getCanonical("pass_accuracy") || numVal("Passes precisos, %");
+    if (passAccuracy > 0 && passAccuracy <= 1) passAccuracy = passAccuracy * 100;
+
+    const tackles = getCanonical("tackles") || numVal("Desarmes");
+    const interceptions = getCanonical("interceptions") || numVal("Interceptações");
+    const rating = getCanonical("rating") || (numVal("Índice") ? numVal("Índice") / 20 : null);
+
+    return {
+      rawMetricId: h.id,
+      matchId: h.match.id,
+      date: h.match.date,
+      opponentName: h.match.opponent?.name || h.match.opponentName,
+      venue: h.match.venue,
+      competition: h.match.competition,
+      round: h.match.round,
+      goalsFor: h.match.goalsFor,
+      goalsAgainst: h.match.goalsAgainst,
+      minutesPlayed: h.minutesPlayed,
+      goals,
+      assists,
+      xg: Number(xg.toFixed(2)),
+      shots,
+      shotsOnTarget,
+      passes,
+      passAccuracy: Number(passAccuracy.toFixed(1)),
+      tackles,
+      interceptions,
+      rating: rating ? Number(rating.toFixed(1)) : null,
+      rawTelemetry: rawData,
+    };
+  });
 
   return (
     <div className="space-y-6 w-full">
@@ -612,13 +669,22 @@ export default async function AthleteProfilePage({
         />
       </Card>
 
-      {/* ─── Matches History (T04) ────────────────────────────────────────── */}
+      {/* ─── Histórico Jogo a Jogo com Amostragem Dinâmica (Fase 6 - Issue #24) ─── */}
+      <AthleteMatchLog
+        athleteId={athlete.id}
+        athleteName={athlete.name}
+        athletePosition={POSITION_LABELS[athlete.position]}
+        teamName={athlete.team.name}
+        history={matchLogEntries}
+      />
+
+      {/* ─── Matches History (T04 - Manual Entry & Raw Cards) ─────────────── */}
       <Card className="rounded-2xl border border-border-strong bg-bg-surface p-6 shadow-md" id="athlete-metrics">
         <div className="mb-5 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
             <BarChart3 className="h-4 w-4 text-indigo-400" />
             <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
-              Histórico & Métricas por Jogo
+              Lançamento Manual & Cartões de Scout
             </h2>
           </div>
           <AddMetricButton {...metricProps} usedMatchIds={history.map((h) => h.matchId)} />

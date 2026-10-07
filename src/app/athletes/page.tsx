@@ -19,14 +19,22 @@ export const metadata: Metadata = {
 export default async function AthletesPage({
   searchParams,
 }: {
-  searchParams: Promise<{ search?: string; position?: string; teamId?: string }>;
+  searchParams: Promise<{
+    search?: string;
+    position?: string;
+    teamId?: string;
+    scope?: "registered" | "all";
+  }>;
 }) {
   const params = await searchParams;
+  const currentScope = params.scope || "registered";
+
   const [athletes, teams] = await Promise.all([
     getAthletes({
       search: params.search,
       position: params.position,
       teamId: params.teamId,
+      scope: currentScope,
     }),
     getTeams(),
   ]);
@@ -47,14 +55,61 @@ export default async function AthletesPage({
             </span>
           </div>
           <h1 className="text-2xl font-black tracking-tight text-white mt-1.5">
-            Atletas Cadastrados
+            {currentScope === "all" ? "Todos os Atletas da Liga" : "Atletas Cadastrados"}
           </h1>
           <p className="text-xs text-zinc-400 mt-0.5">
-            Gerencie dados biométricos, fotos recortadas e histórico de atletas do sistema.
+            {currentScope === "all"
+              ? "Base completa de jogadores registrados no campeonato."
+              : "Jogadores cadastrados e sob monitoramento ativo pelo analista."}
           </p>
         </div>
 
-        <CreateAthleteButton teams={teamList} />
+        <div className="flex flex-wrap items-center gap-2.5">
+          <Link
+            href="/catalog"
+            className="inline-flex items-center gap-1.5 rounded-xl border border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/20 px-3.5 py-2 text-xs font-bold text-cyan-300 transition-all shadow-sm"
+          >
+            <Sparkles className="h-3.5 w-3.5" />
+            <span>Catálogo da Liga (671 Atletas) &rarr;</span>
+          </Link>
+          <CreateAthleteButton teams={teamList} />
+        </div>
+      </div>
+
+      {/* Scope Toggle & Catalog Banner */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-2xl border border-white/[0.08] bg-[#0c1220]/80">
+        <div className="flex items-center gap-2">
+          <Link
+            href={`/athletes${params.teamId ? `?teamId=${params.teamId}` : ""}`}
+            className={cn(
+              "px-3 py-1.5 rounded-xl text-xs font-bold transition-all",
+              currentScope === "registered"
+                ? "bg-[#00e676]/20 text-[#00e676] border border-[#00e676]/40 shadow-sm"
+                : "text-zinc-400 hover:text-white"
+            )}
+          >
+            Cadastrados pelo Analista
+          </Link>
+          <Link
+            href={`/athletes?scope=all${params.teamId ? `&teamId=${params.teamId}` : ""}`}
+            className={cn(
+              "px-3 py-1.5 rounded-xl text-xs font-bold transition-all",
+              currentScope === "all"
+                ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm"
+                : "text-zinc-400 hover:text-white"
+            )}
+          >
+            Todos do Campeonato
+          </Link>
+        </div>
+
+        <div className="text-[11px] text-zinc-400 flex items-center gap-1.5">
+          <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" />
+          <span>Para análise estatística Moneyball e filtros multidimensionais, acerte o</span>
+          <Link href="/catalog" className="text-cyan-300 font-bold hover:underline">
+            Catálogo da Liga
+          </Link>
+        </div>
       </div>
 
       {/* ─── Filters ─────────────────────────────────────────────────────── */}

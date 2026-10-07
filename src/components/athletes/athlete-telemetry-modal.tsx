@@ -1,6 +1,7 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react";
+import { createPortal } from "react-dom";
 import {
   Activity,
   Search,
@@ -14,6 +15,9 @@ import {
   Filter,
   CheckCircle2,
   ExternalLink,
+  User,
+  Zap,
+  Award,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -39,7 +43,11 @@ interface MetricItem {
   isPercent: boolean;
 }
 
-const CATEGORIES: Array<{ key: CategoryKey; label: string; icon: React.ComponentType<{ className?: string }> }> = [
+const CATEGORIES: Array<{
+  key: CategoryKey;
+  label: string;
+  icon: React.ComponentType<{ className?: string }>;
+}> = [
   { key: "all", label: "Todas as Métricas", icon: Layers },
   { key: "passe", label: "🎯 Construção & Passe", icon: Target },
   { key: "duelos", label: "⚔️ Duelos & 1v1", icon: Activity },
@@ -50,7 +58,7 @@ const CATEGORIES: Array<{ key: CategoryKey; label: string; icon: React.Component
 
 const METRIC_CATEGORY_MAP: Record<string, CategoryKey> = {
   // Construção & Passe
-  "Passes": "passe",
+  Passes: "passe",
   "Passes precisos, %": "passe",
   "Passes progressivos": "passe",
   "Passes progressivos precisos, %": "passe",
@@ -69,17 +77,17 @@ const METRIC_CATEGORY_MAP: Record<string, CategoryKey> = {
   "Passes-chave": "passe",
   "Passes-chave precisos": "passe",
   "Passes-chave precisos, %": "passe",
-  "Cruzamentos": "passe",
+  Cruzamentos: "passe",
   "Cruzamentos precisos": "passe",
   "Cruzamentos precisos, %": "passe",
-  "Condução": "passe",
+  Condução: "passe",
   "Passes para a frente precisos": "passe",
   "Passes para a frente precisos, %": "passe",
   "Passes para a área precisos": "passe",
   "Passes progressivos precisos": "passe",
 
   // Duelos & 1v1
-  "Duelos": "duelos",
+  Duelos: "duelos",
   "Duelos ganhos": "duelos",
   "Duelos ganhos, %": "duelos",
   "Duelos defensivos": "duelos",
@@ -92,19 +100,19 @@ const METRIC_CATEGORY_MAP: Record<string, CategoryKey> = {
   "Duelos aéreos ganhos": "duelos",
   "Duelos aéreos ganhos, %": "duelos",
   "Duelos perdidos": "duelos",
-  "Dribles": "duelos",
+  Dribles: "duelos",
   "Dribles bem-sucedidos": "duelos",
   "Dribles bem-sucedidos, %": "duelos",
   "Dribles no terço final": "duelos",
   "Dribles no terço final bem-sucedidos": "duelos",
   "Dribles no terço final bem-sucedidos, %": "duelos",
-  "Cabeceios": "duelos",
+  Cabeceios: "duelos",
 
   // Defesa & Recuperação
-  "Desarmes": "defesa",
+  Desarmes: "defesa",
   "Desarmes bem-sucedidos": "defesa",
   "Desarmes bem-sucedidos, %": "defesa",
-  "Interceptações": "defesa",
+  Interceptações: "defesa",
   "Recuperações de bola solta": "defesa",
   "Recuperações da bola": "defesa",
   "Recuperações da bola no campo adversário": "defesa",
@@ -112,21 +120,21 @@ const METRIC_CATEGORY_MAP: Record<string, CategoryKey> = {
   "Recuperações da bola após perdas em até 10 segundos no campo adversário": "defesa",
   "Recuperações da bola após perdas em até 5 segundos": "defesa",
   "Recuperações da bola após perdas em até 5 segundos no campo adversário": "defesa",
-  "Faltas": "defesa",
+  Faltas: "defesa",
   "Cartões amarelos": "defesa",
   "Cartões vermelhos": "defesa",
   "Erros que geram chances de gol": "defesa",
 
   // Ataque & Criação
   "xG (Gols esperados)": "ataque",
-  "Gols": "ataque",
-  "Assistências": "ataque",
+  Gols: "ataque",
+  Assistências: "ataque",
   "Chances de gol": "ataque",
   "Chances de gol bem-sucedidas": "ataque",
   "Chances de gol bem-sucedidas, %": "ataque",
   "Chances de gol criadas": "ataque",
   "Participação em ataques com gol": "ataque",
-  "Chutes": "ataque",
+  Chutes: "ataque",
   "Chutes no alvo": "ataque",
   "Chutes no alvo, %": "ataque",
   "Chutes para fora": "ataque",
@@ -149,21 +157,24 @@ const METRIC_CATEGORY_MAP: Record<string, CategoryKey> = {
   "Minutos jogados": "volume",
   "Partidas jogadas": "volume",
   "Aparições na escalação inicial": "volume",
-  "Ações": "volume",
+  Ações: "volume",
   "Ações bem-sucedidas": "volume",
   "Ações bem-sucedidas, %": "volume",
-  "Índice": "volume",
-  "Idade": "volume",
-  "Altura": "volume",
-  "Peso": "volume",
-  "Nacionalidade": "volume",
-  "Posição": "volume",
-  "Time": "volume",
-  "Jogador": "volume",
+  Índice: "volume",
+  Idade: "volume",
+  Altura: "volume",
+  Peso: "volume",
+  Nacionalidade: "volume",
+  Posição: "volume",
+  Time: "volume",
+  Jogador: "volume",
   "№": "volume",
 };
 
-function formatTelemetryValue(key: string, val: unknown): { formatted: string; isPercent: boolean } {
+function formatTelemetryValue(
+  key: string,
+  val: unknown
+): { formatted: string; isPercent: boolean } {
   if (val == null || val === "-" || val === "") {
     return { formatted: "—", isPercent: false };
   }
@@ -176,15 +187,19 @@ function formatTelemetryValue(key: string, val: unknown): { formatted: string; i
 
   if (typeof val === "number") {
     if (isPercent) {
-      // If between 0 and 1 (ex: 0.854), convert to percentage
       const pct = val <= 1 && val >= 0 ? val * 100 : val;
       return { formatted: `${pct.toFixed(1)}%`, isPercent: true };
     }
-    // Float vs Integer
     if (Number.isInteger(val)) {
       return { formatted: val.toLocaleString("pt-BR"), isPercent: false };
     }
-    return { formatted: val.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 2 }), isPercent: false };
+    return {
+      formatted: val.toLocaleString("pt-BR", {
+        minimumFractionDigits: 1,
+        maximumFractionDigits: 2,
+      }),
+      isPercent: false,
+    };
   }
 
   if (typeof val === "string") {
@@ -214,6 +229,22 @@ export function AthleteTelemetryModal({
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<CategoryKey>("all");
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setMounted(true), 0);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Close on ESC
+  useEffect(() => {
+    if (!isOpen) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setIsOpen(false);
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [isOpen]);
 
   const items: MetricItem[] = useMemo(() => {
     if (!rawData || typeof rawData !== "object") return [];
@@ -267,9 +298,303 @@ export function AthleteTelemetryModal({
     return counts;
   }, [items]);
 
+  // Extract biometrics for the 3D card
+  const age = rawData?.["Idade"] ? String(rawData["Idade"]) : null;
+  const height = rawData?.["Altura"] ? `${rawData["Altura"]} cm` : null;
+  const weight = rawData?.["Peso"] ? `${rawData["Peso"]} kg` : null;
+  const nationality = rawData?.["Nacionalidade"] ? String(rawData["Nacionalidade"]) : null;
+  const ratingIndex = rawData?.["Índice"] ? String(rawData["Índice"]) : null;
+  const matchesPlayed = rawData?.["Partidas jogadas"] ? String(rawData["Partidas jogadas"]) : null;
+  const minutesPlayed = rawData?.["Minutos jogados"] ? String(rawData["Minutos jogados"]) : null;
+
+  const initials = athleteName
+    .split(" ")
+    .map((n) => n[0])
+    .slice(0, 2)
+    .join("");
+
+  const modalOverlay = isOpen && mounted ? (
+    createPortal(
+      <div className="fixed inset-0 z-[9999] overflow-y-auto bg-black/85 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200">
+        <div
+          className="fixed inset-0 bg-black/60"
+          onClick={() => setIsOpen(false)}
+          aria-hidden="true"
+        />
+
+        {/* 3D Holographic Poster Container */}
+        <div className="relative w-full max-w-6xl bg-[#080d18] border border-cyan-500/30 rounded-3xl shadow-[0_0_50px_rgba(6,182,212,0.15)] overflow-hidden flex flex-col max-h-[92vh] z-10 animate-in zoom-in-95 duration-200">
+          {/* Top Holographic Navigation Bar */}
+          <div className="border-b border-white/[0.08] px-5 py-4 bg-[#0a1122]/90 flex items-center justify-between gap-4">
+            <div className="flex items-center gap-3">
+              <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-cyan-500/20 to-teal-500/10 border border-cyan-500/40 flex items-center justify-center text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.3)]">
+                <Sparkles className="h-4 w-4" />
+              </div>
+              <div>
+                <div className="flex items-center gap-2">
+                  <h2 className="text-sm sm:text-base font-black text-white tracking-tight">
+                    Dossiê 3D &bull; Telemetria Integral Wyscout
+                  </h2>
+                  <Badge className="bg-cyan-500/20 text-cyan-300 border-cyan-500/40 text-[10px] font-mono py-0 h-4">
+                    75 Métricas Oficiais
+                  </Badge>
+                </div>
+                <p className="text-[11px] text-zinc-400">
+                  {athleteName} &bull; {teamName ?? "Série A 2026"} &bull; Camada JSONB Raw
+                </p>
+              </div>
+            </div>
+
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsOpen(false)}
+              className="h-8 w-8 text-zinc-400 hover:text-white hover:bg-white/10 rounded-xl"
+              title="Fechar (ESC)"
+            >
+              <X className="h-5 w-5" />
+            </Button>
+          </div>
+
+          {/* Modal Main Body (2 Columns: 3D Poster Card on left, Metrics Explorer on right) */}
+          <div className="flex-1 overflow-y-auto grid grid-cols-1 lg:grid-cols-12 min-h-0 bg-[#060a14]">
+            {/* ─── LEFT: Cartaz 3D do Atleta (Holographic Executive Poster) ───── */}
+            <div className="lg:col-span-4 p-5 sm:p-6 bg-gradient-to-b from-[#0c1426] via-[#090f1d] to-[#070b16] border-b lg:border-b-0 lg:border-r border-white/[0.08] flex flex-col justify-between gap-5">
+              {/* 3D Card Shell */}
+              <div className="relative rounded-2xl border border-cyan-500/30 bg-gradient-to-b from-[#111c34]/90 to-[#0c1324]/90 p-5 shadow-2xl backdrop-blur-xl overflow-hidden group">
+                {/* Holographic light effect */}
+                <div className="pointer-events-none absolute -right-12 -top-12 h-36 w-36 rounded-full bg-cyan-500/15 blur-2xl" />
+                <div className="pointer-events-none absolute -left-12 -bottom-12 h-36 w-36 rounded-full bg-indigo-500/15 blur-2xl" />
+
+                {/* Avatar / Monogram Header */}
+                <div className="relative z-10 flex flex-col items-center text-center">
+                  <div className="relative mb-3">
+                    <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-cyan-500/25 via-[#13203c] to-indigo-500/25 border-2 border-cyan-400/50 flex items-center justify-center text-cyan-200 text-2xl font-black font-mono shadow-[0_0_25px_rgba(6,182,212,0.35)]">
+                      {initials}
+                    </div>
+                    {athletePosition && (
+                      <span className="absolute -bottom-2 px-2 py-0.5 rounded-full bg-cyan-500 text-black font-black text-[10px] uppercase font-mono shadow-md">
+                        {athletePosition}
+                      </span>
+                    )}
+                  </div>
+
+                  <h3 className="text-lg font-black text-white tracking-tight mt-1">
+                    {athleteName}
+                  </h3>
+                  <p className="text-xs text-zinc-400 font-medium">
+                    {teamName ?? "Brasileirão Série A"}
+                  </p>
+                </div>
+
+                {/* Biometrics 3D Tiles */}
+                <div className="relative z-10 mt-5 pt-4 border-t border-white/[0.08] grid grid-cols-2 gap-2 text-xs font-mono">
+                  {age && (
+                    <div className="p-2.5 rounded-xl bg-black/40 border border-white/[0.06]">
+                      <span className="text-[9px] uppercase font-bold text-zinc-400 block">
+                        Idade
+                      </span>
+                      <span className="text-white font-bold">{age} anos</span>
+                    </div>
+                  )}
+
+                  {height && (
+                    <div className="p-2.5 rounded-xl bg-black/40 border border-white/[0.06]">
+                      <span className="text-[9px] uppercase font-bold text-zinc-400 block">
+                        Altura
+                      </span>
+                      <span className="text-white font-bold">{height}</span>
+                    </div>
+                  )}
+
+                  {weight && (
+                    <div className="p-2.5 rounded-xl bg-black/40 border border-white/[0.06]">
+                      <span className="text-[9px] uppercase font-bold text-zinc-400 block">
+                        Peso
+                      </span>
+                      <span className="text-white font-bold">{weight}</span>
+                    </div>
+                  )}
+
+                  {nationality && (
+                    <div className="p-2.5 rounded-xl bg-black/40 border border-white/[0.06]">
+                      <span className="text-[9px] uppercase font-bold text-zinc-400 block">
+                        País
+                      </span>
+                      <span className="text-white font-bold truncate block" title={nationality}>
+                        {nationality}
+                      </span>
+                    </div>
+                  )}
+
+                  {matchesPlayed && (
+                    <div className="p-2.5 rounded-xl bg-black/40 border border-white/[0.06]">
+                      <span className="text-[9px] uppercase font-bold text-zinc-400 block">
+                        Partidas
+                      </span>
+                      <span className="text-emerald-400 font-bold">{matchesPlayed} jogos</span>
+                    </div>
+                  )}
+
+                  {minutesPlayed && (
+                    <div className="p-2.5 rounded-xl bg-black/40 border border-white/[0.06]">
+                      <span className="text-[9px] uppercase font-bold text-zinc-400 block">
+                        Minutagem
+                      </span>
+                      <span className="text-cyan-300 font-bold">{minutesPlayed}&apos;</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Rating / Index Seal */}
+                {ratingIndex && (
+                  <div className="relative z-10 mt-3 p-3 rounded-xl bg-cyan-950/40 border border-cyan-500/30 flex items-center justify-between">
+                    <div className="flex items-center gap-1.5 text-cyan-300 text-xs font-black">
+                      <Award className="h-4 w-4 text-cyan-400" />
+                      <span>Índice Wyscout:</span>
+                    </div>
+                    <span className="font-mono text-base font-black text-cyan-200">
+                      {ratingIndex}
+                    </span>
+                  </div>
+                )}
+              </div>
+
+              {/* Technical Cert Seal */}
+              <div className="rounded-xl border border-white/[0.06] bg-black/30 p-3 text-[11px] text-zinc-400 space-y-1">
+                <div className="flex items-center gap-1.5 text-zinc-300 font-bold">
+                  <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                  <span>Base Canônica Auditada</span>
+                </div>
+                <p className="text-[10px] text-zinc-400 leading-relaxed">
+                  Os 75 indicadores alimentam diretamente os motores matemáticos de IDG, PAdj Defensivo e xG/Shot.
+                </p>
+              </div>
+            </div>
+
+            {/* ─── RIGHT: Painel de Indicadores & Busca Rápida ─────────────────── */}
+            <div className="lg:col-span-8 flex flex-col min-h-0">
+              {/* Search Bar */}
+              <div className="p-4 sm:px-6 bg-[#090f1d] border-b border-white/[0.06] flex items-center gap-3">
+                <div className="relative flex-1">
+                  <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
+                  <input
+                    type="text"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                    placeholder="Filtrar por métrica (ex: 'Passes', 'Duelos', 'Recuperações', 'xG')..."
+                    className="w-full bg-[#11192e] border border-white/10 rounded-xl pl-10 pr-10 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-500/60 shadow-inner"
+                  />
+                  {search && (
+                    <button
+                      onClick={() => setSearch("")}
+                      className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white"
+                    >
+                      <X className="h-3.5 w-3.5" />
+                    </button>
+                  )}
+                </div>
+                <div className="text-[11px] font-mono text-zinc-400 shrink-0 hidden sm:block">
+                  <span className="font-bold text-white">{filteredItems.length}</span> de {items.length}
+                </div>
+              </div>
+
+              {/* Category Filter Pills */}
+              <div className="px-4 sm:px-6 py-2.5 bg-[#080d1a] border-b border-white/[0.06] flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+                {CATEGORIES.map((cat) => {
+                  const count = categoryCounts[cat.key];
+                  const isActive = activeCategory === cat.key;
+                  const Icon = cat.icon;
+
+                  return (
+                    <button
+                      key={cat.key}
+                      onClick={() => setActiveCategory(cat.key)}
+                      className={cn(
+                        "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0",
+                        isActive
+                          ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/50 shadow-sm"
+                          : "text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.04]"
+                      )}
+                    >
+                      <Icon className="h-3.5 w-3.5" />
+                      <span>{cat.label}</span>
+                      <span className="text-[10px] font-mono opacity-60">({count})</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Metric Grid */}
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-[#060a14]">
+                {filteredItems.length === 0 ? (
+                  <div className="py-16 text-center space-y-3">
+                    <div className="mx-auto w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-zinc-400">
+                      <Filter className="h-5 w-5" />
+                    </div>
+                    <p className="text-sm font-bold text-zinc-300">
+                      Nenhum indicador encontrado para o filtro
+                    </p>
+                    <p className="text-xs text-zinc-500">
+                      Tente outro termo na busca ou selecione outra categoria temática.
+                    </p>
+                  </div>
+                ) : (
+                  <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-2.5">
+                    {filteredItems.map((item) => {
+                      const isHighPercent =
+                        item.isPercent && parseFloat(item.formattedValue) >= 70;
+
+                      return (
+                        <div
+                          key={item.key}
+                          className="group flex items-center justify-between p-3 rounded-xl border border-white/[0.07] bg-gradient-to-b from-[#111726]/90 to-[#0b0f19]/90 hover:border-cyan-500/40 hover:bg-[#131b2c] transition-all shadow-sm"
+                        >
+                          <div className="min-w-0 pr-2">
+                            <p
+                              className="text-xs font-semibold text-zinc-300 group-hover:text-white truncate"
+                              title={item.label}
+                            >
+                              {item.label}
+                            </p>
+                            <span className="text-[9px] uppercase font-bold text-zinc-400 tracking-wider">
+                              {item.category}
+                            </span>
+                          </div>
+
+                          <div className="text-right shrink-0">
+                            <span
+                              className={cn(
+                                "font-mono font-black text-sm",
+                                item.formattedValue === "—"
+                                  ? "text-zinc-600"
+                                  : isHighPercent
+                                  ? "text-emerald-400 drop-shadow-sm"
+                                  : item.isPercent
+                                  ? "text-cyan-300"
+                                  : "text-white"
+                              )}
+                            >
+                              {item.formattedValue}
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>,
+      document.body
+    )
+  ) : null;
+
   return (
     <>
-      {/* ─── Executive Trigger ──────────────────────────────────────────────── */}
+      {/* ─── Executive Trigger Variants ────────────────────────────────────── */}
       {triggerVariant === "banner" ? (
         <div className="relative overflow-hidden rounded-2xl border border-cyan-500/30 bg-gradient-to-r from-cyan-950/40 via-[#0d1322] to-indigo-950/30 p-5 shadow-2xl backdrop-blur-xl group">
           <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-cyan-500/10 blur-2xl pointer-events-none" />
@@ -288,7 +613,7 @@ export function AthleteTelemetryModal({
                   </Badge>
                 </div>
                 <p className="text-xs text-zinc-400 mt-0.5">
-                  Explore todos os dados brutos de passes, duelos, ações defensivas, criação e volume com busca instantânea.
+                  Explore todos os dados brutos em cartaz 3D com busca instantânea.
                 </p>
               </div>
             </div>
@@ -298,7 +623,7 @@ export function AthleteTelemetryModal({
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black px-4 py-2.5 text-xs font-black transition-all shadow-[0_0_20px_rgba(6,182,212,0.4)] active:scale-95 shrink-0"
             >
               <Sparkles className="h-4 w-4" />
-              <span>🔬 Explorar Telemetria Completa ({items.length || 75} Indicadores)</span>
+              <span>🔬 Abrir Cartaz 3D &bull; 75 Indicadores</span>
             </button>
           </div>
         </div>
@@ -316,179 +641,12 @@ export function AthleteTelemetryModal({
             <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500" />
           </span>
           <Activity className="h-4 w-4 text-cyan-400 group-hover:rotate-45 transition-transform" />
-          <span>🔬 Explorar Telemetria Completa ({items.length || 75} Indicadores)</span>
-          <Badge className="bg-cyan-500/20 text-cyan-300 border-cyan-500/40 text-[10px] font-mono py-0 h-4">
-            Wyscout
-          </Badge>
+          <span>🔬 Cartaz 3D &bull; 75 Indicadores</span>
         </button>
       )}
 
-      {/* ─── Modal Dialog / Overlay ────────────────────────────────────────── */}
-      {isOpen && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-md flex items-center justify-center p-3 sm:p-6 animate-in fade-in duration-200">
-          <div
-            className="fixed inset-0"
-            onClick={() => setIsOpen(false)}
-            aria-hidden="true"
-          />
-
-          <div className="relative w-full max-w-5xl bg-[#090d16] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] z-10 animate-in zoom-in-95 duration-200">
-            {/* Header */}
-            <div className="border-b border-white/[0.08] p-4 sm:p-6 bg-[#0c121e]/90 flex flex-wrap items-center justify-between gap-4">
-              <div className="flex items-center gap-3">
-                <div className="h-10 w-10 rounded-xl bg-gradient-to-br from-cyan-500/20 to-teal-500/10 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.25)]">
-                  <Activity className="h-5 w-5" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <h2 className="text-base font-black text-white tracking-tight">
-                      Telemetria Oficial &bull; {athleteName}
-                    </h2>
-                    <Badge className="bg-cyan-500/15 text-cyan-300 border-cyan-500/30 text-[10px] font-mono py-0 h-4">
-                      {items.length} Métricas
-                    </Badge>
-                  </div>
-                  <p className="text-xs text-zinc-400">
-                    {athletePosition ?? "Atleta"} • {teamName ?? "Brasileirão Série A 2026"} &bull; Ingestão Integral Wyscout
-                  </p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  onClick={() => setIsOpen(false)}
-                  className="h-8 w-8 text-zinc-400 hover:text-white hover:bg-white/5"
-                  title="Fechar"
-                >
-                  <X className="h-5 w-5" />
-                </Button>
-              </div>
-            </div>
-
-            {/* Search Input Bar */}
-            <div className="p-4 sm:px-6 bg-[#0a0f1a] border-b border-white/[0.06] flex items-center gap-3">
-              <div className="relative flex-1">
-                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
-                <input
-                  type="text"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                  placeholder="Buscar indicador específico (ex: 'Passes progressivos', 'Recuperações', 'Duelos', 'xG')..."
-                  className="w-full bg-[#111728] border border-white/10 rounded-xl pl-10 pr-10 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-500/50 shadow-inner"
-                />
-                {search && (
-                  <button
-                    onClick={() => setSearch("")}
-                    className="absolute right-3 top-1/2 -translate-y-1/2 text-zinc-400 hover:text-white"
-                  >
-                    <X className="h-3.5 w-3.5" />
-                  </button>
-                )}
-              </div>
-              <div className="text-[11px] font-mono text-zinc-400 shrink-0 hidden sm:block">
-                Exibindo <span className="font-bold text-white">{filteredItems.length}</span> de {items.length}
-              </div>
-            </div>
-
-            {/* Category Filter Pills */}
-            <div className="px-4 sm:px-6 py-2.5 bg-[#0b101c]/80 border-b border-white/[0.06] flex items-center gap-1.5 overflow-x-auto scrollbar-none">
-              {CATEGORIES.map((cat) => {
-                const count = categoryCounts[cat.key];
-                const isActive = activeCategory === cat.key;
-                const Icon = cat.icon;
-
-                return (
-                  <button
-                    key={cat.key}
-                    onClick={() => setActiveCategory(cat.key)}
-                    className={cn(
-                      "inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-all whitespace-nowrap shrink-0",
-                      isActive
-                        ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm"
-                        : "text-zinc-400 hover:text-zinc-200 hover:bg-white/[0.04]"
-                    )}
-                  >
-                    <Icon className="h-3.5 w-3.5" />
-                    <span>{cat.label}</span>
-                    <span className="text-[10px] font-mono opacity-60">({count})</span>
-                  </button>
-                );
-              })}
-            </div>
-
-            {/* Metric Items Grid Body */}
-            <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-[#080c14]">
-              {filteredItems.length === 0 ? (
-                <div className="py-16 text-center space-y-3">
-                  <div className="mx-auto w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-zinc-400">
-                    <Filter className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="text-sm font-bold text-zinc-300">
-                      Nenhum indicador encontrado
-                    </p>
-                    <p className="text-xs text-zinc-500 mt-0.5">
-                      Tente outro termo na busca ou selecione outra categoria.
-                    </p>
-                  </div>
-                </div>
-              ) : (
-                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2.5">
-                  {filteredItems.map((item) => {
-                    const isHighPercent = item.isPercent && parseFloat(item.formattedValue) >= 70;
-
-                    return (
-                      <div
-                        key={item.key}
-                        className="group flex items-center justify-between p-3 rounded-xl border border-white/[0.07] bg-gradient-to-b from-[#111726]/90 to-[#0b0f19]/90 hover:border-cyan-500/30 hover:bg-[#131b2c] transition-all shadow-sm"
-                      >
-                        <div className="min-w-0 pr-2">
-                          <p className="text-xs font-semibold text-zinc-300 group-hover:text-white truncate" title={item.label}>
-                            {item.label}
-                          </p>
-                          <span className="text-[9px] uppercase font-bold text-zinc-400 tracking-wider">
-                            {item.category}
-                          </span>
-                        </div>
-
-                        <div className="text-right shrink-0">
-                          <span
-                            className={cn(
-                              "font-mono font-black text-sm",
-                              item.formattedValue === "—"
-                                ? "text-zinc-600"
-                                : isHighPercent
-                                ? "text-emerald-400 drop-shadow-sm"
-                                : item.isPercent
-                                ? "text-cyan-300"
-                                : "text-white"
-                            )}
-                          >
-                            {item.formattedValue}
-                          </span>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            {/* Footer */}
-            <div className="border-t border-white/[0.08] px-4 sm:px-6 py-3 bg-[#0c121e]/90 flex flex-wrap items-center justify-between gap-3 text-[11px] text-zinc-400">
-              <span className="flex items-center gap-1.5 text-zinc-400">
-                <CheckCircle2 className="h-3.5 w-3.5 text-cyan-400" />
-                Dados brutos indexados no banco Neon &bull; Zero perda de informação
-              </span>
-              <span className="font-mono text-zinc-400">
-                The Net Scouting Telemetry Engine
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Render via Portal to document.body */}
+      {modalOverlay}
     </>
   );
 }

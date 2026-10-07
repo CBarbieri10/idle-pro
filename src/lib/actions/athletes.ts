@@ -27,10 +27,23 @@ export async function getAthletes(params?: {
   search?: string;
   position?: string;
   teamId?: string;
+  scope?: "registered" | "all";
 }) {
+  const scopeFilter =
+    params?.scope === "all"
+      ? {}
+      : {
+          OR: [
+            { notes: null },
+            { NOT: { notes: { startsWith: "Atleta oficial da Série A 2026" } } },
+            { portfolioAthletes: { some: {} } },
+          ],
+        };
+
   return prisma.athlete.findMany({
     where: {
       AND: [
+        scopeFilter,
         params?.search
           ? { name: { contains: params.search, mode: "insensitive" } }
           : {},

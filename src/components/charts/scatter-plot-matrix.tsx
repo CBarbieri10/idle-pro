@@ -368,17 +368,14 @@ export function ScatterPlotMatrix({
                   filter={isElite || isHovered ? "url(#pointGlow)" : undefined}
                 />
 
-                {/* Rótulo de texto simplificado ao lado do ponto para jogadores de elite */}
-                {(isElite || isHovered) && (
+                {/* Rótulo de texto focado exclusivamente no atleta em hover para evitar colisões */}
+                {isHovered && (
                   <text
-                    x={cx + 9}
-                    y={cy + 3.5}
-                    className={cn(
-                      "font-sans text-[10px] font-bold select-none pointer-events-none drop-shadow-md",
-                      isHovered ? "fill-white font-black" : "fill-zinc-300"
-                    )}
+                    x={cx + 11}
+                    y={cy + 4}
+                    className="font-sans text-xs font-black fill-white select-none pointer-events-none drop-shadow-[0_2px_8px_rgba(0,0,0,0.9)]"
                   >
-                    {d.athlete.name.split(" ")[0]}
+                    {d.athlete.name}
                   </text>
                 )}
               </g>
