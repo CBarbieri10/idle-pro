@@ -528,6 +528,7 @@ export function LeagueCatalog({
                 id: athlete.team.id,
                 name: athlete.team.name,
                 shortName: null,
+                logoUrl: athlete.team.logoUrl,
               },
               totalMinutes: athlete.totalMinutes,
               totalMatches: athlete.totalMatches,
@@ -610,7 +611,11 @@ export function LeagueCatalog({
                         {athlete.name}
                       </Link>
                       <div className="flex items-center gap-1 text-xs text-zinc-400 truncate mt-0.5">
-                        <Shield className="h-3 w-3 shrink-0 text-indigo-400" />
+                        {athlete.team.logoUrl ? (
+                          <img src={athlete.team.logoUrl} alt={athlete.team.name} className="h-4 w-4 object-contain" />
+                        ) : (
+                          <Shield className="h-3 w-3 shrink-0 text-indigo-400" />
+                        )}
                         <span className="truncate font-semibold">{athlete.team.name}</span>
                         {athlete.nationality && (
                           <span className="text-[10px] opacity-70">&bull; {athlete.nationality}</span>
@@ -758,6 +763,7 @@ export function LeagueCatalog({
                       id: athlete.team.id,
                       name: athlete.team.name,
                       shortName: null,
+                      logoUrl: athlete.team.logoUrl,
                     },
                     totalMinutes: athlete.totalMinutes,
                     totalMatches: athlete.totalMatches,
@@ -817,7 +823,12 @@ export function LeagueCatalog({
                       </TableCell>
 
                       <TableCell className="text-xs text-muted-foreground font-medium">
-                        {athlete.team.name}
+                        <div className="flex items-center gap-1.5">
+                          {athlete.team.logoUrl && (
+                            <img src={athlete.team.logoUrl} alt={athlete.team.name} className="h-4 w-4 object-contain" />
+                          )}
+                          {athlete.team.name}
+                        </div>
                       </TableCell>
 
                       <TableCell>

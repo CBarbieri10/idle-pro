@@ -102,7 +102,11 @@ export function ReportCover({
 
         {/* Club Floating Watermark/Badge */}
         <div className="absolute top-4 left-4 flex items-center gap-2 bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-xl border border-zinc-200 shadow-sm print:bg-white">
-          <Shield className="h-4 w-4 text-zinc-900" />
+          {athlete.team.logoUrl ? (
+            <img src={athlete.team.logoUrl} className="h-4 w-4 object-contain" alt={athlete.team.name} />
+          ) : (
+            <Shield className="h-4 w-4 text-zinc-900" />
+          )}
           <span className="text-xs font-black uppercase tracking-wider text-zinc-900">
             {athlete.team.name}
           </span>
@@ -150,7 +154,8 @@ export function ReportCover({
             <p className="text-[9px] font-bold font-mono text-zinc-500 uppercase tracking-wider">
               Clube
             </p>
-            <p className="text-sm font-black text-zinc-950 uppercase mt-0.5 truncate">
+            <p className="text-sm font-black text-zinc-950 uppercase mt-0.5 truncate flex items-center gap-1.5">
+              {athlete.team.logoUrl && <img src={athlete.team.logoUrl} className="h-4 w-4 object-contain" alt={athlete.team.name} />}
               {athlete.team.name}
             </p>
           </div>

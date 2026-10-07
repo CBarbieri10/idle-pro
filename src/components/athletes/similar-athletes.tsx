@@ -19,6 +19,7 @@ export interface SimilarAthleteItem {
   team: {
     id: string;
     name: string;
+    logoUrl?: string | null;
   };
   similarityScore: number; // e.g. 88
 }
@@ -91,8 +92,12 @@ export function SimilarAthletes({ athletes, currentPositionName }: SimilarAthlet
               <h4 className="font-black text-xs text-white group-hover:text-[#00e676] transition-colors truncate max-w-full">
                 {ath.name}
               </h4>
-              <p className="text-[10px] text-zinc-400 truncate max-w-full mt-0.5 flex items-center justify-center gap-1">
-                <Shield className="h-2.5 w-2.5 text-indigo-400" />
+              <p className="text-[10px] text-zinc-400 truncate max-w-full mt-0.5 flex items-center justify-center gap-1.5">
+                {ath.team.logoUrl ? (
+                  <img src={ath.team.logoUrl} className="h-3 w-3 object-contain" alt={ath.team.name} />
+                ) : (
+                  <Shield className="h-2.5 w-2.5 text-indigo-400" />
+                )}
                 {ath.team.name}
               </p>
 

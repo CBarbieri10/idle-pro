@@ -120,7 +120,8 @@ export function AthleteMatchHistory({
                         {m.round ? ` · ${m.round}` : ""}
                       </p>
                       <div className="mt-1 flex items-center gap-2">
-                        <h3 className="truncate text-sm font-semibold text-foreground">
+                        <h3 className="truncate text-sm font-semibold text-foreground flex items-center gap-1.5">
+                          {m.team.logoUrl && <img src={m.team.logoUrl} alt={m.team.name} className="h-4 w-4 object-contain" />}
                           {m.team.shortName ?? m.team.name}
                           {m.goalsFor != null && m.goalsAgainst != null ? (
                             <span className="mx-1.5 tabular-nums">{m.goalsFor} × {m.goalsAgainst}</span>

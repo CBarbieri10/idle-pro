@@ -160,6 +160,7 @@ export default async function AthleteProfilePage({
       id: athlete.team.id,
       name: athlete.team.name,
       shortName: athlete.team.shortName,
+      logoUrl: athlete.team.logoUrl,
     },
     totalMinutes: athleteStats?.totalMinutes ?? 0,
     totalMatches: athleteStats?.totalMatches ?? 0,
@@ -360,7 +361,11 @@ export default async function AthleteProfilePage({
             {/* Club & Physical Pills Bar */}
             <div className="mt-4 flex flex-wrap items-center gap-2">
               <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-black/35 px-3 py-1.5 backdrop-blur-md">
-                <Shield className="h-4 w-4 text-indigo-400" />
+                {athlete.team.logoUrl ? (
+                  <img src={athlete.team.logoUrl} alt={athlete.team.name} className="h-5 w-5 object-contain" />
+                ) : (
+                  <Shield className="h-4 w-4 text-indigo-400" />
+                )}
                 <div>
                   <p className="text-[9px] uppercase font-bold tracking-wider text-white/50">Clube</p>
                   <p className="text-xs font-bold text-white">{athlete.team.name}</p>

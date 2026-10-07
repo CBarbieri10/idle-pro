@@ -3,6 +3,7 @@ import {
   getAnalystDashboardData,
   getAnalystHighlights,
 } from "@/lib/actions/portfolio";
+import { getBrasileiraoStandings, getUpcomingMatches, getBrasileiraoScorers, getPastMatches } from "@/lib/services/footballApi";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -20,6 +21,7 @@ import {
   Bookmark,
   CalendarDays,
   Sparkles,
+  Globe,
   FileText,
   Target,
   Flame,
@@ -36,10 +38,17 @@ export const metadata: Metadata = {
 };
 
 export default async function DashboardPage() {
-  const [dashboardData, highlights] = await Promise.all([
+  const [dashboardData, highlights, standings, nextMatches, scorers, pastMatches] = await Promise.all([
     getAnalystDashboardData(),
     getAnalystHighlights(),
+    getBrasileiraoStandings(),
+    getUpcomingMatches(10),
+    getBrasileiraoScorers(20),
+    getPastMatches(10),
   ]);
+
+  const top5Standings = standings; // Use all 20 standings
+  const upcomingMatches = nextMatches;
 
   const {
     totalAthletes,
@@ -170,6 +179,150 @@ export default async function DashboardPage() {
           </Link>
         ))}
       </div>
+
+      {/* ─── Central de Ligas Ao Vivo ──────────────────────────────────────── */}
+      <section className="space-y-4">
+        <div className="flex items-center gap-2">
+          <Globe className="h-5 w-5 text-indigo-400" />
+          <h2 className="text-lg font-black text-white">Central de Ligas Ao Vivo</h2>
+          <Badge className="bg-indigo-500/15 text-indigo-400 border-indigo-500/30 text-[10px] uppercase font-bold ml-2">Série A</Badge>
+        </div>
+        
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
+          {/* Classificação Top 5 */}
+          <Card className="p-4.5 rounded-2xl border border-white/10 bg-[#0d121d]/80 backdrop-blur-md shadow-xl flex flex-col lg:col-span-1">
+            <h3 className="text-xs font-black text-zinc-300 uppercase tracking-wider mb-3 flex items-center gap-2 border-b border-white/10 pb-2">
+              <Trophy className="h-4 w-4 text-amber-400" />
+              Classificação Completa
+            </h3>
+            <div className="flex-1 space-y-2 overflow-y-auto max-h-[350px] pr-1">
+              {top5Standings.length > 0 ? (
+                <>
+                  <div className="flex items-center justify-between px-2 pb-2 text-[10px] font-bold text-zinc-500 uppercase tracking-widest border-b border-white/5">
+                    <span>Clube</span>
+                    <div className="flex items-center gap-3">
+                      <span title="Pontos" className="w-5 text-center">P</span>
+                      <span title="Jogos" className="w-5 text-center">J</span>
+                      <span title="Vitórias" className="w-5 text-center">V</span>
+                      <span title="Empates" className="w-5 text-center">E</span>
+                      <span title="Derrotas" className="w-5 text-center">D</span>
+                      <span title="Saldo de Gols" className="w-5 text-center">SG</span>
+                    </div>
+                  </div>
+                  {top5Standings.map((entry) => (
+                    <div key={entry.team.id} className="flex items-center justify-between p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                      <div className="flex items-center gap-2.5">
+                        <span className="font-mono text-xs font-bold text-zinc-400 w-4 text-center">{entry.position}</span>
+                        <img src={entry.team.crest} alt={entry.team.shortName} className="h-6 w-6 object-contain" />
+                        <span className="font-bold text-sm text-white truncate max-w-[100px]">{entry.team.shortName}</span>
+                      </div>
+                      <div className="flex items-center gap-3 font-mono text-xs">
+                        <span className="font-black text-[#00e676] w-5 text-center">{entry.points}</span>
+                        <span className="text-zinc-400 w-5 text-center">{entry.playedGames}</span>
+                        <span className="text-zinc-400 w-5 text-center">{entry.won}</span>
+                        <span className="text-zinc-400 w-5 text-center">{entry.draw}</span>
+                        <span className="text-zinc-400 w-5 text-center">{entry.lost}</span>
+                        <span className="text-zinc-400 w-5 text-center font-semibold">{entry.goalDifference > 0 ? `+${entry.goalDifference}` : entry.goalDifference}</span>
+                      </div>
+                    </div>
+                  ))}
+                </>
+              ) : (
+                <p className="text-xs text-zinc-500 text-center py-4">Dados indisponíveis</p>
+              )}
+            </div>
+          </Card>
+
+          {/* Últimos Resultados */}
+          <Card className="p-4.5 rounded-2xl border border-white/10 bg-[#0d121d]/80 backdrop-blur-md shadow-xl flex flex-col">
+            <h3 className="text-xs font-black text-zinc-300 uppercase tracking-wider mb-3 flex items-center gap-2 border-b border-white/10 pb-2">
+              <Clock className="h-4 w-4 text-indigo-400" />
+              Últimos Resultados
+            </h3>
+            <div className="flex-1 space-y-2 overflow-y-auto max-h-[350px] pr-1">
+              {pastMatches.length > 0 ? pastMatches.map((match) => (
+                <div key={match.id} className="flex items-center justify-between p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                  <div className="flex flex-1 items-center justify-end gap-2 text-right">
+                    <span className="font-bold text-sm text-white truncate">{match.homeTeam.shortName}</span>
+                    <img src={match.homeTeam.crest} alt={match.homeTeam.shortName} className="h-7 w-7 object-contain" />
+                  </div>
+                  <div className="px-3 flex flex-col items-center justify-center min-w-[70px] bg-black/20 rounded py-1 mx-1">
+                    <span className="text-sm font-black text-white">{match.score.fullTime.home} - {match.score.fullTime.away}</span>
+                    <span className="text-[10px] font-mono text-zinc-500 mt-0.5">{new Date(match.utcDate).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</span>
+                  </div>
+                  <div className="flex flex-1 items-center justify-start gap-2 text-left">
+                    <img src={match.awayTeam.crest} alt={match.awayTeam.shortName} className="h-7 w-7 object-contain" />
+                    <span className="font-bold text-sm text-white truncate">{match.awayTeam.shortName}</span>
+                  </div>
+                </div>
+              )) : (
+                <p className="text-xs text-zinc-500 text-center py-4">Nenhum resultado recente</p>
+              )}
+            </div>
+          </Card>
+
+          {/* Próximos Jogos */}
+          <Card className="p-4.5 rounded-2xl border border-white/10 bg-[#0d121d]/80 backdrop-blur-md shadow-xl flex flex-col">
+            <h3 className="text-xs font-black text-zinc-300 uppercase tracking-wider mb-3 flex items-center gap-2 border-b border-white/10 pb-2">
+              <CalendarDays className="h-4 w-4 text-sky-400" />
+              Próximos Jogos
+            </h3>
+            <div className="flex-1 space-y-2 overflow-y-auto max-h-[350px] pr-1">
+              {upcomingMatches.length > 0 ? upcomingMatches.map((match) => (
+                <div key={match.id} className="flex items-center justify-between p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                  <div className="flex flex-1 items-center justify-end gap-2 text-right">
+                    <span className="font-bold text-sm text-white truncate">{match.homeTeam.shortName}</span>
+                    <img src={match.homeTeam.crest} alt={match.homeTeam.shortName} className="h-7 w-7 object-contain" />
+                  </div>
+                  <div className="px-3 flex flex-col items-center justify-center min-w-[70px]">
+                    <span className="text-[10px] font-bold text-zinc-500 uppercase">VS</span>
+                    <span className="text-[10px] font-mono text-zinc-400 mt-0.5">{new Date(match.utcDate).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })}</span>
+                    <span className="text-[10px] font-mono text-emerald-400 mt-0.5">{new Date(match.utcDate).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+                  </div>
+                  <div className="flex flex-1 items-center justify-start gap-2 text-left">
+                    <img src={match.awayTeam.crest} alt={match.awayTeam.shortName} className="h-7 w-7 object-contain" />
+                    <span className="font-bold text-sm text-white truncate">{match.awayTeam.shortName}</span>
+                  </div>
+                </div>
+              )) : (
+                <p className="text-xs text-zinc-500 text-center py-4">Nenhum jogo agendado</p>
+              )}
+            </div>
+          </Card>
+
+          {/* Artilheiros */}
+          <Card className="p-4.5 rounded-2xl border border-white/10 bg-[#0d121d]/80 backdrop-blur-md shadow-xl flex flex-col">
+            <h3 className="text-xs font-black text-zinc-300 uppercase tracking-wider mb-3 flex items-center gap-2 border-b border-white/10 pb-2">
+              <Target className="h-4 w-4 text-rose-400" />
+              Artilheiros
+            </h3>
+            <div className="flex-1 space-y-2 overflow-y-auto max-h-[350px] pr-1">
+              {scorers.length > 0 ? scorers.map((scorer, idx) => (
+                <div key={scorer.player.id} className="flex items-center justify-between p-2 rounded-lg bg-white/5 hover:bg-white/10 transition-colors">
+                  <div className="flex items-center gap-3">
+                    <span className="font-mono text-xs font-bold text-zinc-400 w-4 text-center">{idx + 1}</span>
+                    <img src={scorer.team.crest} alt={scorer.team.shortName} className="h-6 w-6 object-contain" />
+                    <div className="flex flex-col">
+                      <span className="font-bold text-sm text-white truncate max-w-[150px]">{scorer.player.name}</span>
+                      <span className="text-[11px] text-zinc-500 truncate">{scorer.team.shortName}</span>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-3 font-mono text-sm">
+                    <div className="flex flex-col items-end">
+                      <span className="font-black text-rose-400" title="Gols">{scorer.goals} G</span>
+                      {scorer.assists != null && (
+                        <span className="text-[10px] text-zinc-500" title="Assistências">{scorer.assists} A</span>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )) : (
+                <p className="text-xs text-zinc-500 text-center py-4">Artilheiros indisponíveis</p>
+              )}
+            </div>
+          </Card>
+        </div>
+      </section>
 
       {/* ─── Portfólio do Analista (Watchlist) ────────────────────────────── */}
       <section id="meu-portfolio" className="space-y-4">

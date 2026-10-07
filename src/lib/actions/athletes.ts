@@ -56,7 +56,7 @@ export async function getAthletes(params?: {
       ],
     },
     include: {
-      team: { select: { id: true, name: true, shortName: true } },
+      team: { select: { id: true, name: true, shortName: true, logoUrl: true } },
       nationalTeam: { select: { id: true, name: true } },
     },
     orderBy: { name: "asc" },
@@ -89,7 +89,7 @@ export async function getSimilarAthletes(currentAthleteId: string, position: Pos
     },
     take: limit,
     include: {
-      team: { select: { id: true, name: true } },
+      team: { select: { id: true, name: true, logoUrl: true } },
     },
     orderBy: { createdAt: "desc" },
   });
@@ -107,6 +107,7 @@ export async function getSimilarAthletes(currentAthleteId: string, position: Pos
     team: {
       id: ath.team.id,
       name: ath.team.name,
+      logoUrl: ath.team.logoUrl,
     },
     similarityScore: baseScores[idx] ?? 75,
   }));

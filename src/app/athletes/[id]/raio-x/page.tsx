@@ -72,6 +72,7 @@ export default async function AthleteRaioXPage({
       id: athlete.team.id,
       name: athlete.team.name,
       shortName: athlete.team.shortName,
+      logoUrl: athlete.team.logoUrl,
     },
     totalMinutes: athleteStats?.totalMinutes ?? 0,
     totalMatches: athleteStats?.totalMatches ?? 0,

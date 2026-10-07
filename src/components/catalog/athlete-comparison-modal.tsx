@@ -78,7 +78,11 @@ export function AthleteComparisonModal({
 
                 <h4 className="text-xs font-bold truncate max-w-full">{athlete.name}</h4>
                 <div className="flex items-center gap-1 text-[11px] text-muted-foreground mt-0.5">
-                  <Shield className="h-3 w-3" />
+                  {athlete.team.logoUrl ? (
+                    <img src={athlete.team.logoUrl} alt={athlete.team.name} className="h-3 w-3 object-contain" />
+                  ) : (
+                    <Shield className="h-3 w-3" />
+                  )}
                   <span className="truncate">{athlete.team.shortName ?? athlete.team.name}</span>
                 </div>
 

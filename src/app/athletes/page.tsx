@@ -192,8 +192,12 @@ export default async function AthletesPage({
                       >
                         {athlete.name}
                       </Link>
-                      <div className="flex items-center gap-1 text-xs text-zinc-400 truncate mt-0.5">
-                        <Shield className="h-3 w-3 shrink-0 text-indigo-400" />
+                      <div className="flex items-center gap-1.5 text-xs text-zinc-400 truncate mt-0.5">
+                        {athlete.team.logoUrl ? (
+                          <img src={athlete.team.logoUrl} alt={athlete.team.name} className="h-4 w-4 object-contain shrink-0" />
+                        ) : (
+                          <Shield className="h-3 w-3 shrink-0 text-indigo-400" />
+                        )}
                         <span className="truncate font-semibold">{athlete.team.name}</span>
                         {athlete.nationality && (
                           <span className="text-[10px] opacity-70">&bull; {athlete.nationality}</span>

@@ -221,7 +221,15 @@ export function DossierGoalsPage({
 
         <div className="text-right font-mono text-[9px] text-zinc-500">
           <p className="font-bold text-zinc-900 uppercase">
-            {POSITION_LABELS[athlete.position]} &bull; {athlete.team.name}
+            {POSITION_LABELS[athlete.position]} &bull;{" "}
+            {athlete.team.logoUrl ? (
+              <span className="inline-flex items-center gap-1">
+                <img src={athlete.team.logoUrl} className="h-3 w-3 object-contain inline" alt={athlete.team.name} />
+                {athlete.team.name}
+              </span>
+            ) : (
+              athlete.team.name
+            )}
           </p>
           <p>Ref: {docRef}</p>
         </div>

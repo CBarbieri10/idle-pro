@@ -30,6 +30,7 @@ export type CatalogAthlete = {
     id: string;
     name: string;
     shortName: string | null;
+    logoUrl?: string | null;
   };
   totalMinutes: number;
   totalMatches: number;
@@ -68,7 +69,7 @@ export async function getCatalogAthletes(
   // 1. Fetch athletes with their rawMetrics and canonicalMetrics
   const athletesFromDb = await prisma.athlete.findMany({
     include: {
-      team: { select: { id: true, name: true, shortName: true } },
+      team: { select: { id: true, name: true, shortName: true, logoUrl: true } },
       rawMetrics: {
         select: {
           id: true,

@@ -34,6 +34,7 @@ export interface RaioXAthleteSheetData {
     id: string;
     name: string;
     shortName: string | null;
+    logoUrl?: string | null;
   };
   totalMinutes: number;
   totalMatches: number;
@@ -249,7 +250,11 @@ export function AthleteRaioXSheet({
             </div>
 
             <div className="flex items-center justify-start gap-1.5 text-xs text-zinc-600 print:text-zinc-700">
-              <Shield className="h-3.5 w-3.5 text-zinc-800" />
+              {athlete.team.logoUrl ? (
+                <img src={athlete.team.logoUrl} className="h-4 w-4 object-contain" alt={athlete.team.name} />
+              ) : (
+                <Shield className="h-3.5 w-3.5 text-zinc-800" />
+              )}
               <span className="font-bold text-zinc-950">{athlete.team.name}</span>
               {athlete.nationality && (
                 <>
