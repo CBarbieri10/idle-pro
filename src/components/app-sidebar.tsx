@@ -30,6 +30,7 @@ const menuGroups = [
       { label: "Partidas", href: "/matches", icon: Circle },
       { label: "Agenda", href: "/agenda", icon: CalendarDays },
       { label: "Catálogo da Liga", href: "/league", icon: Trophy },
+      { label: "Líderes da Competição", href: "/competition/leaders", icon: Trophy },
     ],
   },
   {
