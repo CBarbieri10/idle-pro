@@ -43,6 +43,7 @@ interface AthleteTelemetryModalProps {
   children?: React.ReactNode;
   teammates?: TeammateItem[];
   onSelectAthlete?: (athlete: TeammateItem) => void;
+  canAccessDeepTelemetry?: boolean;
 }
 
 type CategoryKey = "all" | "passe" | "duelos" | "defesa" | "ataque" | "volume";
@@ -241,11 +242,17 @@ export function AthleteTelemetryModal({
   children,
   teammates,
   onSelectAthlete,
+  canAccessDeepTelemetry = true,
 }: AthleteTelemetryModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<CategoryKey>("all");
   const [mounted, setMounted] = useState(false);
+
+  // Se o perfil não tiver permissão para telemetria profunda, bloqueia renderização
+  if (!canAccessDeepTelemetry) {
+    return null;
+  }
 
   // Dynamic Athlete Context for Rapid Switching without closing modal
   const [currentAthlete, setCurrentAthlete] = useState<{
@@ -759,7 +766,7 @@ export function AthleteTelemetryModal({
               className="inline-flex items-center justify-center gap-2 rounded-xl bg-cyan-500 hover:bg-cyan-400 text-black px-4 py-2.5 text-xs font-black transition-all shadow-[0_0_20px_rgba(6,182,212,0.4)] active:scale-95 shrink-0"
             >
               <Sparkles className="h-4 w-4" />
-              <span>🔬 Abrir Cartaz 3D &bull; 75 Indicadores</span>
+              <span>🔬 Estatísticas Avançadas (Modo Analista)</span>
             </button>
           </div>
         </div>
@@ -777,7 +784,7 @@ export function AthleteTelemetryModal({
             <span className="relative inline-flex rounded-full h-2 w-2 bg-cyan-500" />
           </span>
           <Activity className="h-4 w-4 text-cyan-400 group-hover:rotate-45 transition-transform" />
-          <span>🔬 Cartaz 3D &bull; 75 Indicadores</span>
+          <span>🔬 Estatísticas Avançadas (Modo Analista)</span>
         </button>
       )}
 

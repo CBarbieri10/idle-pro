@@ -15,9 +15,13 @@ model User {
   password  String
   name      String
   role      Role     @default(ANALYST)
+  athleteId String?  @unique
+  teamId    String?
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  athlete    Athlete?          @relation(fields: [athleteId], references: [id], onDelete: SetNull)
+  team       Team?             @relation(fields: [teamId], references: [id], onDelete: SetNull)
   portfolios AnalystPortfolio[]
 
   @@map("users")
@@ -26,6 +30,8 @@ model User {
 enum Role {
   ADMIN
   ANALYST
+  CLUB
+  ATHLETE
 }
 
 // ─── Fase 1: Entidades Core ────────────────────────────────────────────────
@@ -62,6 +68,7 @@ model Team {
   national        Athlete[] @relation("NationalAthletes")
   matches         Match[]   @relation("MatchTeam")
   opponentMatches Match[]   @relation("MatchOpponent")
+  users           User[]
 
   @@map("teams")
 }
@@ -124,6 +131,7 @@ model Athlete {
   portfolioAthletes PortfolioAthlete[]
   videoLinks   VideoLink[]
   goals        AthleteGoal[]
+  user         User?
 
   @@map("athletes")
 }

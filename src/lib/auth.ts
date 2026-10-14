@@ -42,6 +42,8 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           email: user.email,
           name: user.name,
           role: user.role,
+          athleteId: user.athleteId,
+          teamId: user.teamId,
         };
       },
     }),
@@ -51,13 +53,22 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
       if (user) {
         token.id = user.id;
         token.role = (user as { role?: string }).role;
+        token.athleteId = (user as { athleteId?: string }).athleteId;
+        token.teamId = (user as { teamId?: string }).teamId;
       }
       return token;
     },
     async session({ session, token }) {
       if (token && session.user) {
         session.user.id = token.id as string;
-        (session.user as { role?: string }).role = token.role as string;
+        const u = session.user as {
+          role?: string;
+          athleteId?: string;
+          teamId?: string;
+        };
+        u.role = token.role as string;
+        u.athleteId = token.athleteId as string | undefined;
+        u.teamId = token.teamId as string | undefined;
       }
       return session;
     },

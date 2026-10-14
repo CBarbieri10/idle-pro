@@ -8,9 +8,17 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
+  const sampleAthlete = await prisma.athlete.findFirst({
+    where: { name: { contains: "Estêvão" } },
+  }) || await prisma.athlete.findFirst();
+
+  const sampleTeam = await prisma.team.findFirst();
+
   const accounts = [
-    { email: "admin@thenetscout.com", name: "Admin TNS", role: "ADMIN" as const },
-    { email: "analista@thenetscouting.com", name: "Analista de Desempenho", role: "ANALYST" as const },
+    { email: "admin@thenetscout.com", name: "Admin TNS", role: "ADMIN" as const, athleteId: null, teamId: null },
+    { email: "analista@thenetscouting.com", name: "Analista de Desempenho", role: "ANALYST" as const, athleteId: null, teamId: null },
+    { email: "clube@thenetscouting.com", name: "Diretoria do Clube", role: "CLUB" as const, athleteId: null, teamId: sampleTeam?.id ?? null },
+    { email: "atleta@thenetscouting.com", name: sampleAthlete?.name || "Atleta Profissional", role: "ATHLETE" as const, athleteId: sampleAthlete?.id ?? null, teamId: sampleAthlete?.teamId ?? null },
   ];
 
   const passwordHash = await bcrypt.hash("admin123", 12);
@@ -20,9 +28,14 @@ async function main() {
     if (existing) {
       await prisma.user.update({
         where: { email: acc.email },
-        data: { password: passwordHash },
+        data: {
+          password: passwordHash,
+          role: acc.role,
+          athleteId: acc.athleteId,
+          teamId: acc.teamId,
+        },
       });
-      console.log(`✅ Usuário atualizado/garantido: ${acc.email} (senha: admin123)`);
+      console.log(`✅ Usuário atualizado/garantido: ${acc.email} [${acc.role}] (senha: admin123)`);
     } else {
       await prisma.user.create({
         data: {
@@ -30,9 +43,11 @@ async function main() {
           password: passwordHash,
           name: acc.name,
           role: acc.role,
+          athleteId: acc.athleteId,
+          teamId: acc.teamId,
         },
       });
-      console.log(`✅ Usuário criado: ${acc.email} (senha: admin123)`);
+      console.log(`✅ Usuário criado: ${acc.email} [${acc.role}] (senha: admin123)`);
     }
   }
 }

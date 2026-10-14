@@ -52,7 +52,8 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 
@@ -101,6 +102,18 @@ export default async function AthleteProfilePage({
     ]);
 
   if (!athlete) notFound();
+
+  const session = await auth();
+  const userRole = session?.user?.role;
+  const isAthlete = userRole === "ATHLETE";
+  const userAthleteId = session?.user?.athleteId;
+
+  // Se o usuário ativo for ATHLETE, ele é estritamente restrito à sua própria página de perfil
+  if (isAthlete && userAthleteId && userAthleteId !== id) {
+    redirect(`/athletes/${userAthleteId}`);
+  }
+
+  const isAnalystOrClub = !isAthlete; // ANALYST, CLUB ou ADMIN
 
   // Query teammates for rapid modal switching and context
   const teammates = await prisma.athlete.findMany({
@@ -270,21 +283,30 @@ export default async function AthleteProfilePage({
     <div className="space-y-6 w-full">
       {/* ─── Breadcrumb & Action Toolbar ──────────────────────────────────── */}
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle pb-4">
-        <Link
-          href="/athletes"
-          className="inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors"
-        >
-          <ArrowLeft className="h-3.5 w-3.5 text-indigo-400" />
-          Voltar para lista de atletas
-        </Link>
+        {isAnalystOrClub ? (
+          <Link
+            href="/athletes"
+            className="inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors"
+          >
+            <ArrowLeft className="h-3.5 w-3.5 text-indigo-400" />
+            Voltar para lista de atletas
+          </Link>
+        ) : (
+          <div className="inline-flex items-center gap-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 px-3 py-1 text-xs font-bold text-emerald-400">
+            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+            Painel do Atleta &bull; Meu Perfil Oficial
+          </div>
+        )}
 
         {/* Executive Action Toolbar */}
         <div className="flex items-center gap-2">
-          <PortfolioToggleButton
-            athleteId={athlete.id}
-            athleteName={athlete.name}
-            initialInPortfolio={inPortfolio}
-          />
+          {isAnalystOrClub && (
+            <PortfolioToggleButton
+              athleteId={athlete.id}
+              athleteName={athlete.name}
+              initialInPortfolio={inPortfolio}
+            />
+          )}
 
           <Link
             href={`/athletes/${athlete.id}/raio-x`}
@@ -297,15 +319,17 @@ export default async function AthleteProfilePage({
 
           <AthleteRaioXModal athlete={raioXData} />
 
-          <AthleteTelemetryModal
-            athleteId={athlete.id}
-            athleteName={athlete.name}
-            athletePosition={POSITION_LABELS[athlete.position]}
-            teamName={athlete.team.name}
-            rawData={rawTelemetryData}
-            teammates={teammateList}
-            triggerVariant="button"
-          />
+          {isAnalystOrClub && (
+            <AthleteTelemetryModal
+              athleteId={athlete.id}
+              athleteName={athlete.name}
+              athletePosition={POSITION_LABELS[athlete.position]}
+              teamName={athlete.team.name}
+              rawData={rawTelemetryData}
+              teammates={teammateList}
+              triggerVariant="button"
+            />
+          )}
         </div>
       </div>
 
@@ -384,10 +408,12 @@ export default async function AthleteProfilePage({
                 )}
               </div>
 
-              <div className="flex shrink-0 items-center gap-1.5">
-                <EditAthleteButton athlete={athlete} teams={teamList} />
-                <DeleteAthleteButton id={athlete.id} name={athlete.name} />
-              </div>
+              {isAnalystOrClub && (
+                <div className="flex shrink-0 items-center gap-1.5">
+                  <EditAthleteButton athlete={athlete} teams={teamList} />
+                  <DeleteAthleteButton id={athlete.id} name={athlete.name} />
+                </div>
+              )}
             </div>
 
             {/* Club & Physical Pills Bar */}
@@ -429,11 +455,13 @@ export default async function AthleteProfilePage({
         athleteAge={athlete.birthDate ? formatAge(athlete.birthDate) : null}
       />
 
-      {/* Similar Players row */}
-      <SimilarAthletes
-        athletes={similarAthletes}
-        currentPositionName={POSITION_LABELS[athlete.position]}
-      />
+      {/* Similar Players row (restrito para Analistas e Clubes) */}
+      {isAnalystOrClub && (
+        <SimilarAthletes
+          athletes={similarAthletes}
+          currentPositionName={POSITION_LABELS[athlete.position]}
+        />
+      )}
 
       {/* ─── Top Destaques Estatísticos ────────────────────────────────────── */}
       {hasMetrics && (
@@ -554,15 +582,17 @@ export default async function AthleteProfilePage({
       )}
 
       {/* ─── Telemetria Completa dos 75 Indicadores Wyscout (Fase 6 - Etapa 2) ── */}
-      <AthleteTelemetryModal
-        athleteId={athlete.id}
-        athleteName={athlete.name}
-        athletePosition={POSITION_LABELS[athlete.position]}
-        teamName={athlete.team.name}
-        rawData={rawTelemetryData}
-        teammates={teammateList}
-        triggerVariant="banner"
-      />
+      {isAnalystOrClub && (
+        <AthleteTelemetryModal
+          athleteId={athlete.id}
+          athleteName={athlete.name}
+          athletePosition={POSITION_LABELS[athlete.position]}
+          teamName={athlete.team.name}
+          rawData={rawTelemetryData}
+          teammates={teammateList}
+          triggerVariant="banner"
+        />
+      )}
 
       {/* ─── Leitura Tática (Analista IA) — Motor de Inferência Cérebro ──── */}
       <AthleteTacticalInferenceCard
@@ -634,22 +664,24 @@ export default async function AthleteProfilePage({
       </Card>
 
       {/* ─── Manage Photos ────────────────────────────────────────────────── */}
-      <Card className="rounded-2xl border border-border-strong bg-bg-surface p-6 shadow-md">
-        <div className="flex items-center gap-2 mb-5">
-          <Camera className="h-4 w-4 text-indigo-400" />
-          <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
-            Fotos do Atleta & Transparência
-          </h2>
-        </div>
+      {isAnalystOrClub && (
+        <Card className="rounded-2xl border border-border-strong bg-bg-surface p-6 shadow-md">
+          <div className="flex items-center gap-2 mb-5">
+            <Camera className="h-4 w-4 text-indigo-400" />
+            <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
+              Fotos do Atleta & Transparência
+            </h2>
+          </div>
 
-        <AthletePhotoUpload
-          athleteId={athlete.id}
-          photoUrl={athlete.photoUrl ?? null}
-          photoHasAlpha={athlete.photoHasAlpha}
-          actionPhotoUrl={athlete.actionPhotoUrl ?? null}
-          actionPhotoHasAlpha={athlete.actionPhotoHasAlpha}
-        />
-      </Card>
+          <AthletePhotoUpload
+            athleteId={athlete.id}
+            photoUrl={athlete.photoUrl ?? null}
+            photoHasAlpha={athlete.photoHasAlpha}
+            actionPhotoUrl={athlete.actionPhotoUrl ?? null}
+            actionPhotoHasAlpha={athlete.actionPhotoHasAlpha}
+          />
+        </Card>
+      )}
 
       {/* ─── Histórico Jogo a Jogo com Amostragem Dinâmica (Fase 6 - Issue #24) ─── */}
       <AthleteMatchLog
@@ -669,7 +701,9 @@ export default async function AthleteProfilePage({
               Lançamento Manual & Cartões de Scout
             </h2>
           </div>
-          <AddMetricButton {...metricProps} usedMatchIds={history.map((h) => h.matchId)} />
+          {isAnalystOrClub && (
+            <AddMetricButton {...metricProps} usedMatchIds={history.map((h) => h.matchId)} />
+          )}
         </div>
         <AthleteMatchHistory history={history} {...metricProps} />
       </Card>

@@ -19,6 +19,8 @@ import {
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
+import { useSession } from "next-auth/react";
+import { User as UserIcon } from "lucide-react";
 
 const menuGroups = [
   {
@@ -53,6 +55,28 @@ const menuGroups = [
 export function AppSidebar() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
+  const { data: session } = useSession();
+
+  const userRole = session?.user?.role;
+  const isAthlete = userRole === "ATHLETE";
+  const athleteId = session?.user?.athleteId;
+
+  const activeGroups = isAthlete
+    ? [
+        {
+          title: "PAINEL DO ATLETA",
+          items: [
+            {
+              label: "Meu Perfil",
+              href: athleteId ? `/athletes/${athleteId}` : "/athletes",
+              icon: UserIcon,
+            },
+            { label: "Minha Agenda", href: "/agenda", icon: CalendarDays },
+            { label: "Central de Vídeos", href: "/performance/videos", icon: Video },
+          ],
+        },
+      ]
+    : menuGroups;
 
   return (
     <>
@@ -102,21 +126,23 @@ export function AppSidebar() {
         <div className="mx-4 mb-3 px-3 py-1.5 rounded-lg bg-white/[0.02] border border-white/5 flex items-center justify-between">
           <div className="flex items-center gap-2">
             <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 bg-emerald-400" />
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-400" />
+              <span className={`animate-ping absolute inline-flex h-full w-full rounded-full opacity-75 ${isAthlete ? "bg-cyan-400" : "bg-emerald-400"}`} />
+              <span className={`relative inline-flex rounded-full h-2 w-2 ${isAthlete ? "bg-cyan-400" : "bg-emerald-400"}`} />
             </span>
-            <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-300">
-              Scout Online
+            <span className={`text-[11px] font-bold uppercase tracking-wider ${isAthlete ? "text-cyan-300" : "text-emerald-300"}`}>
+              {isAthlete ? "Atleta Conectado" : "Scout Online"}
             </span>
           </div>
-          <span className="text-[10px] font-mono font-bold text-zinc-400">v2.2</span>
+          <span className="text-[10px] font-mono font-bold text-zinc-400">
+            {userRole ?? "v2.2"}
+          </span>
         </div>
 
         <div className="h-px bg-gradient-to-r from-transparent via-white/10 to-transparent mx-4 mb-2" />
 
         <div className="flex-1 overflow-y-auto overflow-x-hidden">
           <nav className="px-3 pb-6 space-y-6 mt-2">
-            {menuGroups.map((group, groupIdx) => (
+            {activeGroups.map((group, groupIdx) => (
               <div key={groupIdx}>
                 <h3 className="px-4 text-[10px] font-bold tracking-widest text-zinc-500 mb-2">
                   {group.title}

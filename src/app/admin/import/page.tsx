@@ -14,9 +14,17 @@ export const metadata: Metadata = {
 export default async function AdminImportPage() {
   const session = await auth();
 
-  // Rota protegida: exige login de analista ou admin
+  // Rota protegida: apenas ANALYST e CLUB (e ADMIN) têm permissão
   if (!session?.user) {
     redirect("/login?callbackUrl=/admin/import");
+  }
+
+  const userRole = session.user.role;
+  if (userRole !== "ANALYST" && userRole !== "CLUB" && userRole !== "ADMIN") {
+    if (userRole === "ATHLETE" && session.user.athleteId) {
+      redirect(`/athletes/${session.user.athleteId}`);
+    }
+    redirect("/");
   }
 
   return (

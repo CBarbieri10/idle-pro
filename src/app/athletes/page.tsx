@@ -8,6 +8,8 @@ import { Card } from "@/components/ui/card";
 import { Users, ChevronRight, Shield, Sparkles, UserPlus } from "lucide-react";
 import { POSITION_LABELS, POSITION_COLORS, FOOT_LABELS, formatAge, formatHeight } from "@/lib/domain";
 import Link from "next/link";
+import { redirect } from "next/navigation";
+import { auth } from "@/lib/auth";
 import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 
@@ -26,6 +28,16 @@ export default async function AthletesPage({
     scope?: "registered" | "all";
   }>;
 }) {
+  const session = await auth();
+
+  // Usuário ATHLETE não pode navegar livremente pelo banco de talentos
+  if (session?.user?.role === "ATHLETE") {
+    if (session.user.athleteId) {
+      redirect(`/athletes/${session.user.athleteId}`);
+    }
+    redirect("/");
+  }
+
   const params = await searchParams;
   const currentScope = params.scope || "registered";
 
