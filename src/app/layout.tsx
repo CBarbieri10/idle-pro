@@ -27,7 +27,7 @@ export const metadata: Metadata = {
     "Sistema de scout e análise de performance para o futebol de base. Gerencie atletas, clubes, métricas e relatórios em um só lugar.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html
       lang="pt-BR"

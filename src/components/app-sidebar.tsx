@@ -14,7 +14,8 @@ import {
   TrendingUp,
   Video,
   Swords,
-  Circle
+  Circle,
+  UploadCloud,
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -43,6 +44,7 @@ const menuGroups = [
     title: "SISTEMA",
     items: [
       { label: "Relatórios", href: "/reports", icon: FileText },
+      { label: "Importar Wyscout", href: "/admin/import", icon: UploadCloud },
     ],
   },
 ];
