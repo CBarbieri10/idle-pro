@@ -413,3 +413,60 @@ export function generateDetailedTacticalInsights(
 
   return insights;
 }
+
+/**
+ * ─── Passo 4: Assinatura do Analista IA (Coletiva / Sistêmica - Aula 3) ───────
+ * Micro-insights sistêmicos para rankings de Clubes / Equipes
+ * Base Metodológica: CÉREBRO — Aulas 1, 2 e 3 (Professor Roberto Torrecilhas)
+ */
+export interface SystemicTeamInsight {
+  metricKey: string;
+  title: string;
+  lessonTag: "Aula 01" | "Aula 02" | "Aula 03" | "Aulas 1 e 2" | "Aulas 2 e 3";
+  microInsight: string;
+  tacticalDescription: string;
+}
+
+export const SYSTEMIC_TEAM_INSIGHTS: Record<string, SystemicTeamInsight> = {
+  high_press: {
+    metricKey: "high_press",
+    title: "Pressão Alta",
+    lessonTag: "Aula 03",
+    microInsight:
+      "Aula 03 • Eficiência em comportamento pós-perda coletivo, sufocando a saída adversária no campo de ataque.",
+    tacticalDescription:
+      "Ativação coordenada de gatilhos de pressão e encurtamento simultâneo das linhas para forçar o passe quebrado do oponente no primeiro terço.",
+  },
+  offensive_volume: {
+    metricKey: "offensive_volume",
+    title: "Volume Ofensivo",
+    lessonTag: "Aulas 1 e 2",
+    microInsight:
+      "Aulas 01 e 02 • Ocupação territorial progressiva e circulação vertical, empurrando o bloco adversário para o próprio terço.",
+    tacticalDescription:
+      "Construção com quebra de linhas e chegadas contínuas ao terço final por condução e triangulação nos corredores internos.",
+  },
+  block_solidity: {
+    metricKey: "block_solidity",
+    title: "Solidez de Bloco",
+    lessonTag: "Aula 03",
+    microInsight:
+      "Aula 03 • Compactação em bloco médio/baixo e coordenação das coberturas defensivas, minimizando espaços entre linhas.",
+    tacticalDescription:
+      "Sincronismo de balanço defensivo e indução para corredores fechados, combinando desarmes no chão e interceptações antecipadas sem conceder faltas frontais.",
+  },
+};
+
+export function getSystemicTeamInsight(metricKey: string): SystemicTeamInsight {
+  return (
+    SYSTEMIC_TEAM_INSIGHTS[metricKey] || {
+      metricKey,
+      title: "Comportamento Coletivo",
+      lessonTag: "Aula 03",
+      microInsight:
+        "Aula 03 • Organização e equilíbrio tático coletivo entre as fases do jogo.",
+      tacticalDescription:
+        "Sincronismo de linhas e resposta padronizada aos momentos de transição ofensiva e defensiva.",
+    }
+  );
+}

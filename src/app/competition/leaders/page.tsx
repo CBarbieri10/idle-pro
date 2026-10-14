@@ -11,7 +11,10 @@ import {
   Users,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
-import { getLeaderboardDashboard } from "@/lib/actions/leaderboards";
+import {
+  getLeaderboardDashboard,
+  getTeamLeaderboardDashboard,
+} from "@/lib/actions/leaderboards";
 import { LeaderboardDashboardView } from "@/components/leaderboards/leaderboard-dashboard-view";
 
 export const metadata: Metadata = {
@@ -21,7 +24,10 @@ export const metadata: Metadata = {
 };
 
 export default async function CompetitionLeadersPage() {
-  const dashboard = await getLeaderboardDashboard();
+  const [dashboard, teamCards] = await Promise.all([
+    getLeaderboardDashboard(),
+    getTeamLeaderboardDashboard(),
+  ]);
 
   return (
     <div className="space-y-6 w-full pb-12">
@@ -102,6 +108,7 @@ export default async function CompetitionLeadersPage() {
         geral={dashboard.geral}
         ofensiva={dashboard.ofensiva}
         defensiva={dashboard.defensiva}
+        teamCards={teamCards}
       />
     </div>
   );

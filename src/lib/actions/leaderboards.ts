@@ -5,6 +5,7 @@ import { POSITION_LABELS } from "@/lib/domain";
 import {
   inferenceEngine,
   generateDetailedTacticalInsights,
+  getSystemicTeamInsight,
 } from "@/lib/services/inferenceEngine";
 
 export interface LeaderboardPlayer {
@@ -532,3 +533,225 @@ export async function getLeaderboardDashboard(): Promise<{
     defensiva: [padjTackles, padjInterceptions, recoveries, groundDuels],
   };
 }
+
+// ─── Passo 1: Motor de Ranqueamento Coletivo (Clubes) ───────────────────────
+
+export interface LeaderboardTeam {
+  id: string;
+  name: string;
+  shortName: string | null;
+  logoUrl: string | null;
+  city: string | null;
+  athleteCount: number;
+  metricValue: number;
+  formattedValue: string;
+  subValue?: string;
+  rank: number;
+  tacticalInsight?: string;
+}
+
+export interface TeamLeaderboardCardData {
+  key: string;
+  title: string;
+  subtitle: string;
+  microInsight: string;
+  lessonTag: "Aula 01" | "Aula 02" | "Aula 03" | "Aulas 1 e 2" | "Aulas 2 e 3";
+  accentColor: "rose" | "indigo" | "cyan" | "emerald" | "amber";
+  unit: string;
+  teams: LeaderboardTeam[];
+}
+
+/**
+ * Server Action para ranqueamento coletivo de clubes.
+ * Agrupa as estatísticas de todos os atletas do mesmo teamId.
+ */
+export async function getTopTeamsByMetric(
+  metricKey: string,
+  limit: number = 5
+): Promise<TeamLeaderboardCardData> {
+  const teamsFromDb = await prisma.team.findMany({
+    include: {
+      athletes: {
+        include: {
+          canonicalMetrics: {
+            select: {
+              metricName: true,
+              absoluteValue: true,
+            },
+          },
+          rawMetrics: {
+            select: {
+              data: true,
+            },
+          },
+        },
+      },
+    },
+  });
+
+  const insightConfig = getSystemicTeamInsight(metricKey);
+
+  const processedTeams = teamsFromDb.map((team) => {
+    let metricValue = 0;
+    let subValue = "";
+    let tacklesSum = 0;
+    let interceptionsSum = 0;
+    let oppRecoveriesSum = 0;
+    let finalThirdEntriesSum = 0;
+
+    for (const athlete of team.athletes) {
+      // 1. Somatórios Canônicos
+      for (const c of athlete.canonicalMetrics) {
+        if (c.metricName === "tackles") tacklesSum += c.absoluteValue;
+        if (c.metricName === "interceptions") interceptionsSum += c.absoluteValue;
+      }
+
+      // 2. Telemetria Bruta (Wyscout)
+      const raw = (athlete.rawMetrics?.[0]?.data as Record<string, unknown>) || null;
+      if (raw) {
+        const getRaw = (key: string): number => {
+          const v = raw[key];
+          if (typeof v === "number") return v;
+          if (typeof v === "string") {
+            const p = parseFloat(v.replace("%", "").replace(",", "."));
+            return isNaN(p) ? 0 : p;
+          }
+          return 0;
+        };
+
+        const oppRec = getRaw("Recuperações da bola no campo adversário");
+        if (oppRec > 0) {
+          oppRecoveriesSum += oppRec;
+        } else {
+          const rec = getRaw("Recuperações da bola");
+          if (rec > 0) oppRecoveriesSum += Math.round(rec * 0.35);
+        }
+
+        const entries = getRaw("Entradas no terço final");
+        if (entries > 0) {
+          finalThirdEntriesSum += entries;
+        } else {
+          const prog = getRaw("Passes progressivos");
+          const keyP = getRaw("Passes-chave");
+          if (prog > 0 || keyP > 0) {
+            finalThirdEntriesSum += Math.round((prog + keyP) * 0.7);
+          }
+        }
+      }
+    }
+
+    switch (metricKey) {
+      case "high_press":
+      case "pressao_alta":
+        metricValue = oppRecoveriesSum;
+        subValue = `${Math.round(oppRecoveriesSum)} recuperações em campo ofensivo`;
+        break;
+
+      case "offensive_volume":
+      case "volume_ofensivo":
+        metricValue = finalThirdEntriesSum;
+        subValue = `${Math.round(finalThirdEntriesSum)} entradas no terço final`;
+        break;
+
+      case "block_solidity":
+      case "solidez_bloco":
+      default:
+        metricValue = tacklesSum + interceptionsSum;
+        subValue = `${Math.round(tacklesSum)} desarmes • ${Math.round(interceptionsSum)} interceptações`;
+        break;
+    }
+
+    return {
+      team,
+      athleteCount: team.athletes.length,
+      metricValue,
+      formattedValue: Math.round(metricValue).toLocaleString("pt-BR"),
+      subValue,
+    };
+  });
+
+  const eligibleTeams = processedTeams.filter((t) => t.metricValue > 0);
+  eligibleTeams.sort((a, b) => b.metricValue - a.metricValue);
+
+  const topTeams = eligibleTeams.slice(0, limit);
+
+  const teams: LeaderboardTeam[] = topTeams.map((item, index) => {
+    const t = item.team;
+    const rank = index + 1;
+    let tacticalInsight: string | undefined = undefined;
+
+    if (rank === 1) {
+      tacticalInsight = `${t.name} lidera a Série A com ${item.formattedValue} ações registradas pelo elenco (${item.athleteCount} atletas monitorados).`;
+    }
+
+    return {
+      id: t.id,
+      name: t.name,
+      shortName: t.shortName,
+      logoUrl: t.logoUrl,
+      city: t.city,
+      athleteCount: item.athleteCount,
+      metricValue: item.metricValue,
+      formattedValue: item.formattedValue,
+      subValue: item.subValue,
+      rank,
+      tacticalInsight,
+    };
+  });
+
+  const titles: Record<string, { title: string; subtitle: string; unit: string; color: "rose" | "indigo" | "cyan" }> = {
+    high_press: {
+      title: "Pressão Alta Coletiva",
+      subtitle: "Recuperações da bola no campo adversário",
+      unit: "Recuperações Ofensivas",
+      color: "rose",
+    },
+    offensive_volume: {
+      title: "Volume Ofensivo do Bloco",
+      subtitle: "Entradas e Ações no Terço Final",
+      unit: "Incursões no Terço Final",
+      color: "indigo",
+    },
+    block_solidity: {
+      title: "Solidez de Bloco Defensivo",
+      subtitle: "Soma de Interceptações + Desarmes Coletivos",
+      unit: "Ações Defensivas",
+      color: "cyan",
+    },
+  };
+
+  const meta = titles[metricKey] || {
+    title: "Comportamento Sistêmico",
+    subtitle: "Métrica agregada do clube",
+    unit: "Ações",
+    color: "cyan",
+  };
+
+  return {
+    key: metricKey,
+    title: meta.title,
+    subtitle: meta.subtitle,
+    microInsight: insightConfig.microInsight,
+    lessonTag: insightConfig.lessonTag,
+    accentColor: meta.color,
+    unit: meta.unit,
+    teams,
+  };
+}
+
+/**
+ * Retorna os 3 cards coletivos da Visão Clubes (Passo 3):
+ * 1. Pressão Alta: Recuperações de bola no campo adversário
+ * 2. Volume Ofensivo: Entradas no terço final
+ * 3. Solidez de Bloco: Interceptações + Desarmes
+ */
+export async function getTeamLeaderboardDashboard(): Promise<TeamLeaderboardCardData[]> {
+  const [highPress, offensiveVolume, blockSolidity] = await Promise.all([
+    getTopTeamsByMetric("high_press", 5),
+    getTopTeamsByMetric("offensive_volume", 5),
+    getTopTeamsByMetric("block_solidity", 5),
+  ]);
+
+  return [highPress, offensiveVolume, blockSolidity];
+}
+
