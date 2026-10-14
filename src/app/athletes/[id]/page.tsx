@@ -23,6 +23,8 @@ import { PortfolioToggleButton } from "@/components/portfolio/portfolio-toggle-b
 import { StabilityBadge } from "@/components/athletes/stability-badge";
 import { AthleteTacticalAiSummary } from "@/components/athletes/athlete-tactical-ai-summary";
 import { AthleteTacticalInferenceCard } from "@/components/athletes/athlete-tactical-inference-card";
+import { AthleteTabsView } from "@/components/athletes/athlete-tabs-view";
+import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -99,6 +101,33 @@ export default async function AthleteProfilePage({
     ]);
 
   if (!athlete) notFound();
+
+  // Query teammates for rapid modal switching and context
+  const teammates = await prisma.athlete.findMany({
+    where: { teamId: athlete.teamId },
+    select: {
+      id: true,
+      name: true,
+      position: true,
+      photoUrl: true,
+      rawMetrics: {
+        orderBy: { createdAt: "desc" },
+        take: 1,
+        select: { data: true },
+      },
+    },
+    orderBy: { name: "asc" },
+    take: 30,
+  });
+
+  const teammateList = teammates.map((t) => ({
+    id: t.id,
+    name: t.name,
+    position: POSITION_LABELS[t.position] || t.position,
+    photoUrl: t.photoUrl,
+    teamName: athlete.team.name,
+    rawData: (t.rawMetrics?.[0]?.data as Record<string, unknown>) || null,
+  }));
 
   const similarAthletes = await getSimilarAthletes(athlete.id, athlete.position, 3);
 
@@ -269,10 +298,12 @@ export default async function AthleteProfilePage({
           <AthleteRaioXModal athlete={raioXData} />
 
           <AthleteTelemetryModal
+            athleteId={athlete.id}
             athleteName={athlete.name}
             athletePosition={POSITION_LABELS[athlete.position]}
             teamName={athlete.team.name}
             rawData={rawTelemetryData}
+            teammates={teammateList}
             triggerVariant="button"
           />
         </div>
@@ -384,90 +415,25 @@ export default async function AthleteProfilePage({
         </div>
       </section>
 
-      {/* ─── Tactical Center: Radar + Heatmap Pitch (BeSoccer Pro Model) ──── */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-        {/* Left: Tactical Radar & Similar Players (7 cols) */}
-        <div className="lg:col-span-7 space-y-6">
-          <Card className="rounded-2xl border border-[#1e2638] bg-[#0c0f17] p-6 shadow-xl tactical-canvas">
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 pb-4 border-b border-[#1e2638]">
-              <div>
-                <div className="flex items-center gap-2">
-                  <div className="h-6 w-6 rounded bg-[#00e676]/20 border border-[#00e676]/40 flex items-center justify-center text-[#00e676]">
-                    <Fingerprint className="h-4 w-4" />
-                  </div>
-                  <h2 className="text-base font-black text-white">
-                    Impressão Digital Tática (Radar Multidimensional)
-                  </h2>
-                </div>
-                <p className="text-xs text-zinc-400 mt-0.5">
-                  Métricas Per-90 calibradas em relação aos padrões de referência da liga profissional.
-                </p>
-              </div>
+      {/* ─── Modern Global App UX: Centralized Pills + Highlights + Sliders + Tabs ─ */}
+      <AthleteTabsView
+        athlete={athlete}
+        metrics={athleteStats?.metrics ?? null}
+        rawMetrics={rawTelemetryData}
+        totalMatches={athleteStats?.totalMatches ?? 0}
+        totalMinutes={athleteStats?.totalMinutes ?? 0}
+        totalGoals={totalGoals}
+        totalAssists={totalAssists}
+        totalYellowCards={totalYellowCards}
+        totalRedCards={totalRedCards}
+        athleteAge={athlete.birthDate ? formatAge(athlete.birthDate) : null}
+      />
 
-              <Badge variant="outline" className="border-[#00e676]/30 text-[#00e676] bg-[#00e676]/10 gap-1 text-[11px] font-bold">
-                <Sparkles className="h-3 w-3" />
-                *Métricas por percentil
-              </Badge>
-            </div>
-
-            {hasMetrics ? (
-              <div className="flex flex-col items-center justify-center py-2">
-                <RadarChart
-                  metrics={athleteStats.metrics}
-                  size={360}
-                  showCategoryTabs={true}
-                  colorVariant="emerald"
-                />
-                <div className="mt-4 pt-3 border-t border-[#1e2638] w-full flex flex-col sm:flex-row items-center justify-between gap-3">
-                  <div className="flex items-center gap-2 text-xs text-zinc-400">
-                    <Sparkles className="h-3.5 w-3.5 text-cyan-400" />
-                    <span>Auditoria completa da base de dados do Wyscout:</span>
-                  </div>
-                  <AthleteTelemetryModal
-                    athleteName={athlete.name}
-                    athletePosition={POSITION_LABELS[athlete.position]}
-                    teamName={athlete.team.name}
-                    rawData={rawTelemetryData}
-                    triggerVariant="button"
-                  />
-                </div>
-              </div>
-            ) : (
-              <div className="flex flex-col items-center justify-center py-16 text-center">
-                <Fingerprint className="h-10 w-10 text-muted-foreground/30 mb-2" />
-                <p className="text-sm font-bold text-foreground">Nenhuma métrica computada</p>
-                <p className="text-xs text-muted-foreground mt-1 max-w-sm">
-                  Adicione métricas por jogo ou importe planilhas de scouts para gerar o radar tático deste atleta.
-                </p>
-              </div>
-            )}
-          </Card>
-
-          {/* Similar Players row */}
-          <SimilarAthletes
-            athletes={similarAthletes}
-            currentPositionName={POSITION_LABELS[athlete.position]}
-          />
-        </div>
-
-        {/* Right: Pitch Heatmap + 5 Quick Metrics + Biometrics & Market Matrix (5 cols) */}
-        <div className="lg:col-span-5 space-y-6">
-          <TacticalPitchHeatmap
-            position={athlete.position}
-            athleteName={athlete.name}
-            totalMatches={athleteStats?.totalMatches ?? 0}
-            totalMinutes={athleteStats?.totalMinutes ?? 0}
-            goals={totalGoals}
-            assists={totalAssists}
-            yellowCards={totalYellowCards}
-            redCards={totalRedCards}
-            age={athlete.birthDate ? formatAge(athlete.birthDate) : null}
-            height={athlete.height}
-            weight={athlete.weight}
-            footPreference={athlete.footPreference}
-          />
-        </div>
-      </div>
+      {/* Similar Players row */}
+      <SimilarAthletes
+        athletes={similarAthletes}
+        currentPositionName={POSITION_LABELS[athlete.position]}
+      />
 
       {/* ─── Top Destaques Estatísticos ────────────────────────────────────── */}
       {hasMetrics && (
@@ -589,10 +555,12 @@ export default async function AthleteProfilePage({
 
       {/* ─── Telemetria Completa dos 75 Indicadores Wyscout (Fase 6 - Etapa 2) ── */}
       <AthleteTelemetryModal
+        athleteId={athlete.id}
         athleteName={athlete.name}
         athletePosition={POSITION_LABELS[athlete.position]}
         teamName={athlete.team.name}
         rawData={rawTelemetryData}
+        teammates={teammateList}
         triggerVariant="banner"
       />
 

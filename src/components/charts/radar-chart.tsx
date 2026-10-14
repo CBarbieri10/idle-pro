@@ -90,7 +90,8 @@ interface RadarChartProps {
   size?: number;
   className?: string;
   showCategoryTabs?: boolean;
-  colorVariant?: "emerald" | "indigo";
+  colorVariant?: "emerald" | "indigo" | "cyan";
+  initialCategory?: RadarCategory;
 }
 
 export function RadarChart({
@@ -99,8 +100,9 @@ export function RadarChart({
   className,
   showCategoryTabs = true,
   colorVariant = "emerald",
+  initialCategory = "GERAL",
 }: RadarChartProps) {
-  const [activeCategory, setActiveCategory] = useState<RadarCategory>("GERAL");
+  const [activeCategory, setActiveCategory] = useState<RadarCategory>(initialCategory);
   const [hoveredPoint, setHoveredPoint] = useState<RadarMetricPoint | null>(null);
 
   const radius = size * 0.35;
@@ -171,8 +173,13 @@ export function RadarChart({
     .join(" ");
 
   const isEmerald = colorVariant === "emerald";
-  const strokeColor = isEmerald ? "#00e676" : "#6366f1";
-  const fillColor = isEmerald ? "url(#radarFillEmerald)" : "url(#radarFillIndigo)";
+  const isCyan = colorVariant === "cyan";
+  const strokeColor = isCyan ? "#06b6d4" : isEmerald ? "#00e676" : "#6366f1";
+  const fillColor = isCyan
+    ? "url(#radarFillCyan)"
+    : isEmerald
+    ? "url(#radarFillEmerald)"
+    : "url(#radarFillIndigo)";
 
   return (
     <div className={cn("flex flex-col items-center", className)}>
@@ -187,7 +194,9 @@ export function RadarChart({
               className={cn(
                 "px-2.5 py-1 text-[11px] font-bold rounded-lg transition-all",
                 activeCategory === cat
-                  ? isEmerald
+                  ? isCyan
+                    ? "bg-cyan-500 text-black shadow-xs font-black"
+                    : isEmerald
                     ? "bg-[#00e676] text-black shadow-xs font-black"
                     : "bg-indigo-600 text-white shadow-xs"
                   : "text-zinc-400 hover:text-white"
@@ -212,6 +221,11 @@ export function RadarChart({
               <stop offset="0%" stopColor="#00e676" stopOpacity="0.45" />
               <stop offset="60%" stopColor="#00e676" stopOpacity="0.30" />
               <stop offset="100%" stopColor="#00b0ff" stopOpacity="0.12" />
+            </radialGradient>
+            <radialGradient id="radarFillCyan" cx="50%" cy="50%" r="50%">
+              <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.55" />
+              <stop offset="60%" stopColor="#06b6d4" stopOpacity="0.35" />
+              <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.15" />
             </radialGradient>
             <radialGradient id="radarFillIndigo" cx="50%" cy="50%" r="50%">
               <stop offset="0%" stopColor="#6366f1" stopOpacity="0.65" />

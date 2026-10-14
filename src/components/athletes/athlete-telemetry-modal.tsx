@@ -16,6 +16,7 @@ import {
   CheckCircle2,
   ExternalLink,
   User,
+  Users,
   Zap,
   Award,
 } from "lucide-react";
@@ -23,13 +24,25 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 
+export interface TeammateItem {
+  id: string;
+  name: string;
+  position?: string | null;
+  photoUrl?: string | null;
+  teamName?: string | null;
+  rawData?: Record<string, unknown> | null;
+}
+
 interface AthleteTelemetryModalProps {
+  athleteId?: string;
   athleteName: string;
   athletePosition?: string;
   teamName?: string;
   rawData: Record<string, unknown> | null | undefined;
   triggerVariant?: "button" | "banner";
   children?: React.ReactNode;
+  teammates?: TeammateItem[];
+  onSelectAthlete?: (athlete: TeammateItem) => void;
 }
 
 type CategoryKey = "all" | "passe" | "duelos" | "defesa" | "ataque" | "volume";
@@ -219,17 +232,58 @@ function formatTelemetryValue(
 }
 
 export function AthleteTelemetryModal({
+  athleteId,
   athleteName,
   athletePosition,
   teamName,
   rawData,
   triggerVariant = "button",
   children,
+  teammates,
+  onSelectAthlete,
 }: AthleteTelemetryModalProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState<CategoryKey>("all");
   const [mounted, setMounted] = useState(false);
+
+  // Dynamic Athlete Context for Rapid Switching without closing modal
+  const [currentAthlete, setCurrentAthlete] = useState<{
+    id?: string;
+    name: string;
+    position?: string;
+    teamName?: string;
+    rawData?: Record<string, unknown> | null;
+  }>({
+    id: athleteId,
+    name: athleteName,
+    position: athletePosition,
+    teamName: teamName,
+    rawData: rawData,
+  });
+
+  useEffect(() => {
+    setCurrentAthlete({
+      id: athleteId,
+      name: athleteName,
+      position: athletePosition,
+      teamName: teamName,
+      rawData: rawData,
+    });
+  }, [athleteId, athleteName, athletePosition, teamName, rawData]);
+
+  const handleSelectTeammate = (teammate: TeammateItem) => {
+    setCurrentAthlete({
+      id: teammate.id,
+      name: teammate.name,
+      position: teammate.position || undefined,
+      teamName: teammate.teamName || teamName,
+      rawData: teammate.rawData || null,
+    });
+    if (onSelectAthlete) {
+      onSelectAthlete(teammate);
+    }
+  };
 
   useEffect(() => {
     const timer = setTimeout(() => setMounted(true), 0);
@@ -246,10 +300,12 @@ export function AthleteTelemetryModal({
     return () => window.removeEventListener("keydown", handleKeyDown);
   }, [isOpen]);
 
-  const items: MetricItem[] = useMemo(() => {
-    if (!rawData || typeof rawData !== "object") return [];
+  const activeRawData = currentAthlete.rawData;
 
-    return Object.entries(rawData)
+  const items: MetricItem[] = useMemo(() => {
+    if (!activeRawData || typeof activeRawData !== "object") return [];
+
+    return Object.entries(activeRawData)
       .filter(([key]) => key !== "id" && key !== "athleteId" && key !== "matchId")
       .map(([key, rawValue]) => {
         const { formatted, isPercent } = formatTelemetryValue(key, rawValue);
@@ -264,7 +320,7 @@ export function AthleteTelemetryModal({
           isPercent,
         };
       });
-  }, [rawData]);
+  }, [activeRawData]);
 
   const filteredItems = useMemo(() => {
     return items.filter((item) => {
@@ -299,15 +355,15 @@ export function AthleteTelemetryModal({
   }, [items]);
 
   // Extract biometrics for the 3D card
-  const age = rawData?.["Idade"] ? String(rawData["Idade"]) : null;
-  const height = rawData?.["Altura"] ? `${rawData["Altura"]} cm` : null;
-  const weight = rawData?.["Peso"] ? `${rawData["Peso"]} kg` : null;
-  const nationality = rawData?.["Nacionalidade"] ? String(rawData["Nacionalidade"]) : null;
-  const ratingIndex = rawData?.["Índice"] ? String(rawData["Índice"]) : null;
-  const matchesPlayed = rawData?.["Partidas jogadas"] ? String(rawData["Partidas jogadas"]) : null;
-  const minutesPlayed = rawData?.["Minutos jogados"] ? String(rawData["Minutos jogados"]) : null;
+  const age = activeRawData?.["Idade"] ? String(activeRawData["Idade"]) : null;
+  const height = activeRawData?.["Altura"] ? `${activeRawData["Altura"]} cm` : null;
+  const weight = activeRawData?.["Peso"] ? `${activeRawData["Peso"]} kg` : null;
+  const nationality = activeRawData?.["Nacionalidade"] ? String(activeRawData["Nacionalidade"]) : null;
+  const ratingIndex = activeRawData?.["Índice"] ? String(activeRawData["Índice"]) : null;
+  const matchesPlayed = activeRawData?.["Partidas jogadas"] ? String(activeRawData["Partidas jogadas"]) : null;
+  const minutesPlayed = activeRawData?.["Minutos jogados"] ? String(activeRawData["Minutos jogados"]) : null;
 
-  const initials = athleteName
+  const initials = currentAthlete.name
     .split(" ")
     .map((n) => n[0])
     .slice(0, 2)
@@ -336,11 +392,11 @@ export function AthleteTelemetryModal({
                     Dossiê 3D &bull; Telemetria Integral Wyscout
                   </h2>
                   <Badge className="bg-cyan-500/20 text-cyan-300 border-cyan-500/40 text-[10px] font-mono py-0 h-4">
-                    75 Métricas Oficiais
+                    {items.length > 0 ? `${items.length} Métricas Oficiais` : "75 Métricas Oficiais"}
                   </Badge>
                 </div>
                 <p className="text-[11px] text-zinc-400">
-                  {athleteName} &bull; {teamName ?? "Série A 2026"} &bull; Camada JSONB Raw
+                  {currentAthlete.name} &bull; {currentAthlete.teamName ?? "Série A 2026"} &bull; Camada JSONB Raw
                 </p>
               </div>
             </div>
@@ -372,18 +428,18 @@ export function AthleteTelemetryModal({
                     <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-cyan-500/25 via-[#13203c] to-indigo-500/25 border-2 border-cyan-400/50 flex items-center justify-center text-cyan-200 text-2xl font-black font-mono shadow-[0_0_25px_rgba(6,182,212,0.35)]">
                       {initials}
                     </div>
-                    {athletePosition && (
+                    {currentAthlete.position && (
                       <span className="absolute -bottom-2 px-2 py-0.5 rounded-full bg-cyan-500 text-black font-black text-[10px] uppercase font-mono shadow-md">
-                        {athletePosition}
+                        {currentAthlete.position}
                       </span>
                     )}
                   </div>
 
                   <h3 className="text-lg font-black text-white tracking-tight mt-1">
-                    {athleteName}
+                    {currentAthlete.name}
                   </h3>
                   <p className="text-xs text-zinc-400 font-medium">
-                    {teamName ?? "Brasileirão Série A"}
+                    {currentAthlete.teamName ?? "Brasileirão Série A"}
                   </p>
                 </div>
 
@@ -586,6 +642,86 @@ export function AthleteTelemetryModal({
               </div>
             </div>
           </div>
+
+          {/* ─── Passo 4: Carrossel Horizontal de Troca Rápida de Atleta ────── */}
+          {teammates && teammates.length > 0 && (
+            <div className="border-t border-white/[0.08] bg-[#070b16]/95 px-4 py-3 sm:px-6 backdrop-blur-md">
+              <div className="flex items-center justify-between gap-2 mb-2">
+                <div className="flex items-center gap-2">
+                  <Users className="h-3.5 w-3.5 text-cyan-400" />
+                  <span className="text-[11px] font-black uppercase tracking-wider text-zinc-300">
+                    Troca Rápida de Atleta &bull; {currentAthlete.teamName || teamName || "Mesmo Elenco"}
+                  </span>
+                </div>
+                <span className="text-[10px] text-zinc-400 font-mono">
+                  {teammates.length} atletas disponíveis no elenco
+                </span>
+              </div>
+
+              <div className="flex items-center gap-2.5 overflow-x-auto scrollbar-thin scrollbar-thumb-white/10 pb-1 pt-0.5">
+                {teammates.map((teammate) => {
+                  const isCurrent =
+                    (currentAthlete.id && teammate.id === currentAthlete.id) ||
+                    teammate.name === currentAthlete.name;
+                  const teammateInitials = teammate.name
+                    .split(" ")
+                    .map((n) => n[0])
+                    .slice(0, 2)
+                    .join("");
+
+                  return (
+                    <button
+                      key={teammate.id}
+                      type="button"
+                      onClick={() => handleSelectTeammate(teammate)}
+                      className={cn(
+                        "flex items-center gap-2.5 px-3 py-1.5 rounded-xl border transition-all shrink-0 text-left cursor-pointer group",
+                        isCurrent
+                          ? "bg-cyan-500/20 border-cyan-400 text-white shadow-[0_0_15px_rgba(6,182,212,0.3)] ring-1 ring-cyan-400/50"
+                          : "bg-[#0d1424] border-white/[0.08] text-zinc-400 hover:text-white hover:border-cyan-500/40 hover:bg-[#121c32]"
+                      )}
+                    >
+                      <div className="relative h-7 w-7 rounded-lg overflow-hidden bg-[#162035] border border-white/10 flex items-center justify-center shrink-0">
+                        {teammate.photoUrl ? (
+                          <img
+                            src={teammate.photoUrl}
+                            alt={teammate.name}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          <span className="text-[10px] font-mono font-bold text-cyan-300">
+                            {teammateInitials}
+                          </span>
+                        )}
+                      </div>
+                      <div className="min-w-0 pr-1">
+                        <p
+                          className={cn(
+                            "text-xs font-bold truncate max-w-[120px]",
+                            isCurrent ? "text-cyan-300 font-black" : "text-zinc-200"
+                          )}
+                        >
+                          {teammate.name}
+                        </p>
+                        <div className="flex items-center gap-1.5 -mt-0.5">
+                          {teammate.position && (
+                            <span className="text-[9px] uppercase font-mono font-semibold text-zinc-400">
+                              {teammate.position}
+                            </span>
+                          )}
+                          {teammate.rawData && (
+                            <span className="text-[8px] font-mono text-cyan-400 font-bold">
+                              &bull; 75 métricas
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          )}
         </div>
       </div>,
       document.body
