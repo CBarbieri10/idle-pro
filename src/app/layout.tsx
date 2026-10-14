@@ -39,19 +39,13 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
             {/* Global Cinematic B&W Stadium & Folded Texture Backdrop */}
             <div
               aria-hidden
-              className="pointer-events-none fixed inset-0 z-0 overflow-hidden"
+              className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[#06080a]"
             >
-              {/* High-contrast black and white stadium image with folded texture */}
-              <div
-                className="absolute inset-0 bg-cover bg-center bg-no-repeat bg-fixed opacity-45 grayscale contrast-110"
-                style={{
-                  backgroundImage: "url('/images/stadium-bw-bg.jpg')",
-                }}
-              />
-              {/* Tactical dark vignette preserving content legibility while keeping stadium and folds crisp */}
-              <div className="absolute inset-0 bg-gradient-to-b from-[#080a0f]/60 via-[#06080d]/45 to-[#040508]/85" />
-              {/* Subtle electric emerald ambient floodlight glow */}
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_80%_45%_at_50%_-10%,rgba(0,230,118,0.08),transparent_70%)]" />
+              {/* Tactical dark vignette */}
+              <div className="absolute inset-0 bg-gradient-to-b from-[#06080a] via-[#080b0f] to-[#040608]" />
+              {/* Subtle cyan ambient glow */}
+              <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_-10%,rgba(34,211,238,0.1),transparent_70%)]" />
+              <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(34,211,238,0.03),transparent_40%)]" />
             </div>
 
             {/* Sidebar */}

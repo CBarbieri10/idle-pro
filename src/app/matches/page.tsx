@@ -63,7 +63,7 @@ const STANDINGS_SERIE_A = [
 export default function MatchesPage() {
   const [expandedLeagues, setExpandedLeagues] = useState<Record<string, boolean>>({ "br-a": true, "br-b": true });
   const [activeTab, setActiveTab] = useState<"todos" | "favoritos" | "competicoes">("todos");
-  const [matchFilter, setMatchFilter] = useState<"aovivo" | "finalizado" | "proximos">("proximos");
+  const [matchFilter, setMatchFilter] = useState<"todos" | "aovivo" | "finalizado" | "proximos">("proximos");
   const [selectedMatchStats, setSelectedMatchStats] = useState<any | null>(null);
 
   const toggleLeague = (id: string) => {

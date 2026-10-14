@@ -22,6 +22,7 @@ import { AthleteGoals } from "@/components/athletes/athlete-goals";
 import { PortfolioToggleButton } from "@/components/portfolio/portfolio-toggle-button";
 import { StabilityBadge } from "@/components/athletes/stability-badge";
 import { AthleteTacticalAiSummary } from "@/components/athletes/athlete-tactical-ai-summary";
+import { AthleteTacticalInferenceCard } from "@/components/athletes/athlete-tactical-inference-card";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
@@ -593,6 +594,14 @@ export default async function AthleteProfilePage({
         teamName={athlete.team.name}
         rawData={rawTelemetryData}
         triggerVariant="banner"
+      />
+
+      {/* ─── Leitura Tática (Analista IA) — Motor de Inferência Cérebro ──── */}
+      <AthleteTacticalInferenceCard
+        athleteName={athlete.name}
+        position={athlete.position}
+        metrics={athleteStats?.metrics ?? null}
+        rawMetrics={rawTelemetryData}
       />
 
       {/* ─── Parecer Tático com IA (Fase 6 - Issue #20) ──────────────────── */}

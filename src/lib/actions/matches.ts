@@ -73,8 +73,8 @@ function revalidateMatches(athleteIds: string[] = []) {
 // ─── Match queries ───────────────────────────────────────────────────────────
 
 const matchInclude = {
-  team: { select: { id: true, name: true, shortName: true } },
-  opponent: { select: { id: true, name: true, shortName: true } },
+  team: { select: { id: true, name: true, shortName: true, logoUrl: true } },
+  opponent: { select: { id: true, name: true, shortName: true, logoUrl: true } },
   league: { select: { id: true, name: true } },
 } satisfies Prisma.MatchInclude;
 
