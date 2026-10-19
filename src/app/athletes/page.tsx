@@ -41,17 +41,38 @@ export default async function AthletesPage({
   const params = await searchParams;
   const currentScope = params.scope || "registered";
 
+  // AÇÃO 3: Atribuição de Clube ao Usuário Analista (Fim dos 537 Atletas no Elenco)
+  // Busca o teamId do usuário autenticado no banco de dados para garantir valor atualizado
+  let userTeamId = (session?.user as { teamId?: string })?.teamId ?? null;
+  if (!userTeamId && session?.user?.email) {
+    const { prisma: dbPrisma } = await import("@/lib/prisma");
+    const dbUser = await dbPrisma.user.findUnique({
+      where: { email: session.user.email },
+      select: { teamId: true },
+    });
+    userTeamId = dbUser?.teamId ?? null;
+  }
+
+  // Se nenhum teamId foi fornecido na query (URL limpa sem filtros), utiliza o userTeamId por padrão
+  const effectiveTeamId =
+    params.teamId !== undefined
+      ? params.teamId === "ALL"
+        ? undefined
+        : params.teamId
+      : (userTeamId ?? undefined);
+
   const [athletes, teams] = await Promise.all([
     getAthletes({
       search: params.search,
       position: params.position,
-      teamId: params.teamId,
+      teamId: effectiveTeamId,
       scope: currentScope,
     }),
     getTeams(),
   ]);
 
   const teamList = teams.map((t) => ({ id: t.id, name: t.name }));
+  const activeTeam = teams.find((t) => t.id === effectiveTeamId);
 
   return (
     <div className="space-y-6 w-full">
@@ -67,10 +88,16 @@ export default async function AthletesPage({
             </span>
           </div>
           <h1 className="text-2xl font-black tracking-tight text-white mt-1.5">
-            {currentScope === "all" ? "Todos os Atletas da Liga" : "Atletas Cadastrados"}
+            {activeTeam
+              ? `Elenco • ${activeTeam.name}`
+              : currentScope === "all"
+              ? "Todos os Atletas da Liga"
+              : "Atletas Cadastrados"}
           </h1>
           <p className="text-xs text-zinc-400 mt-0.5">
-            {currentScope === "all"
+            {activeTeam
+              ? `Atletas do elenco do ${activeTeam.name} sob monitoramento do analista.`
+              : currentScope === "all"
               ? "Base completa de jogadores registrados no campeonato."
               : "Jogadores cadastrados e sob monitoramento ativo pelo analista."}
           </p>
@@ -126,7 +153,7 @@ export default async function AthletesPage({
 
       {/* ─── Filters ─────────────────────────────────────────────────────── */}
       <Suspense>
-        <AthleteFilters teams={teamList} />
+        <AthleteFilters teams={teamList} defaultTeamId={userTeamId} />
       </Suspense>
 
       {/* ─── Athletes Grid ───────────────────────────────────────────────── */}

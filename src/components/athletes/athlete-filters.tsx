@@ -15,7 +15,13 @@ import { POSITION_LABELS } from "@/lib/domain";
 
 type Team = { id: string; name: string };
 
-export function AthleteFilters({ teams }: { teams: Team[] }) {
+export function AthleteFilters({
+  teams,
+  defaultTeamId,
+}: {
+  teams: Team[];
+  defaultTeamId?: string | null;
+}) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
@@ -23,10 +29,23 @@ export function AthleteFilters({ teams }: { teams: Team[] }) {
 
   function updateParam(key: string, value: string) {
     const params = new URLSearchParams(searchParams.toString());
-    if (value && value !== "ALL") {
-      params.set(key, value);
+    if (key === "teamId") {
+      if (value && value !== "ALL") {
+        params.set("teamId", value);
+      } else {
+        // Se temos um defaultTeamId e o usuário selecionou "ALL", passamos teamId=ALL na query
+        if (defaultTeamId) {
+          params.set("teamId", "ALL");
+        } else {
+          params.delete("teamId");
+        }
+      }
     } else {
-      params.delete(key);
+      if (value && value !== "ALL") {
+        params.set(key, value);
+      } else {
+        params.delete(key);
+      }
     }
     startTransition(() => {
       router.push(`${pathname}?${params.toString()}`);
@@ -34,7 +53,9 @@ export function AthleteFilters({ teams }: { teams: Team[] }) {
   }
 
   const currentPosition = searchParams.get("position") || "ALL";
-  const currentTeamId = searchParams.get("teamId") || "ALL";
+  const paramTeamId = searchParams.get("teamId");
+  const currentTeamId =
+    paramTeamId !== null ? paramTeamId : (defaultTeamId || "ALL");
 
   const selectedPositionLabel =
     currentPosition !== "ALL"

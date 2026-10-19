@@ -51,12 +51,13 @@ export const TEAM_CANONICAL_MAP: Record<string, string> = {
   "vasco da gama": "Vasco da Gama",
   "vasco": "Vasco da Gama",
   // Atlético Mineiro
-  "clube atletico mineiro": "Atlético-MG",
-  "clube atlético mineiro": "Atlético-MG",
-  "atletico mineiro": "Atlético-MG",
-  "atlético mineiro": "Atlético-MG",
-  "atletico mg": "Atlético-MG",
-  "atlético-mg": "Atlético-MG",
+  "clube atletico mineiro": "Atlético Mineiro",
+  "clube atlético mineiro": "Atlético Mineiro",
+  "atletico mineiro": "Atlético Mineiro",
+  "atlético mineiro": "Atlético Mineiro",
+  "atletico mg": "Atlético Mineiro",
+  "atlético-mg": "Atlético Mineiro",
+  "atletico-mg": "Atlético Mineiro",
   // Internacional
   "sc internacional": "Internacional",
   "internacional": "Internacional",
@@ -116,6 +117,9 @@ export const TEAM_CANONICAL_MAP: Record<string, string> = {
   // Mirassol
   "mirassol fc": "Mirassol",
   "mirassol": "Mirassol",
+  // Remo
+  "remo": "Remo",
+  "clube do remo": "Remo",
   // Sport
   "sport club do recife": "Sport",
   "sport recife": "Sport",
@@ -148,23 +152,30 @@ export function normalizeTeamName(rawName: string): string {
   let name = rawName.trim();
 
   // 1. Verificação direta no dicionário canônico
-  const lowerDirect = name.toLowerCase();
+  const lowerDirect = name.toLowerCase().trim();
   if (TEAM_CANONICAL_MAP[lowerDirect]) {
     return TEAM_CANONICAL_MAP[lowerDirect];
   }
 
   // 2. Remoção agressiva de prefixos
-  name = name.replace(/^(?:cr|se|saf|sc|ec|club|clube|esporte\s+clube|associacao|associação)\s+/i, "");
+  name = name.replace(/^(?:cr|se|saf|sc|ec|club|clube|esporte\s+clube|associacao|associação|red\s+bull)\s+/i, "");
 
   // 3. Remoção agressiva de sufixos
-  name = name.replace(/\s+(?:ec|fc|saf|fbpa|f\.c\.|e\.c\.|s\/a|ltda|de\s+futebol)$/i, "");
-
+  name = name.replace(/\s+(?:ec|fc|saf|fbpa|f\.c\.|e\.c\.|s\/a|ltda|de\s+futebol|futebol\s+clube)$/i, "");
   name = name.trim();
 
   // 4. Checagem pós-limpeza no dicionário canônico
-  const lowerClean = name.toLowerCase();
+  const lowerClean = name.toLowerCase().trim();
   if (TEAM_CANONICAL_MAP[lowerClean]) {
     return TEAM_CANONICAL_MAP[lowerClean];
+  }
+
+  // 5. Limpeza final estrita com Regex para remover qualquer sigla residual (ex: " FC", " EC", " FBPA", " SAF")
+  name = name.replace(/\s+(?:fc|ec|fbpa|saf|sc|f\.c\.|e\.c\.)$/i, "").trim();
+
+  const lowerFinal = name.toLowerCase().trim();
+  if (TEAM_CANONICAL_MAP[lowerFinal]) {
+    return TEAM_CANONICAL_MAP[lowerFinal];
   }
 
   return name;

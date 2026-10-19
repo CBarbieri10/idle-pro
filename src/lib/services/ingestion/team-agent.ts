@@ -73,23 +73,43 @@ export class TeamAgent implements IngestionAgent {
             ""
         ).trim();
 
-        if (!rawTeam) {
-          errorCount++;
+        // Ignora linhas vazias ou de resumo geral ("Média por time, Total")
+        if (
+          !rawTeam ||
+          rawTeam.toLowerCase().includes("total") ||
+          rawTeam.toLowerCase().includes("média") ||
+          rawTeam.toLowerCase().includes("media")
+        ) {
           continue;
         }
 
+        // AÇÃO 2: Unificação Canônica Forçada (Mandatória)
         const cleanTeam = normalizeTeamName(rawTeam);
-        let team = findMatchingTeam(cleanTeam, existingTeams);
+        if (!cleanTeam) {
+          continue;
+        }
+
+        // Busca o time exclusivamente pelo nome canônico no Prisma para não duplicar entidades
+        let team =
+          existingTeams.find(
+            (t) => t.name.toLowerCase().trim() === cleanTeam.toLowerCase().trim()
+          ) ?? null;
+
+        if (!team) {
+          team = await prisma.team.findFirst({
+            where: { name: { equals: cleanTeam, mode: "insensitive" } },
+          });
+          if (team) existingTeams.push(team);
+        }
 
         if (!team) {
           team = await prisma.team.create({
             data: {
-              name: cleanTeam || rawTeam,
+              name: cleanTeam,
               country: "Brasil",
               leagueId: defaultLeague.id,
             },
           });
-          teamMap.set(team.name.toLowerCase(), team);
           existingTeams.push(team);
           createdCount++;
         } else {
@@ -108,14 +128,20 @@ export class TeamAgent implements IngestionAgent {
           ? new Date(2026, 3, 10 + parsedRound * 7)
           : new Date("2026-08-01T12:00:00.000Z");
 
-        const possession = parseFlexibleNumber(
+        const rawPoss = parseFlexibleNumber(
           row["Posse de bola, %"] || row["Posse, %"] || row["Posse"] || 50,
           50
         );
-        const pressingPct = parseFlexibleNumber(
+        const possession =
+          rawPoss > 0 && rawPoss <= 1 ? Math.round(rawPoss * 100) : Math.round(rawPoss);
+
+        const rawPressing = parseFlexibleNumber(
           row["Pressão do time bem-sucedida, %"] || row["Pressao, %"] || 0,
           0
         );
+        const pressingPct =
+          rawPressing > 0 && rawPressing <= 1 ? Math.round(rawPressing * 100) : Math.round(rawPressing);
+
         const finalThirdEntries = parseFlexibleNumber(
           row["Entradas no campo adversário"] || row["Entradas terço final"] || 0,
           0

@@ -97,10 +97,34 @@ function readSpreadsheetRows(filePath: string): Record<string, unknown>[] {
   });
 }
 
+// Os 20 clubes oficiais e canônicos da Série A
+const CANONICAL_SERIE_A_TEAMS = new Set([
+  "Flamengo",
+  "Palmeiras",
+  "Botafogo",
+  "São Paulo",
+  "Cruzeiro",
+  "Grêmio",
+  "Mirassol",
+  "Vasco da Gama",
+  "Remo",
+  "Athletico-PR",
+  "Bahia",
+  "Internacional",
+  "RB Bragantino",
+  "Chapecoense",
+  "Corinthians",
+  "Atlético Mineiro",
+  "Coritiba",
+  "Santos",
+  "Vitória",
+  "Fluminense",
+]);
+
 async function wipeDatabase(): Promise<void> {
   console.log(chalk.yellow("🧹 Limpando dados voláteis no banco de dados (Wipe Seguro)..."));
 
-  // Expurga dados dependentes mantendo Clubes, Ligas e Usuários Administrativos
+  // Expurga dados dependentes mantendo Clubes Canônicos, Ligas e Usuários Administrativos
   await prisma.portfolioAthlete.deleteMany({});
   await prisma.videoLink.deleteMany({});
   await prisma.athleteGoal.deleteMany({});
@@ -122,12 +146,63 @@ async function wipeDatabase(): Promise<void> {
     prisma.match.deleteMany({}),
   ]);
 
+  // AÇÃO 2: Unificação Canônica Forçada - Purga entidades de clubes duplicadas/residuais
+  const allTeams = await prisma.team.findMany({
+    select: { id: true, name: true },
+  });
+  const dirtyTeamIds = allTeams
+    .filter(
+      (t) =>
+        !CANONICAL_SERIE_A_TEAMS.has(t.name) ||
+        t.name.includes("Total") ||
+        t.name.includes("Média") ||
+        t.name.includes("Media")
+    )
+    .map((t) => t.id);
+
+  if (dirtyTeamIds.length > 0) {
+    await prisma.user.updateMany({
+      where: { teamId: { in: dirtyTeamIds } },
+      data: { teamId: null },
+    });
+    await prisma.team.deleteMany({
+      where: { id: { in: dirtyTeamIds } },
+    });
+    console.log(
+      chalk.yellow(
+        `   ✔ ${dirtyTeamIds.length} clubes duplicados/não-canônicos expurgados da base.`
+      )
+    );
+  }
+
+  // AÇÃO 3: Atribui clube de origem ao usuário analista (Flamengo)
+  const flamengo = await prisma.team.findFirst({
+    where: { name: "Flamengo" },
+  });
+  if (flamengo) {
+    const updated = await prisma.user.updateMany({
+      where: { email: "analista@thenetscouting.com" },
+      data: { teamId: flamengo.id },
+    });
+    if (updated.count > 0) {
+      console.log(
+        chalk.green(
+          `   ✔ Usuário analista@thenetscouting.com vinculado ao clube ${flamengo.name} (${flamengo.id}).`
+        )
+      );
+    }
+  }
+
   console.log(
     chalk.green(
       `   ✔ Banco limpo: ${deletedAthletes.count} atletas e ${deletedMatches.count} partidas resetados.`
     )
   );
-  console.log(chalk.gray("   ✔ Clubes (Teams), Ligas e Contas Administrativas preservados com sucesso.\n"));
+  console.log(
+    chalk.gray(
+      "   ✔ 20 Clubes Canônicos, Ligas e Contas Administrativas configurados com sucesso.\n"
+    )
+  );
 }
 
 async function main() {
