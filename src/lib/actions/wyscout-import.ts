@@ -18,6 +18,10 @@ import {
   SPORTSBASE_ATHLETE_MAP,
   normalizeSportsBaseMatchRow,
   normalizeSportsBaseAthleteRow,
+  normalizeTeamName,
+  findMatchingTeam,
+  parseSafeInteger,
+  parseFootPreference,
   parseIsoDate,
   parseMatchString,
   parseFlexibleNumber,
@@ -314,7 +318,7 @@ export async function processAthleteFile(
   const candidateAthletes: CandidateAthlete[] = existingAthletes.map((a) => ({
     id: a.id,
     name: a.name,
-    teamName: a.team.name,
+    teamName: a.team?.name ?? "Sem Clube",
   }));
 
   const details: ImportDetailItem[] = [];
@@ -357,26 +361,14 @@ export async function processAthleteFile(
             return;
           }
 
-          // Resolver ou criar clube
-          let team =
-            teamMapByName.get(rawTeam.toLowerCase().trim()) ||
-            existingTeams.find(
-              (t) =>
-                rawTeam.toLowerCase().includes(t.name.toLowerCase()) ||
-                t.name.toLowerCase().includes(rawTeam.toLowerCase())
-            ) ||
-            existingTeams[0];
+          // Ação 1: Limpeza agressiva e resolução segura do clube
+          // Normaliza ('CR ', 'SE ', ' EC', ' FC', ' SAF', ' FBPA', 'Club ', 'Esporte Clube ')
+          const cleanTeam = normalizeTeamName(rawTeam);
+          const matchedTeam = findMatchingTeam(cleanTeam, existingTeams);
 
-          if (!team) {
-            team = await prisma.team.create({
-              data: {
-                name: rawTeam || "Clube Não Identificado",
-                country: "Brasil",
-                leagueId: defaultLeague.id,
-              },
-            });
-            teamMapByName.set(team.name.toLowerCase().trim(), team);
-          }
+          // Regra de Ouro: Se o time não der match, NUNCA insira os atletas em um clube aleatório (como Chapecoense).
+          // O teamId do atleta deve ficar nulo (Sem Clube).
+          const athleteTeamId = matchedTeam ? matchedTeam.id : null;
 
           // Parsing cronológico (Rodada e Data do Evento com parseIsoDate)
           const rawRound = parseNum(row["Rodada"] || row["Round"] || row["Matchday"]);
@@ -389,14 +381,33 @@ export async function processAthleteFile(
             ? new Date(2026, 3, 10 + parsedRound * 7)
             : new Date("2026-08-01T12:00:00.000Z");
 
+          // Para a tabela Match (que exige teamId como chave estrangeira relacional):
+          let matchTeamId: string;
+          if (matchedTeam) {
+            matchTeamId = matchedTeam.id;
+          } else {
+            let unassignedTeam = existingTeams.find((t) => t.name === "Sem Clube");
+            if (!unassignedTeam) {
+              unassignedTeam = await prisma.team.create({
+                data: {
+                  name: "Sem Clube",
+                  country: "Brasil",
+                  leagueId: defaultLeague.id,
+                },
+              });
+              existingTeams.push(unassignedTeam);
+            }
+            matchTeamId = unassignedTeam.id;
+          }
+
           // Chave única para o evento da partida
-          const matchCacheKey = `${team.id}-R${parsedRound || 0}-${eventDate.toISOString().slice(0, 10)}`;
+          const matchCacheKey = `${matchTeamId}-R${parsedRound || 0}-${eventDate.toISOString().slice(0, 10)}`;
           let matchId = roundMatchCache.get(matchCacheKey);
 
           if (!matchId) {
             const existingMatch = await prisma.match.findFirst({
               where: {
-                teamId: team.id,
+                teamId: matchTeamId,
                 round: parsedRound ? `Rodada ${parsedRound}` : "Rodada Regular",
                 date: eventDate,
               },
@@ -407,7 +418,7 @@ export async function processAthleteFile(
             } else {
               const newMatch = await prisma.match.create({
                 data: {
-                  teamId: team.id,
+                  teamId: matchTeamId,
                   opponentName: "Série A 2026",
                   date: eventDate,
                   round: parsedRound ? `Rodada ${parsedRound}` : "Rodada Regular",
@@ -429,12 +440,10 @@ export async function processAthleteFile(
           const sbAthlete = normalizeSportsBaseAthleteRow(row);
 
           // Fuzzy Match do Atleta
-          const matchResult = matchAthleteName(playerName, candidateAthletes, rawTeam);
+          const matchResult = matchAthleteName(playerName, candidateAthletes, cleanTeam || rawTeam);
           const rawPos = String(row["Posição"] || row["Position"] || row["Pos"] || "");
           const position = mapWyscoutPosition(rawPos);
           const age = parseNum(row["Idade"] || row["Age"]);
-          const height = parseNum(row["Altura"] || row["Height"]);
-          const weight = parseNum(row["Peso"] || row["Weight"]);
           const nationality = String(row["Nacionalidade"] || row["País"] || "Brasil").trim();
           const minutes = sbAthlete.minutes_played > 0 ? sbAthlete.minutes_played : parseNum(row["Minutos jogados"] || row["Minutos"] || 90);
           const matches = parseNum(row["Partidas jogadas"] || row["Jogos"] || row["Matches"] || 1);
@@ -464,8 +473,10 @@ export async function processAthleteFile(
               data: {
                 position: position || undefined,
                 birthDate: birthDate || undefined,
-                height: height > 0 ? Math.round(height) : undefined,
-                weight: weight > 0 ? Math.round(weight) : undefined,
+                height: sbAthlete.height !== null ? sbAthlete.height : undefined,
+                weight: sbAthlete.weight !== null ? sbAthlete.weight : undefined,
+                footPreference: sbAthlete.footPreference ?? undefined,
+                teamId: athleteTeamId, // strictly null if no match found!
                 nationality: nationality || undefined,
                 idgScore,
                 stabilityCategory,
@@ -476,7 +487,7 @@ export async function processAthleteFile(
             details.push({
               rowNumber,
               playerName,
-              teamName: rawTeam,
+              teamName: matchedTeam ? matchedTeam.name : (rawTeam ? `${rawTeam} (Sem Match)` : "Sem Clube"),
               matchedAthleteName: matchResult.athlete.name,
               athleteId: targetAthleteId,
               similarityScore: matchResult.score,
@@ -488,11 +499,11 @@ export async function processAthleteFile(
                 name: playerName,
                 position,
                 birthDate,
-                height: height > 0 ? Math.round(height) : null,
-                weight: weight > 0 ? Math.round(weight) : null,
+                height: sbAthlete.height, // safe parsing: '-' converted to null
+                weight: sbAthlete.weight, // safe parsing: '-' converted to null
                 nationality,
-                footPreference: FootPreference.RIGHT,
-                teamId: team.id,
+                footPreference: sbAthlete.footPreference ?? FootPreference.UNKNOWN, // NO right foot fallback!
+                teamId: athleteTeamId, // strictly null if no match found!
                 notes: [jerseyNote, `Importado via Dropzone. Índice: ${rating} (${matches} jogos, ${minutes} min).`].filter(Boolean).join(" • "),
                 idgScore,
                 stabilityCategory,
@@ -503,14 +514,14 @@ export async function processAthleteFile(
             candidateAthletes.push({
               id: newAthlete.id,
               name: newAthlete.name,
-              teamName: team.name,
+              teamName: matchedTeam ? matchedTeam.name : "Sem Clube",
             });
 
             createdCount++;
             details.push({
               rowNumber,
               playerName,
-              teamName: rawTeam,
+              teamName: matchedTeam ? matchedTeam.name : (rawTeam ? `${rawTeam} (Sem Match)` : "Sem Clube"),
               matchedAthleteName: newAthlete.name,
               athleteId: targetAthleteId,
               similarityScore: 100,
@@ -546,16 +557,16 @@ export async function processAthleteFile(
           const xgPerShot = calculateXgPerShot(xg, shots);
 
           // ─── A Regra de Ouro (Acúmulo Longitudinal): ──────────────────────
-          // NÃO fazemos delete indiscriminado. Substitui APENAS o registro da mesma partida/rodada!
-          await prisma.rawMetric.deleteMany({
+          // Upsert atômico para RawMetric (elimina P2002 em chunks concorrentes)
+          const rawMetric = await prisma.rawMetric.upsert({
             where: {
-              athleteId: targetAthleteId,
-              matchId,
+              matchId_athleteId_source: {
+                matchId,
+                athleteId: targetAthleteId,
+                source: MetricSource.SPORTSBASE,
+              },
             },
-          });
-
-          const rawMetric = await prisma.rawMetric.create({
-            data: {
+            create: {
               athleteId: targetAthleteId,
               matchId,
               round: parsedRound,
@@ -571,12 +582,18 @@ export async function processAthleteFile(
                 key_passes_accurate: keyPassesAccurate,
               } as Prisma.InputJsonValue,
             },
-          });
-
-          await prisma.canonicalMetric.deleteMany({
-            where: {
-              athleteId: targetAthleteId,
-              matchId,
+            update: {
+              round: parsedRound,
+              date: eventDate,
+              minutesPlayed: Math.round(minutes),
+              data: {
+                ...row,
+                jersey_number: jerseyNumber,
+                minutes_played: minutes,
+                pass_accuracy: passAccuracy,
+                defensive_duels_won_pct: defDuelsWonPct,
+                key_passes_accurate: keyPassesAccurate,
+              } as Prisma.InputJsonValue,
             },
           });
 
@@ -605,14 +622,28 @@ export async function processAthleteFile(
           ];
 
           for (const item of canonicalRecords) {
-            await prisma.canonicalMetric.create({
-              data: {
+            await prisma.canonicalMetric.upsert({
+              where: {
+                matchId_athleteId_metricName: {
+                  matchId,
+                  athleteId: targetAthleteId,
+                  metricName: item.metricName,
+                },
+              },
+              create: {
                 athleteId: targetAthleteId,
                 matchId,
                 rawMetricId: rawMetric.id,
                 round: parsedRound,
                 date: eventDate,
                 metricName: item.metricName,
+                absoluteValue: item.absoluteValue,
+                per90Value: item.per90Value,
+              },
+              update: {
+                rawMetricId: rawMetric.id,
+                round: parsedRound,
+                date: eventDate,
                 absoluteValue: item.absoluteValue,
                 per90Value: item.per90Value,
               },
@@ -693,24 +724,25 @@ export async function processMatchFile(
       // 'Tática (inicial)' -> starting_formation
       // 'Pressão do time bem-sucedida, %' -> successful_pressing_pct
       // 'Entradas no campo adversário' -> entries_final_third_team
+      // 'Chances de gol' -> goal_chances (Eixo X de Ofensividade)
+      // 'Recuperações da bola no campo adversário' -> recoveries_opponent_half (Eixo Y de Controle)
       const sbMatch = normalizeSportsBaseMatchRow(row);
 
-      const homeTeamName = sbMatch.homeTeam;
-      const awayTeamName = sbMatch.awayTeam;
+      const rawHomeTeam = sbMatch.homeTeam;
+      const rawAwayTeam = sbMatch.awayTeam;
 
-      if (!homeTeamName) {
+      if (!rawHomeTeam) {
         errorCount++;
         continue;
       }
 
-      let homeTeam =
-        teamMap.get(homeTeamName.toLowerCase()) ||
-        existingTeams.find((t) => t.name.toLowerCase().includes(homeTeamName.toLowerCase()));
+      const cleanHomeTeam = normalizeTeamName(rawHomeTeam);
+      let homeTeam = findMatchingTeam(cleanHomeTeam, existingTeams);
 
       if (!homeTeam) {
         homeTeam = await prisma.team.create({
           data: {
-            name: homeTeamName,
+            name: cleanHomeTeam || rawHomeTeam,
             country: "Brasil",
             leagueId: defaultLeague.id,
           },
@@ -719,15 +751,13 @@ export async function processMatchFile(
         existingTeams.push(homeTeam);
       }
 
-      let awayTeam = awayTeamName
-        ? teamMap.get(awayTeamName.toLowerCase()) ||
-          existingTeams.find((t) => t.name.toLowerCase().includes(awayTeamName.toLowerCase()))
-        : null;
+      const cleanAwayTeam = rawAwayTeam ? normalizeTeamName(rawAwayTeam) : "";
+      let awayTeam = cleanAwayTeam ? findMatchingTeam(cleanAwayTeam, existingTeams) : null;
 
-      if (awayTeamName && !awayTeam) {
+      if (cleanAwayTeam && !awayTeam) {
         awayTeam = await prisma.team.create({
           data: {
-            name: awayTeamName,
+            name: cleanAwayTeam,
             country: "Brasil",
             leagueId: defaultLeague.id,
           },
@@ -752,6 +782,8 @@ export async function processMatchFile(
         sbMatch.starting_formation ? `Tática: ${sbMatch.starting_formation}` : null,
         sbMatch.successful_pressing_pct > 0 ? `Pressão: ${sbMatch.successful_pressing_pct}%` : null,
         sbMatch.entries_final_third_team > 0 ? `Entradas Terço Final: ${sbMatch.entries_final_third_team}` : null,
+        sbMatch.goal_chances > 0 ? `Chances de gol: ${sbMatch.goal_chances}` : null,
+        sbMatch.recoveries_opponent_half > 0 ? `Recuperações Campo Adv: ${sbMatch.recoveries_opponent_half}` : null,
         xgHome > 0 ? `xG: ${xgHome.toFixed(2)}` : null,
         "Importado via SportsBase Match Pipeline",
       ].filter(Boolean);
@@ -770,7 +802,7 @@ export async function processMatchFile(
           where: { id: existingMatch.id },
           data: {
             opponentId: awayTeam?.id || null,
-            opponentName: awayTeam?.name || awayTeamName || "Adversário",
+            opponentName: awayTeam?.name || rawAwayTeam || "Adversário",
             goalsFor: Math.round(goalsFor),
             goalsAgainst: Math.round(goalsAgainst),
             possession,
@@ -781,7 +813,7 @@ export async function processMatchFile(
         matchedCount++;
         details.push({
           rowNumber,
-          playerName: sbMatch.match_string || `${homeTeam.name} vs ${awayTeam?.name || awayTeamName}`,
+          playerName: sbMatch.match_string || `${homeTeam.name} vs ${awayTeam?.name || rawAwayTeam}`,
           teamName: homeTeam.name,
           similarityScore: 100,
           action: "UPDATED",
@@ -791,7 +823,7 @@ export async function processMatchFile(
           data: {
             teamId: homeTeam.id,
             opponentId: awayTeam?.id || null,
-            opponentName: awayTeam?.name || awayTeamName || "Adversário",
+            opponentName: awayTeam?.name || rawAwayTeam || "Adversário",
             venue: MatchVenue.HOME,
             date: matchDate,
             round: roundLabel,
@@ -807,7 +839,7 @@ export async function processMatchFile(
         createdCount++;
         details.push({
           rowNumber,
-          playerName: sbMatch.match_string || `${homeTeam.name} vs ${awayTeam?.name || awayTeamName}`,
+          playerName: sbMatch.match_string || `${homeTeam.name} vs ${awayTeam?.name || rawAwayTeam}`,
           teamName: homeTeam.name,
           similarityScore: 100,
           action: "CREATED",
@@ -878,28 +910,28 @@ export async function processTeamFile(
     const rowNumber = i + 2;
 
     try {
-      const teamName = String(
+      const rawTeamName = String(
         row["Time"] || row["Equipe"] || row["Team"] || row["Clube"] || row["Club"] || ""
       ).trim();
 
-      if (!teamName) {
+      if (!rawTeamName) {
         errorCount++;
         continue;
       }
 
-      let team =
-        teamMap.get(teamName.toLowerCase()) ||
-        existingTeams.find((t) => t.name.toLowerCase().includes(teamName.toLowerCase()));
+      const cleanTeam = normalizeTeamName(rawTeamName);
+      let team = findMatchingTeam(cleanTeam, existingTeams);
 
       if (!team) {
         team = await prisma.team.create({
           data: {
-            name: teamName,
+            name: cleanTeam || rawTeamName,
             country: "Brasil",
             leagueId: defaultLeague.id,
           },
         });
         teamMap.set(team.name.toLowerCase(), team);
+        existingTeams.push(team);
         createdCount++;
       } else {
         matchedCount++;
@@ -921,9 +953,17 @@ export async function processTeamFile(
       const pressing = parseFlexibleNumber(row["Pressão do time bem-sucedida, %"] || row["successful_pressing_pct"]);
       const entries = parseFlexibleNumber(row["Entradas no campo adversário"] || row["entries_final_third_team"]);
 
+      const rawChances = row["Chances de gol"] ?? row["goal_chances"] ?? row["chances_de_gol"];
+      const goalChances = parseFlexibleNumber(rawChances, 0);
+
+      const rawRecup = row["Recuperações da bola no campo adversário"] ?? row["recoveries_opponent_half"] ?? row["recuperacoes_no_campo_adversario"];
+      const recoveriesOpponentHalf = parseFlexibleNumber(rawRecup, 0);
+
       const teamNotesParts = [
         `xG: ${xg.toFixed(2)}`,
         `xGA: ${xga.toFixed(2)}`,
+        goalChances > 0 ? `Chances de gol: ${goalChances}` : null,
+        recoveriesOpponentHalf > 0 ? `Recuperações Campo Adv: ${recoveriesOpponentHalf}` : null,
         startingFormation ? `Tática: ${startingFormation}` : null,
         pressing > 0 ? `Pressão: ${pressing}%` : null,
         entries > 0 ? `Entradas Terço Final: ${entries}` : null,

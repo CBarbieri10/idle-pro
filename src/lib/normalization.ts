@@ -1,5 +1,5 @@
 import { prisma } from "@/lib/prisma";
-import { Prisma, type MetricSource } from "@prisma/client";
+import { Prisma, type MetricSource, FootPreference } from "@prisma/client";
 import { METRIC_BY_KEY, type MetricData } from "@/lib/metrics";
 import { normalizeHeader } from "@/lib/import/mapping";
 import { calculatePAdj, calculateXgPerShot } from "@/lib/math-engine";
@@ -11,28 +11,252 @@ export interface NormalizedCanonicalValue {
 }
 
 /**
- * Calculates Per-90 metric value: (value / minutes) * 90.
- *
- * Safety guarantees:
- * - If minutes <= 0, null, undefined, or NaN, returns 0 (prevents division by zero).
- * - If value is NaN or infinite, returns 0.
- * - Rounds result to 2 decimal places.
+ * Dicionário Canônico Agressivo de Clubes Brasileiros (SportsBase -> Nome Canônico do Prisma)
  */
-export function calculatePer90(
-  value: number,
-  minutesPlayed: number | null | undefined
-): number {
-  if (
-    !minutesPlayed ||
-    minutesPlayed <= 0 ||
-    !Number.isFinite(minutesPlayed) ||
-    !Number.isFinite(value)
-  ) {
-    return 0;
+export const TEAM_CANONICAL_MAP: Record<string, string> = {
+  // Flamengo
+  "cr flamengo": "Flamengo",
+  "flamengo": "Flamengo",
+  // Palmeiras
+  "se palmeiras": "Palmeiras",
+  "palmeiras": "Palmeiras",
+  // Botafogo
+  "saf botafogo": "Botafogo",
+  "botafogo fr": "Botafogo",
+  "botafogo": "Botafogo",
+  // São Paulo
+  "sao paulo fc": "São Paulo",
+  "são paulo fc": "São Paulo",
+  "sao paulo": "São Paulo",
+  "são paulo": "São Paulo",
+  // Cruzeiro
+  "cruzeiro ec": "Cruzeiro",
+  "cruzeiro": "Cruzeiro",
+  // Grêmio
+  "gremio fbpa": "Grêmio",
+  "grêmio fbpa": "Grêmio",
+  "gremio": "Grêmio",
+  "grêmio": "Grêmio",
+  // Corinthians
+  "sc corinthians paulista": "Corinthians",
+  "corinthians": "Corinthians",
+  // Santos
+  "santos fc": "Santos",
+  "santos": "Santos",
+  // Fluminense
+  "fluminense fc": "Fluminense",
+  "fluminense": "Fluminense",
+  // Vasco
+  "cr vasco da gama": "Vasco da Gama",
+  "vasco da gama": "Vasco da Gama",
+  "vasco": "Vasco da Gama",
+  // Atlético Mineiro
+  "clube atletico mineiro": "Atlético-MG",
+  "clube atlético mineiro": "Atlético-MG",
+  "atletico mineiro": "Atlético-MG",
+  "atlético mineiro": "Atlético-MG",
+  "atletico mg": "Atlético-MG",
+  "atlético-mg": "Atlético-MG",
+  // Internacional
+  "sc internacional": "Internacional",
+  "internacional": "Internacional",
+  "inter": "Internacional",
+  // Athletico Paranaense
+  "club athletico paranaense": "Athletico-PR",
+  "athletico paranaense": "Athletico-PR",
+  "athletico pr": "Athletico-PR",
+  "athletico-pr": "Athletico-PR",
+  "atletico paranaense": "Athletico-PR",
+  // Bahia
+  "esporte clube bahia": "Bahia",
+  "ec bahia": "Bahia",
+  "bahia": "Bahia",
+  // RB Bragantino
+  "red bull bragantino": "RB Bragantino",
+  "rb bragantino": "RB Bragantino",
+  "bragantino": "RB Bragantino",
+  // Vitória
+  "esporte clube vitoria": "Vitória",
+  "esporte clube vitória": "Vitória",
+  "ec vitoria": "Vitória",
+  "ec vitória": "Vitória",
+  "vitoria": "Vitória",
+  "vitória": "Vitória",
+  // Fortaleza
+  "fortaleza ec": "Fortaleza",
+  "fortaleza": "Fortaleza",
+  // Juventude
+  "esporte clube juventude": "Juventude",
+  "ec juventude": "Juventude",
+  "juventude": "Juventude",
+  // Criciúma
+  "criciuma ec": "Criciúma",
+  "criciúma ec": "Criciúma",
+  "criciuma": "Criciúma",
+  "criciúma": "Criciúma",
+  // Cuiabá
+  "cuiaba ec": "Cuiabá",
+  "cuiabá ec": "Cuiabá",
+  "cuiaba": "Cuiabá",
+  "cuiabá": "Cuiabá",
+  // Atlético Goianiense
+  "atletico clube goianiense": "Atlético-GO",
+  "atlético clube goianiense": "Atlético-GO",
+  "atletico goianiense": "Atlético-GO",
+  "atlético goianiense": "Atlético-GO",
+  "atletico go": "Atlético-GO",
+  "atlético-go": "Atlético-GO",
+  // Coritiba
+  "coritiba fbc": "Coritiba",
+  "coritiba": "Coritiba",
+  // Chapecoense
+  "associacao chapecoense de futebol": "Chapecoense",
+  "associação chapecoense de futebol": "Chapecoense",
+  "chapecoense": "Chapecoense",
+  // Mirassol
+  "mirassol fc": "Mirassol",
+  "mirassol": "Mirassol",
+  // Sport
+  "sport club do recife": "Sport",
+  "sport recife": "Sport",
+  "sport": "Sport",
+  // Ceará
+  "ceara sc": "Ceará",
+  "ceará sc": "Ceará",
+  "ceara": "Ceará",
+  "ceará": "Ceará",
+  // América Mineiro
+  "america fc": "América-MG",
+  "américa fc": "América-MG",
+  "america mineiro": "América-MG",
+  "américa mineiro": "América-MG",
+  "america-mg": "América-MG",
+  "américa-mg": "América-MG",
+  // Goiás
+  "goias ec": "Goiás",
+  "goiás ec": "Goiás",
+  "goias": "Goiás",
+  "goiás": "Goiás",
+};
+
+/**
+ * Limpa agressivamente prefixos ('CR ', 'SE ', 'SAF ', 'Club ', 'Esporte Clube ', 'EC ', 'SC ')
+ * e sufixos (' EC', ' FC', ' SAF', ' FBPA', ' F.C.', ' E.C.') de nomes de clubes do SportsBase.
+ */
+export function normalizeTeamName(rawName: string): string {
+  if (!rawName) return "";
+  let name = rawName.trim();
+
+  // 1. Verificação direta no dicionário canônico
+  const lowerDirect = name.toLowerCase();
+  if (TEAM_CANONICAL_MAP[lowerDirect]) {
+    return TEAM_CANONICAL_MAP[lowerDirect];
   }
 
-  const per90 = (value / minutesPlayed) * 90;
-  return Math.round(per90 * 100) / 100;
+  // 2. Remoção agressiva de prefixos
+  name = name.replace(/^(?:cr|se|saf|sc|ec|club|clube|esporte\s+clube|associacao|associação)\s+/i, "");
+
+  // 3. Remoção agressiva de sufixos
+  name = name.replace(/\s+(?:ec|fc|saf|fbpa|f\.c\.|e\.c\.|s\/a|ltda|de\s+futebol)$/i, "");
+
+  name = name.trim();
+
+  // 4. Checagem pós-limpeza no dicionário canônico
+  const lowerClean = name.toLowerCase();
+  if (TEAM_CANONICAL_MAP[lowerClean]) {
+    return TEAM_CANONICAL_MAP[lowerClean];
+  }
+
+  return name;
+}
+
+/**
+ * Busca o time correspondente no Prisma.
+ * Regra de Ouro: Se não encontrar correspondência segura, NUNCA retorna um clube aleatório!
+ * Retorna null (Sem Clube).
+ */
+export function findMatchingTeam<T extends { id: string; name: string; shortName?: string | null }>(
+  rawOrCleanName: string,
+  teams: T[]
+): T | null {
+  if (!rawOrCleanName || !rawOrCleanName.trim()) return null;
+
+  const normalized = normalizeTeamName(rawOrCleanName);
+  const normLower = normalized.toLowerCase().trim();
+  const rawLower = rawOrCleanName.toLowerCase().trim();
+
+  // 1. Match exato pelo nome limpo, raw ou shortName
+  const directMatch = teams.find(
+    (t) =>
+      t.name.toLowerCase().trim() === normLower ||
+      t.name.toLowerCase().trim() === rawLower ||
+      (t.shortName && t.shortName.toLowerCase().trim() === normLower)
+  );
+  if (directMatch) return directMatch;
+
+  // 2. Match por inclusão se a string tiver tamanho suficiente (>= 4 caracteres)
+  if (normLower.length >= 4) {
+    const includesMatch = teams.find((t) => {
+      const tNorm = normalizeTeamName(t.name).toLowerCase().trim();
+      return (
+        tNorm === normLower ||
+        t.name.toLowerCase().includes(normLower) ||
+        normLower.includes(tNorm)
+      );
+    });
+    if (includesMatch) return includesMatch;
+  }
+
+  return null;
+}
+
+/**
+ * Converte com segurança valores de altura, peso ou outros inteiros vindos do Excel.
+ * Converte com segurança '-', ' - ', '', null, undefined ou strings com texto em null.
+ */
+export function parseSafeInteger(val: unknown): number | null {
+  if (val === null || val === undefined) return null;
+  if (typeof val === "number") {
+    return Number.isFinite(val) && val > 0 ? Math.round(val) : null;
+  }
+  const s = String(val).trim();
+  if (
+    s === "" ||
+    s === "-" ||
+    s === "—" ||
+    s === "–" ||
+    s === "N/A" ||
+    s === "n/a" ||
+    s === "null" ||
+    s === "undefined"
+  ) {
+    return null;
+  }
+  const clean = s.replace(/[^\d.-]/g, "");
+  const num = parseInt(clean, 10);
+  return Number.isFinite(num) && num > 0 ? num : null;
+}
+
+/**
+ * Converte o pé preferencial sem assumir 'Direito' como fallback.
+ * Se ausente ou com '-', retorna null.
+ */
+export function parseFootPreference(val: unknown): FootPreference | null {
+  if (!val) return null;
+  const s = String(val).toLowerCase().trim();
+  if (s === "" || s === "-" || s === "—" || s === "–" || s === "n/a" || s === "desconhecido") {
+    return null;
+  }
+  if (s.includes("dir") || s.includes("right") || s === "d" || s === "r") {
+    return FootPreference.RIGHT;
+  }
+  if (s.includes("esq") || s.includes("left") || s === "e" || s === "l") {
+    return FootPreference.LEFT;
+  }
+  if (s.includes("ambi") || s.includes("both") || s === "a" || s === "b") {
+    return FootPreference.BOTH;
+  }
+  return FootPreference.UNKNOWN;
 }
 
 /**
@@ -45,6 +269,8 @@ export const SPORTSBASE_MATCH_MAP = {
   "Tática (inicial)": "starting_formation",
   "Pressão do time bem-sucedida, %": "successful_pressing_pct",
   "Entradas no campo adversário": "entries_final_third_team",
+  "Chances de gol": "goal_chances",
+  "Recuperações da bola no campo adversário": "recoveries_opponent_half",
 } as const;
 
 /**
@@ -189,6 +415,8 @@ export interface NormalizedMatchRow {
   starting_formation: string;
   successful_pressing_pct: number;
   entries_final_third_team: number;
+  goal_chances: number;
+  recoveries_opponent_half: number;
   raw: Record<string, unknown>;
 }
 
@@ -223,6 +451,14 @@ export function normalizeSportsBaseMatchRow(row: Record<string, unknown>): Norma
   const rawEntries = row["Entradas no campo adversário"] ?? row["entries_final_third_team"] ?? row["Entradas no campo adversario"];
   const entries_final_third_team = parseFlexibleNumber(rawEntries, 0);
 
+  // 'Chances de gol' -> goal_chances (Eixo X de Ofensividade)
+  const rawChances = row["Chances de gol"] ?? row["goal_chances"] ?? row["chances_de_gol"];
+  const goal_chances = parseFlexibleNumber(rawChances, 0);
+
+  // 'Recuperações da bola no campo adversário' -> recoveries_opponent_half (Eixo Y de Controle)
+  const rawRecupAdv = row["Recuperações da bola no campo adversário"] ?? row["recoveries_opponent_half"] ?? row["recuperacoes_no_campo_adversario"];
+  const recoveries_opponent_half = parseFlexibleNumber(rawRecupAdv, 0);
+
   return {
     date,
     dateIso: date.toISOString(),
@@ -235,6 +471,8 @@ export function normalizeSportsBaseMatchRow(row: Record<string, unknown>): Norma
     starting_formation,
     successful_pressing_pct,
     entries_final_third_team,
+    goal_chances,
+    recoveries_opponent_half,
     raw: row,
   };
 }
@@ -245,6 +483,10 @@ export interface NormalizedAthleteRow {
   pass_accuracy: number;
   defensive_duels_won_pct: number;
   key_passes_accurate: number;
+  height: number | null;
+  weight: number | null;
+  footPreference: FootPreference | null;
+  cleanTeamName: string;
   raw: Record<string, unknown>;
 }
 
@@ -273,12 +515,29 @@ export function normalizeSportsBaseAthleteRow(row: Record<string, unknown>): Nor
   const rawKeyPasses = row["Passes-chave precisos"] ?? row["key_passes_accurate"] ?? row["Passes chave precisos"];
   const key_passes_accurate = parseFlexibleNumber(rawKeyPasses, 0);
 
+  // Altura e Peso seguros (convertem '-' ou vazios em null, evitando quebras)
+  const height = parseSafeInteger(row["Altura"] ?? row["Height"] ?? row["altura"]);
+  const weight = parseSafeInteger(row["Peso"] ?? row["Weight"] ?? row["peso"]);
+
+  // Pé preferencial sem fallback artificial para 'Direito'
+  const footPreference = parseFootPreference(row["Pé"] ?? row["Pe"] ?? row["Foot"] ?? row["Pé preferencial"]);
+
+  // Limpeza de nome do clube via normalizeTeamName
+  const rawTeam = String(
+    row["Time"] ?? row["Equipe"] ?? row["Team"] ?? row["Clube"] ?? row["Club"] ?? ""
+  ).trim();
+  const cleanTeamName = normalizeTeamName(rawTeam);
+
   return {
     jersey_number,
     minutes_played,
     pass_accuracy,
     defensive_duels_won_pct,
     key_passes_accurate,
+    height,
+    weight,
+    footPreference,
+    cleanTeamName,
     raw: row,
   };
 }
@@ -468,9 +727,10 @@ export function extractCanonicalMetrics(
       metricName === "rating" ||
       metricName === "xg_per_shot";
 
+    const safeMinutes = minutesPlayed ?? 0;
     const per90Value = isRateOrPercentage
       ? Math.round(absoluteValue * 100) / 100
-      : calculatePer90(absoluteValue, minutesPlayed);
+      : (safeMinutes > 0 ? Number(((absoluteValue / safeMinutes) * 90).toFixed(2)) : Number(absoluteValue.toFixed(2)));
 
     output.push({
       metricName,

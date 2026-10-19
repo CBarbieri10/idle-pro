@@ -443,12 +443,19 @@ export async function getTopPlayersByMetric(
       name: a.name,
       position: a.position,
       positionLabel: POSITION_LABELS[a.position] || a.position,
-      team: {
-        id: a.team.id,
-        name: a.team.name,
-        shortName: a.team.shortName,
-        logoUrl: a.team.logoUrl,
-      },
+      team: a.team
+        ? {
+            id: a.team.id,
+            name: a.team.name,
+            shortName: a.team.shortName,
+            logoUrl: a.team.logoUrl,
+          }
+        : {
+            id: "sem-clube",
+            name: "Sem Clube",
+            shortName: "S/C",
+            logoUrl: null,
+          },
       photoUrl: a.photoUrl,
       photoHasAlpha: a.photoHasAlpha,
       totalMinutes: item.totalMinutes,
@@ -760,8 +767,10 @@ export interface TeamQuadrantPoint {
   name: string;
   shortName: string;
   logoUrl: string | null;
-  offensiveEfficiency: number; // Eixo X: xG / Eficiência Ofensiva
-  defensiveSolidity: number;   // Eixo Y: Solidez Defensiva (xGA Evitado / Índice de Bloqueio)
+  offensiveEfficiency: number; // Eixo X: Chances de gol (Ofensividade)
+  defensiveSolidity: number;   // Eixo Y: Recuperações da bola no campo adversário (Controle)
+  goalChances: number;         // Chave canônica 'Chances de gol'
+  recoveriesOpponentHalf: number; // Chave canônica 'Recuperações da bola no campo adversário'
   matches: number;
   goalsFor: number;
   goalsAgainst: number;
@@ -780,8 +789,8 @@ export interface LeagueQuadrantsPayload {
 
 /**
  * Retorna os dados em plano cartesiano 2D dos clubes da Série A para o QuadrantScatterChart:
- * Eixo X = Eficiência Ofensiva (xG / Gols Pró / Jogo)
- * Eixo Y = Solidez Defensiva (xGA Evitado / Solidez de Bloco)
+ * Eixo X = Chances de gol (Ofensividade)
+ * Eixo Y = Recuperações da bola no campo adversário (Controle)
  * Dividido pela mediana da competição em 4 quadrantes térmicos.
  */
 export async function getLeagueQuadrantsData(): Promise<LeagueQuadrantsPayload> {
@@ -804,7 +813,7 @@ export async function getLeagueQuadrantsData(): Promise<LeagueQuadrantsPayload> 
         select: {
           canonicalMetrics: {
             where: {
-              metricName: { in: ["xg", "goals", "padj_tackles", "padj_interceptions", "recoveries"] },
+              metricName: { in: ["xg", "goals", "shots_on_target", "recoveries", "padj_tackles"] },
             },
             select: {
               metricName: true,
@@ -818,87 +827,87 @@ export async function getLeagueQuadrantsData(): Promise<LeagueQuadrantsPayload> 
     orderBy: { name: "asc" },
   });
 
-  // Calibração de fallback realista para a Série A 2026 (quando o banco estiver pós-wipe)
-  const BASE_CALIBRATION: Record<string, { off: number; def: number; gf: number; ga: number }> = {
-    Flamengo: { off: 2.15, def: 2.20, gf: 24, ga: 10 },
-    Palmeiras: { off: 2.05, def: 2.25, gf: 22, ga: 9 },
-    Botafogo: { off: 2.10, def: 2.10, gf: 23, ga: 11 },
-    "Atlético-MG": { off: 1.85, def: 1.95, gf: 18, ga: 13 },
-    "São Paulo": { off: 1.70, def: 2.00, gf: 16, ga: 12 },
-    Internacional: { off: 1.75, def: 2.05, gf: 17, ga: 11 },
-    Cruzeiro: { off: 1.65, def: 1.90, gf: 15, ga: 14 },
-    Bahia: { off: 1.80, def: 1.60, gf: 19, ga: 18 },
-    Fortaleza: { off: 1.60, def: 1.85, gf: 15, ga: 13 },
-    Fluminense: { off: 1.55, def: 1.75, gf: 14, ga: 15 },
-    Grêmio: { off: 1.65, def: 1.55, gf: 16, ga: 19 },
-    Vasco: { off: 1.50, def: 1.60, gf: 13, ga: 17 },
-    Corinthians: { off: 1.45, def: 1.80, gf: 12, ga: 14 },
-    "Athletico-PR": { off: 1.50, def: 1.70, gf: 13, ga: 15 },
-    Bragantino: { off: 1.70, def: 1.50, gf: 17, ga: 20 },
-    Vitória: { off: 1.30, def: 1.45, gf: 11, ga: 20 },
-    Juventude: { off: 1.25, def: 1.40, gf: 10, ga: 22 },
-    Criciúma: { off: 1.20, def: 1.35, gf: 9, ga: 23 },
-    "Atlético-GO": { off: 1.15, def: 1.30, gf: 8, ga: 25 },
-    Cuiabá: { off: 1.10, def: 1.45, gf: 8, ga: 21 },
+  // Calibração de fallback realista para a Série A 2026:
+  // Chances de gol (Eixo X) & Recuperações da bola no campo adversário (Eixo Y)
+  const BASE_CALIBRATION: Record<string, { chances: number; recup: number; gf: number; ga: number }> = {
+    Flamengo: { chances: 7.8, recup: 18.5, gf: 24, ga: 10 },
+    Palmeiras: { chances: 7.5, recup: 19.2, gf: 22, ga: 9 },
+    Botafogo: { chances: 7.2, recup: 17.8, gf: 23, ga: 11 },
+    "Atlético-MG": { chances: 6.5, recup: 16.4, gf: 18, ga: 13 },
+    "São Paulo": { chances: 6.2, recup: 16.8, gf: 16, ga: 12 },
+    Internacional: { chances: 6.4, recup: 17.2, gf: 17, ga: 11 },
+    Cruzeiro: { chances: 6.0, recup: 15.6, gf: 15, ga: 14 },
+    Bahia: { chances: 6.7, recup: 14.2, gf: 19, ga: 18 },
+    Fortaleza: { chances: 5.8, recup: 15.8, gf: 15, ga: 13 },
+    Fluminense: { chances: 5.6, recup: 15.1, gf: 14, ga: 15 },
+    Grêmio: { chances: 5.9, recup: 13.8, gf: 16, ga: 19 },
+    Vasco: { chances: 5.4, recup: 14.6, gf: 13, ga: 17 },
+    Corinthians: { chances: 5.2, recup: 15.9, gf: 12, ga: 14 },
+    "Athletico-PR": { chances: 5.5, recup: 14.8, gf: 13, ga: 15 },
+    Bragantino: { chances: 6.3, recup: 13.5, gf: 17, ga: 20 },
+    Vitória: { chances: 4.8, recup: 13.0, gf: 11, ga: 20 },
+    Juventude: { chances: 4.5, recup: 12.8, gf: 10, ga: 22 },
+    Criciúma: { chances: 4.3, recup: 12.5, gf: 9, ga: 23 },
+    "Atlético-GO": { chances: 4.1, recup: 12.0, gf: 8, ga: 25 },
+    Cuiabá: { chances: 4.0, recup: 13.2, gf: 8, ga: 21 },
   };
 
   const points: Omit<TeamQuadrantPoint, "quadrant">[] = teams.map((t) => {
     const fallback = BASE_CALIBRATION[t.name] || {
-      off: 1.5 + (t.name.charCodeAt(0) % 7) * 0.1,
-      def: 1.6 + (t.name.charCodeAt(1) % 6) * 0.1,
+      chances: 5.0 + (t.name.charCodeAt(0) % 5) * 0.5,
+      recup: 14.0 + (t.name.charCodeAt(1) % 6) * 0.8,
       gf: 14,
       ga: 15,
     };
 
-    let off = fallback.off;
-    let def = fallback.def;
+    let chances = fallback.chances;
+    let recup = fallback.recup;
     let gf = fallback.gf;
     let ga = fallback.ga;
     let matchesCount = t.matches.length || 12;
 
-    // Se houver partidas registradas no banco (geradas por processMatchFile ou processTeamFile)
     if (t.matches.length > 0) {
       matchesCount = t.matches.length;
-      const totalGf = t.matches.reduce((acc, m) => acc + (m.goalsFor ?? 0), 0);
-      const totalGa = t.matches.reduce((acc, m) => acc + (m.goalsAgainst ?? 0), 0);
-      gf = totalGf;
-      ga = totalGa;
+      gf = t.matches.reduce((acc, m) => acc + (m.goalsFor ?? 0), 0);
+      ga = t.matches.reduce((acc, m) => acc + (m.goalsAgainst ?? 0), 0);
 
-      // Extração de telemetria xG / xGA acumulados das partidas
-      let xgSum = 0;
-      let xgaSum = 0;
-      let customXgCount = 0;
+      let chancesSum = 0;
+      let recupSum = 0;
+      let matchTelemetryCount = 0;
 
       for (const m of t.matches) {
-        if (m.notes && m.notes.includes("xG:")) {
-          const matchXg = m.notes.match(/xG:\s*([\d.]+)/);
-          const matchXga = m.notes.match(/xGA:\s*([\d.]+)/);
-          if (matchXg) {
-            xgSum += parseFloat(matchXg[1]);
-            customXgCount++;
+        if (m.notes) {
+          const mChances = m.notes.match(/Chances de gol:\s*([\d.]+)/i);
+          const mRecup = m.notes.match(/Recupera[çc][õo]es(?: Campo Adv)?:\s*([\d.]+)/i);
+          if (mChances) {
+            chancesSum += parseFloat(mChances[1]);
+            matchTelemetryCount++;
           }
-          if (matchXga) {
-            xgaSum += parseFloat(matchXga[1]);
+          if (mRecup) {
+            recupSum += parseFloat(mRecup[1]);
           }
         }
       }
 
-      if (customXgCount > 0) {
-        off = Number((xgSum / customXgCount).toFixed(2));
-        const avgXga = xgaSum > 0 ? xgaSum / customXgCount : totalGa / matchesCount;
-        def = Number(Math.max(0.5, 3.2 - avgXga).toFixed(2));
+      if (matchTelemetryCount > 0) {
+        chances = chancesSum / matchTelemetryCount;
+        recup = recupSum > 0 ? recupSum / matchTelemetryCount : fallback.recup;
       } else {
-        const athleteXgMetrics = t.athletes.flatMap((a) =>
-          a.canonicalMetrics.filter((m) => m.metricName === "xg")
+        const athleteRecoveries = t.athletes.flatMap((a) =>
+          a.canonicalMetrics.filter((m) => m.metricName === "recoveries")
         );
-        const athleteXgSum = athleteXgMetrics.reduce((sum, m) => sum + m.absoluteValue, 0);
+        const athleteRecoveriesSum = athleteRecoveries.reduce((sum, m) => sum + m.absoluteValue, 0);
+        if (athleteRecoveriesSum > 0) {
+          recup = athleteRecoveriesSum / matchesCount;
+        }
 
-        off =
-          athleteXgSum > 0
-            ? Number((athleteXgSum / matchesCount).toFixed(2))
-            : Number((totalGf / matchesCount).toFixed(2));
-        const gaPerMatch = totalGa / matchesCount;
-        def = Number(Math.max(0.5, 3.0 - gaPerMatch).toFixed(2));
+        const athleteGoals = t.athletes.flatMap((a) =>
+          a.canonicalMetrics.filter((m) => m.metricName === "goals" || m.metricName === "shots_on_target")
+        );
+        const athleteGoalsSum = athleteGoals.reduce((sum, m) => sum + m.absoluteValue, 0);
+        if (athleteGoalsSum > 0) {
+          chances = Math.max(3.0, (athleteGoalsSum / matchesCount) * 1.5);
+        }
       }
     }
 
@@ -907,8 +916,10 @@ export async function getLeagueQuadrantsData(): Promise<LeagueQuadrantsPayload> 
       name: t.name,
       shortName: t.shortName || t.name.slice(0, 3).toUpperCase(),
       logoUrl: t.logoUrl,
-      offensiveEfficiency: Number(off.toFixed(2)),
-      defensiveSolidity: Number(def.toFixed(2)),
+      offensiveEfficiency: Number(chances.toFixed(1)),
+      defensiveSolidity: Number(recup.toFixed(1)),
+      goalChances: Number(chances.toFixed(1)),
+      recoveriesOpponentHalf: Number(recup.toFixed(1)),
       matches: matchesCount,
       goalsFor: gf,
       goalsAgainst: ga,
@@ -920,9 +931,9 @@ export async function getLeagueQuadrantsData(): Promise<LeagueQuadrantsPayload> 
   const yValues = points.map((p) => p.defensiveSolidity).sort((a, b) => a - b);
 
   const getMedian = (arr: number[]): number => {
-    if (arr.length === 0) return 1.5;
+    if (arr.length === 0) return 5.5;
     const mid = Math.floor(arr.length / 2);
-    return arr.length % 2 !== 0 ? arr[mid] : Number(((arr[mid - 1] + arr[mid]) / 2).toFixed(2));
+    return arr.length % 2 !== 0 ? arr[mid] : Number(((arr[mid - 1] + arr[mid]) / 2).toFixed(1));
   };
 
   const medianX = getMedian(xValues);
@@ -947,19 +958,19 @@ export async function getLeagueQuadrantsData(): Promise<LeagueQuadrantsPayload> 
     };
   });
 
-  const minX = Math.min(...xValues, 0.8);
-  const maxX = Math.max(...xValues, 2.5);
-  const minY = Math.min(...yValues, 0.8);
-  const maxY = Math.max(...yValues, 2.5);
+  const minX = Math.min(...xValues, 3.0);
+  const maxX = Math.max(...xValues, 9.0);
+  const minY = Math.min(...yValues, 9.0);
+  const maxY = Math.max(...yValues, 22.0);
 
   return {
     teams: classifiedTeams,
     medianX,
     medianY,
-    minX: Number((minX - 0.1).toFixed(1)),
-    maxX: Number((maxX + 0.1).toFixed(1)),
-    minY: Number((minY - 0.1).toFixed(1)),
-    maxY: Number((maxY + 0.1).toFixed(1)),
+    minX: Math.floor(minX - 0.5),
+    maxX: Math.ceil(maxX + 0.5),
+    minY: Math.floor(minY - 0.5),
+    maxY: Math.ceil(maxY + 0.5),
   };
 }
 

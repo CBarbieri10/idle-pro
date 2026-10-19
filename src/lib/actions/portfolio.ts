@@ -380,8 +380,8 @@ export async function getAnalystHighlights() {
           athleteId: r.athlete.id,
           athleteName: r.athlete.name,
           athletePosition: r.athlete.position,
-          teamName: r.athlete.team.name,
-          teamLogo: r.athlete.team.logoUrl,
+          teamName: r.athlete.team?.name ?? "Sem Clube",
+          teamLogo: r.athlete.team?.logoUrl ?? null,
           photoUrl: r.athlete.photoUrl,
           value: r.per90Value,
         });

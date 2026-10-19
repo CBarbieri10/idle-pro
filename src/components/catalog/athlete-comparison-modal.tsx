@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { type CatalogAthlete } from "@/lib/actions/catalog";
-import { POSITION_LABELS, POSITION_COLORS, FOOT_LABELS, formatHeight, formatWeight } from "@/lib/domain";
+import { POSITION_LABELS, POSITION_COLORS, FOOT_LABELS, formatFootPreference, formatHeight, formatWeight } from "@/lib/domain";
 import { METRICS, formatMetric } from "@/lib/metrics";
 import { ExternalLink, Trophy, X, Shield, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
@@ -78,12 +78,12 @@ export function AthleteComparisonModal({
 
                 <h4 className="text-xs font-bold truncate max-w-full">{athlete.name}</h4>
                 <div className="flex items-center gap-1 text-[11px] text-muted-foreground mt-0.5">
-                  {athlete.team.logoUrl ? (
-                    <img src={athlete.team.logoUrl} alt={athlete.team.name} className="h-3 w-3 object-contain" />
+                  {athlete.team?.logoUrl ? (
+                    <img src={athlete.team.logoUrl} alt={athlete.team?.name ?? "Sem Clube"} className="h-3 w-3 object-contain" />
                   ) : (
                     <Shield className="h-3 w-3" />
                   )}
-                  <span className="truncate">{athlete.team.shortName ?? athlete.team.name}</span>
+                  <span className="truncate">{athlete.team?.shortName ?? athlete.team?.name ?? "Sem Clube"}</span>
                 </div>
 
                 <Badge
@@ -127,7 +127,7 @@ export function AthleteComparisonModal({
                     <TableCell className="text-xs font-semibold bg-muted/30">Pé Dominante</TableCell>
                     {athletes.map((a) => (
                       <TableCell key={a.id} className="text-xs text-center">
-                        {FOOT_LABELS[a.footPreference]}
+                        {formatFootPreference(a.footPreference)}
                       </TableCell>
                     ))}
                   </TableRow>

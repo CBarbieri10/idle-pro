@@ -29,13 +29,13 @@ type Athlete = {
   id: string;
   name: string;
   position: Position;
-  teamId: string;
+  teamId: string | null;
   nationalTeamId: string | null;
   birthDate: Date | null;
   nationality: string | null;
   height: number | null;
   weight: number | null;
-  footPreference: FootPreference;
+  footPreference: FootPreference | null;
   notes: string | null;
 };
 
@@ -55,7 +55,7 @@ function AthleteForm({
   const [position, setPosition] = useState<string>(athlete?.position ?? "STRIKER");
   const [teamId, setTeamId] = useState(athlete?.teamId ?? "");
   const [nationalTeamId, setNationalTeamId] = useState(athlete?.nationalTeamId ?? "none");
-  const [foot, setFoot] = useState<string>(athlete?.footPreference ?? "RIGHT");
+  const [foot, setFoot] = useState<string>(athlete?.footPreference ?? "UNKNOWN");
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();

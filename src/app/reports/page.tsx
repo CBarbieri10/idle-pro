@@ -159,12 +159,12 @@ export default async function ReportsPage() {
                           {a.name}
                         </Link>
                         <div className="flex items-center gap-1.5 text-xs text-zinc-400 truncate mt-0.5">
-                          {a.team.logoUrl ? (
-                            <img src={a.team.logoUrl} alt={a.team.name} className="h-4 w-4 object-contain" />
+                          {a.team?.logoUrl ? (
+                            <img src={a.team.logoUrl} alt={a.team?.name ?? "Sem Clube"} className="h-4 w-4 object-contain" />
                           ) : (
                             <Shield className="h-3.5 w-3.5 text-emerald-400/70 shrink-0" />
                           )}
-                          <span className="truncate font-medium">{a.team.name}</span>
+                          <span className="truncate font-medium">{a.team?.name ?? "Sem Clube"}</span>
                         </div>
                       </div>
                     </div>
@@ -249,8 +249,8 @@ export default async function ReportsPage() {
                       {a.name}
                     </p>
                     <p className="text-[11px] text-zinc-400 truncate flex items-center gap-1">
-                      {a.team.logoUrl && <img src={a.team.logoUrl} alt={a.team.name} className="h-3 w-3 object-contain" />}
-                      {a.team.name} · {POSITION_LABELS[a.position]}
+                      {a.team?.logoUrl && <img src={a.team.logoUrl} alt={a.team?.name ?? "Sem Clube"} className="h-3 w-3 object-contain" />}
+                      {a.team?.name ?? "Sem Clube"} · {POSITION_LABELS[a.position]}
                     </p>
                   </div>
                 </div>

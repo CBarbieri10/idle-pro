@@ -131,7 +131,7 @@ export async function resolveStagedImport(
     // If athlete is resolved, infer team if not yet set
     if (resolvedAthlete && !resolvedTeamId) {
       resolvedTeamId = resolvedAthlete.teamId;
-      resolvedTeamName = resolvedAthlete.team.name;
+      resolvedTeamName = resolvedAthlete.team?.name ?? "Sem Clube";
     }
 
     // Determine row status

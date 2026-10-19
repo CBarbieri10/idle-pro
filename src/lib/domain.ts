@@ -18,7 +18,13 @@ export const FOOT_LABELS: Record<FootPreference, string> = {
   RIGHT: "Direito",
   LEFT: "Esquerdo",
   BOTH: "Ambidestro",
+  UNKNOWN: "Desconhecido",
 };
+
+export function formatFootPreference(foot?: FootPreference | null): string {
+  if (!foot || foot === "UNKNOWN") return "Desconhecido";
+  return FOOT_LABELS[foot] ?? "Desconhecido";
+}
 
 export const POSITION_COLORS: Record<Position, string> = {
   GOALKEEPER: "text-yellow-400 bg-yellow-400/10",

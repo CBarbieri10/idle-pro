@@ -57,7 +57,7 @@ export async function buildScoutingContext(): Promise<{
       a.metrics["dribbles_completed"]?.per90 ?? a.metrics["dribbles_successful"]?.per90 ?? 0;
     const aerialWonPer90 = a.metrics["aerial_duels_won"]?.per90 ?? 0;
 
-    return `ID: ${a.id} | Atleta: ${a.name} | Clube: ${a.team.name} (${a.team.shortName ?? "—"}) | Posição: ${
+    return `ID: ${a.id} | Atleta: ${a.name} | Clube: ${a.team?.name ?? "Sem Clube"} (${a.team?.shortName ?? "—"}) | Posição: ${
       POSITION_LABELS[a.position]
     } (${a.position}) | Idade: ${a.age ?? "—"} | IDG: ${
       a.idgScore != null ? a.idgScore.toFixed(1) + "%" : "N/D"
@@ -132,7 +132,7 @@ export async function askScoutingCopilot(
               id: a.id,
               name: a.name,
               position: POSITION_LABELS[a.position],
-              teamName: a.team.name,
+              teamName: a.team?.name ?? "Sem Clube",
               photoUrl: a.photoUrl,
               idgScore: a.idgScore,
               stabilityCategory: a.stabilityCategory,
@@ -171,7 +171,7 @@ export async function askScoutingCopilot(
               id: a.id,
               name: a.name,
               position: POSITION_LABELS[a.position],
-              teamName: a.team.name,
+              teamName: a.team?.name ?? "Sem Clube",
               photoUrl: a.photoUrl,
               idgScore: a.idgScore,
               stabilityCategory: a.stabilityCategory,
@@ -340,7 +340,7 @@ export async function askScoutingCopilot(
           ? "Estabilidade Moderada"
           : "Volátil";
 
-      answer += `**${idx + 1}. ${atleta.name}** (${atleta.team.name})\n`;
+      answer += `**${idx + 1}. ${atleta.name}** (${atleta.team?.name ?? "Sem Clube"})\n`;
       answer += `- **Volume Ofensivo:** ${crosses} cruzamentos/90 e boa chegada à linha de fundo no corredor externo.\n`;
       answer += `- **Segurança Tática:** PAdj Desarmes de ${padjTackles} (ajustado pela posse adversária).\n`;
       answer += `- **Consistência Longitudinal (IDG):** ${idg} — Classificado como **${stab}**.\n`;
@@ -356,7 +356,7 @@ export async function askScoutingCopilot(
       const padjI = atleta.metrics["padj_interceptions"]?.per90 ?? 0;
       const progPasses = atleta.metrics["progressive_passes"]?.per90 ?? 0;
 
-      answer += `**${idx + 1}. ${atleta.name}** (${POSITION_LABELS[atleta.position]} — ${atleta.team.name})\n`;
+      answer += `**${idx + 1}. ${atleta.name}** (${POSITION_LABELS[atleta.position]} — ${atleta.team?.name ?? "Sem Clube"})\n`;
       answer += `- **Desarmes PAdj:** ${padjT}/90 | **Interceptações PAdj:** ${padjI}/90\n`;
       answer += `- **Construção:** ${progPasses} passes progressivos/90 rompendo as primeiras linhas de pressão.\n`;
       answer += `- **IDG:** ${atleta.idgScore?.toFixed(1) ?? "—"}% (${atleta.stabilityCategory ?? "N/D"})\n\n`;
@@ -371,7 +371,7 @@ export async function askScoutingCopilot(
       const goals = atleta.metrics["goals"]?.per90 ?? 0;
       const xg = atleta.metrics["xg"]?.per90 ?? 0;
 
-      answer += `**${idx + 1}. ${atleta.name}** (${atleta.team.name})\n`;
+      answer += `**${idx + 1}. ${atleta.name}** (${atleta.team?.name ?? "Sem Clube"})\n`;
       answer += `- **xG / Shot:** ${xgShot} por finalização tentada (alta qualidade de escolha de tiro).\n`;
       answer += `- **Volume:** ${goals} Gols/90 contra ${xg} xG/90.\n`;
       answer += `- **IDG:** ${atleta.idgScore?.toFixed(1) ?? "—"}% de consistência.\n\n`;
@@ -384,7 +384,7 @@ export async function askScoutingCopilot(
       .slice(0, 4);
 
     moneyballAthletes.forEach((atleta, idx) => {
-      answer += `**${idx + 1}. ${atleta.name}** (${POSITION_LABELS[atleta.position]} — ${atleta.team.name})\n`;
+      answer += `**${idx + 1}. ${atleta.name}** (${POSITION_LABELS[atleta.position]} — ${atleta.team?.name ?? "Sem Clube"})\n`;
       answer += `- **Estabilidade IDG:** ${atleta.idgScore?.toFixed(1)}% (${atleta.stabilityCategory})\n`;
       answer += `- **Produção Principal:** ${
         atleta.metrics["goals"]?.per90 ?? 0
@@ -397,7 +397,7 @@ export async function askScoutingCopilot(
     answer = `### 🧠 Relatório de Inteligência Tática — The Net Scouting\n\nProcessamos sua solicitação cruzando a base de dados canônica com os motores estatísticos de **IDG**, **PAdj** e **xG**:\n\n`;
 
     topMatches.forEach((atleta, idx) => {
-      answer += `**${idx + 1}. ${atleta.name}** (${POSITION_LABELS[atleta.position]} • ${atleta.team.name})\n`;
+      answer += `**${idx + 1}. ${atleta.name}** (${POSITION_LABELS[atleta.position]} • ${atleta.team?.name ?? "Sem Clube"})\n`;
       answer += `- **Indicadores:** IDG ${atleta.idgScore?.toFixed(1) ?? "N/D"}% (${atleta.stabilityCategory ?? "N/D"}) | Minutos: ${atleta.totalMinutes}\n`;
       answer += `- **Métricas-Chave:** Gols/90: ${atleta.metrics["goals"]?.per90 ?? 0} | PAdj Desarmes: ${atleta.metrics["padj_tackles"]?.per90 ?? 0} | Passes Prog/90: ${atleta.metrics["progressive_passes"]?.per90 ?? 0}\n\n`;
     });
@@ -411,7 +411,7 @@ export async function askScoutingCopilot(
       id: a.id,
       name: a.name,
       position: POSITION_LABELS[a.position],
-      teamName: a.team.name,
+      teamName: a.team?.name ?? "Sem Clube",
       photoUrl: a.photoUrl,
       idgScore: a.idgScore,
       stabilityCategory: a.stabilityCategory,

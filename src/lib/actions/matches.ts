@@ -140,7 +140,7 @@ export interface MatchAthletePerformance {
   name: string;
   position: string;
   teamName: string;
-  teamId: string;
+  teamId: string | null;
   isHome: boolean;
   photoUrl?: string | null;
   photoHasAlpha?: boolean;

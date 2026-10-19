@@ -69,6 +69,8 @@ export function normalizeName(s: string): string {
     .trim();
 }
 
+export { normalizeTeamName } from "@/lib/normalization";
+
 const IDENTITY_ALIASES: Record<IdentityField, string[]> = {
   date: ["data", "date", "matchdate", "datadojogo", "datajogo", "dia", "gamedate"],
   athlete: ["atleta", "jogador", "player", "playername", "nome", "name", "nomedoatleta", "jogadora"],

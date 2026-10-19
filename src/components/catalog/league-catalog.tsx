@@ -48,9 +48,11 @@ import {
   POSITION_LABELS,
   POSITION_COLORS,
   FOOT_LABELS,
+  formatFootPreference,
   formatHeight,
   formatWeight,
 } from "@/lib/domain";
+import { FootPreference } from "@prisma/client";
 import { METRICS, formatMetric } from "@/lib/metrics";
 import { cn } from "@/lib/utils";
 import { PortfolioToggleButton } from "@/components/portfolio/portfolio-toggle-button";
@@ -176,7 +178,7 @@ export function LeagueCatalog({
       list = list.filter(
         (a) =>
           a.name.toLowerCase().includes(q) ||
-          a.team.name.toLowerCase().includes(q) ||
+          (a.team?.name && a.team.name.toLowerCase().includes(q)) ||
           (a.nationality && a.nationality.toLowerCase().includes(q))
       );
     }
@@ -186,7 +188,7 @@ export function LeagueCatalog({
     }
 
     if (teamFilter !== "ALL") {
-      list = list.filter((a) => a.team.id === teamFilter);
+      list = list.filter((a) => a.team?.id === teamFilter);
     }
 
     if (footFilter !== "ALL") {
@@ -521,15 +523,22 @@ export function LeagueCatalog({
               nationality: athlete.nationality,
               height: athlete.height,
               weight: athlete.weight,
-              footPreference: athlete.footPreference,
+              footPreference: athlete.footPreference ?? FootPreference.UNKNOWN,
               photoUrl: athlete.photoUrl,
               photoHasAlpha: athlete.photoHasAlpha,
-              team: {
-                id: athlete.team.id,
-                name: athlete.team.name,
-                shortName: null,
-                logoUrl: athlete.team.logoUrl,
-              },
+              team: athlete.team
+                ? {
+                    id: athlete.team.id,
+                    name: athlete.team.name,
+                    shortName: null,
+                    logoUrl: athlete.team.logoUrl,
+                  }
+                : {
+                    id: "sem-clube",
+                    name: "Sem Clube",
+                    shortName: null,
+                    logoUrl: null,
+                  },
               totalMinutes: athlete.totalMinutes,
               totalMatches: athlete.totalMatches,
               canonicalMetrics: athlete.metrics,
@@ -611,12 +620,12 @@ export function LeagueCatalog({
                         {athlete.name}
                       </Link>
                       <div className="flex items-center gap-1 text-xs text-zinc-400 truncate mt-0.5">
-                        {athlete.team.logoUrl ? (
+                        {athlete.team?.logoUrl ? (
                           <img src={athlete.team.logoUrl} alt={athlete.team.name} className="h-4 w-4 object-contain" />
                         ) : (
                           <Shield className="h-3 w-3 shrink-0 text-indigo-400" />
                         )}
-                        <span className="truncate font-semibold">{athlete.team.name}</span>
+                        <span className="truncate font-semibold">{athlete.team?.name ?? "Sem Clube"}</span>
                         {athlete.nationality && (
                           <span className="text-[10px] opacity-70">&bull; {athlete.nationality}</span>
                         )}
@@ -628,7 +637,7 @@ export function LeagueCatalog({
                   <div className="mt-3 flex items-center gap-2 text-[11px] text-zinc-300 border-t border-white/10 pt-2 font-mono">
                     <span>{athlete.age ? `${athlete.age} anos` : "—"}</span>
                     <span className="text-zinc-600">&bull;</span>
-                    <span>{FOOT_LABELS[athlete.footPreference]}</span>
+                    <span>{formatFootPreference(athlete.footPreference)}</span>
                     {athlete.height && (
                       <>
                         <span className="text-zinc-600">&bull;</span>
@@ -756,15 +765,22 @@ export function LeagueCatalog({
                     nationality: athlete.nationality,
                     height: athlete.height,
                     weight: athlete.weight,
-                    footPreference: athlete.footPreference,
+                    footPreference: athlete.footPreference ?? FootPreference.UNKNOWN,
                     photoUrl: athlete.photoUrl,
                     photoHasAlpha: athlete.photoHasAlpha,
-                    team: {
-                      id: athlete.team.id,
-                      name: athlete.team.name,
-                      shortName: null,
-                      logoUrl: athlete.team.logoUrl,
-                    },
+                    team: athlete.team
+                      ? {
+                          id: athlete.team.id,
+                          name: athlete.team.name,
+                          shortName: null,
+                          logoUrl: athlete.team.logoUrl,
+                        }
+                      : {
+                          id: "sem-clube",
+                          name: "Sem Clube",
+                          shortName: null,
+                          logoUrl: null,
+                        },
                     totalMinutes: athlete.totalMinutes,
                     totalMatches: athlete.totalMatches,
                     canonicalMetrics: athlete.metrics,
@@ -824,10 +840,10 @@ export function LeagueCatalog({
 
                       <TableCell className="text-xs text-muted-foreground font-medium">
                         <div className="flex items-center gap-1.5">
-                          {athlete.team.logoUrl && (
+                          {athlete.team?.logoUrl && (
                             <img src={athlete.team.logoUrl} alt={athlete.team.name} className="h-4 w-4 object-contain" />
                           )}
-                          {athlete.team.name}
+                          {athlete.team?.name ?? "Sem Clube"}
                         </div>
                       </TableCell>
 
@@ -845,7 +861,7 @@ export function LeagueCatalog({
                       </TableCell>
 
                       <TableCell className="text-xs text-center text-muted-foreground">
-                        {FOOT_LABELS[athlete.footPreference]}
+                        {formatFootPreference(athlete.footPreference)}
                       </TableCell>
 
                       <TableCell className="text-xs text-center font-mono font-semibold">

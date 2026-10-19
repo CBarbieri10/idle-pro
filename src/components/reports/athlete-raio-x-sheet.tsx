@@ -7,7 +7,7 @@ import { RadarChart } from "@/components/charts/radar-chart";
 import {
   POSITION_LABELS,
   POSITION_COLORS,
-  FOOT_LABELS,
+  formatFootPreference,
   formatHeight,
   formatWeight,
   formatAge,
@@ -24,7 +24,7 @@ export interface RaioXAthleteSheetData {
   nationality: string | null;
   height: number | null;
   weight: number | null;
-  footPreference: FootPreference;
+  footPreference: FootPreference | null;
   photoUrl: string | null;
   photoHasAlpha: boolean;
   actionPhotoUrl?: string | null;
@@ -35,7 +35,7 @@ export interface RaioXAthleteSheetData {
     name: string;
     shortName: string | null;
     logoUrl?: string | null;
-  };
+  } | null;
   totalMinutes: number;
   totalMatches: number;
   canonicalMetrics: Record<string, { total: number; per90: number; label: string }>;
@@ -250,12 +250,12 @@ export function AthleteRaioXSheet({
             </div>
 
             <div className="flex items-center justify-start gap-1.5 text-xs text-zinc-600 print:text-zinc-700">
-              {athlete.team.logoUrl ? (
-                <img src={athlete.team.logoUrl} className="h-4 w-4 object-contain" alt={athlete.team.name} />
+              {athlete.team?.logoUrl ? (
+                <img src={athlete.team.logoUrl} className="h-4 w-4 object-contain" alt={athlete.team?.name ?? "Sem Clube"} />
               ) : (
                 <Shield className="h-3.5 w-3.5 text-zinc-800" />
               )}
-              <span className="font-bold text-zinc-950">{athlete.team.name}</span>
+              <span className="font-bold text-zinc-950">{athlete.team?.name ?? "Sem Clube"}</span>
               {athlete.nationality && (
                 <>
                   <span>&bull;</span>
@@ -270,7 +270,7 @@ export function AthleteRaioXSheet({
                 <strong>Idade:</strong> {athlete.birthDate ? formatAge(new Date(athlete.birthDate)) : "—"}
               </span>
               <span className="rounded-md bg-white border border-zinc-200 px-2 py-0.5 text-zinc-800">
-                <strong>Pé:</strong> {FOOT_LABELS[athlete.footPreference]}
+                <strong>Pé:</strong> {formatFootPreference(athlete.footPreference)}
               </span>
               {athlete.height && (
                 <span className="rounded-md bg-white border border-zinc-200 px-2 py-0.5 text-zinc-800">

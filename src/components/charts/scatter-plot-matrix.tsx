@@ -442,7 +442,7 @@ export function ScatterPlotMatrix({
                   {activePoint.athlete.name}
                 </h4>
                 <p className="text-[11px] text-zinc-400 truncate">
-                  {activePoint.athlete.team.name}
+                  {activePoint.athlete.team?.name ?? "Sem Clube"}
                 </p>
               </div>
             </div>

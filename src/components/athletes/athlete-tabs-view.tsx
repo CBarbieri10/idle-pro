@@ -35,7 +35,7 @@ interface AthleteTabsViewProps {
     birthDate?: Date | null;
     height?: number | null;
     weight?: number | null;
-    footPreference?: string;
+    footPreference?: string | null;
     idgScore?: number | null;
     stabilityCategory?: any | null;
   };

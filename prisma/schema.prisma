@@ -91,6 +91,7 @@ enum FootPreference {
   RIGHT
   LEFT
   BOTH
+  UNKNOWN
 }
 
 enum StabilityCategory {
@@ -107,7 +108,7 @@ model Athlete {
   nationality         String?
   height              Int? // cm
   weight              Int? // kg
-  footPreference      FootPreference     @default(RIGHT)
+  footPreference      FootPreference?    @default(UNKNOWN)
   photoUrl            String? // foto de perfil
   photoHasAlpha       Boolean            @default(false) // PNG/WebP com fundo transparente
   actionPhotoUrl      String? // foto de ação
@@ -119,12 +120,12 @@ model Athlete {
   tacticalSummary     String?
   tacticalStrengths   String[]           @default([])
   tacticalWeaknesses  String[]           @default([])
-  teamId              String
+  teamId              String?
   nationalTeamId      String?
   createdAt           DateTime           @default(now())
   updatedAt           DateTime           @updatedAt
 
-  team         Team              @relation("ClubAthletes", fields: [teamId], references: [id])
+  team         Team?             @relation("ClubAthletes", fields: [teamId], references: [id], onDelete: SetNull)
   nationalTeam Team?             @relation("NationalAthletes", fields: [nationalTeamId], references: [id])
   rawMetrics   RawMetric[]
   canonicalMetrics CanonicalMetric[]

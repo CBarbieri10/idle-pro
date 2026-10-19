@@ -32,6 +32,7 @@ export const METRICS: MetricDef[] = [
   { key: "dribbles_completed", label: "Dribles Certos", short: "Dri", unit: "count", group: "Ataque" },
   { key: "key_passes", label: "Passes Decisivos", short: "PD", unit: "count", group: "Ataque" },
   { key: "key_passes_accurate", label: "Passes-Chave Precisos", short: "PCP", unit: "count", group: "Ataque" },
+  { key: "goal_chances", label: "Chances de Gol", short: "CdG", unit: "count", group: "Ataque" },
   // Passe
   { key: "passes", label: "Passes Certos", short: "PC", unit: "count", group: "Passe" },
   { key: "pass_accuracy", label: "Precisão de Passe", short: "%P", unit: "percent", group: "Passe", max: 100 },
@@ -48,6 +49,7 @@ export const METRICS: MetricDef[] = [
   { key: "ground_duels_won", label: "Duelos no Chão Ganhos", short: "DC", unit: "count", group: "Defesa" },
   { key: "defensive_duels_won_pct", label: "Duelos Defensivos Ganhos (%)", short: "%DDG", unit: "percent", group: "Defesa", max: 100 },
   { key: "recoveries", label: "Recuperações", short: "Rec", unit: "count", group: "Defesa" },
+  { key: "recoveries_opponent_half", label: "Recuperações no Campo Adversário", short: "RCA", unit: "count", group: "Defesa" },
   { key: "blocks", label: "Bloqueios", short: "Blq", unit: "count", group: "Defesa" },
   { key: "fouls_committed", label: "Faltas Cometidas", short: "FC", unit: "count", group: "Defesa" },
   // Goleiro

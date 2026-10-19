@@ -222,13 +222,13 @@ export function DossierGoalsPage({
         <div className="text-right font-mono text-[9px] text-zinc-500">
           <p className="font-bold text-zinc-900 uppercase">
             {POSITION_LABELS[athlete.position]} &bull;{" "}
-            {athlete.team.logoUrl ? (
+            {athlete.team?.logoUrl ? (
               <span className="inline-flex items-center gap-1">
                 <img src={athlete.team.logoUrl} className="h-3 w-3 object-contain inline" alt={athlete.team.name} />
                 {athlete.team.name}
               </span>
             ) : (
-              athlete.team.name
+              athlete.team?.name ?? "Sem Clube"
             )}
           </p>
           <p>Ref: {docRef}</p>
@@ -291,7 +291,7 @@ export function DossierGoalsPage({
               ) : (
                 <div className="flex flex-col items-center justify-center text-zinc-400">
                   <Shield className="h-8 w-8 text-zinc-300 mb-1" />
-                  <span className="text-[9px] font-mono font-bold uppercase">{athlete.team.shortName}</span>
+                  <span className="text-[9px] font-mono font-bold uppercase">{athlete.team?.shortName ?? athlete.team?.name ?? "Sem Clube"}</span>
                 </div>
               )}
               <div className="absolute bottom-1 right-1 bg-zinc-950 text-white text-[8px] font-mono font-bold px-1.5 py-0.5 rounded print:bg-black">

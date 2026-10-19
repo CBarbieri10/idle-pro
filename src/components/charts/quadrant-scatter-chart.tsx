@@ -108,14 +108,14 @@ export function QuadrantScatterChart({ data, className }: QuadrantScatterChartPr
             <div>
               <div className="flex items-center gap-2">
                 <h3 className="text-base sm:text-lg font-black tracking-tight text-white">
-                  Matriz Cartesiana de Eficiência & Solidez dos Clubes
+                  Matriz Cartesiana de Ofensividade & Controle dos Clubes
                 </h3>
                 <Badge variant="outline" className="border-emerald-500/40 text-emerald-300 text-[10px] font-mono py-0 h-4">
                   2D Quadrants
                 </Badge>
               </div>
               <p className="text-xs text-zinc-400">
-                Dispersão da Série A dividida pelas medianas: Eixo X (Eficiência Ofensiva) vs Eixo Y (Solidez Defensiva)
+                Dispersão da Série A dividida pelas medianas: Eixo X (Chances de gol • Ofensividade) vs Eixo Y (Recuperações da bola no campo adversário • Controle)
               </p>
             </div>
           </div>
@@ -125,13 +125,13 @@ export function QuadrantScatterChart({ data, className }: QuadrantScatterChartPr
         <div className="flex flex-wrap items-center gap-2 text-xs font-mono">
           <div className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-1.5 flex items-center gap-2">
             <Flame className="h-3.5 w-3.5 text-amber-400" />
-            <span className="text-zinc-400">Mediana Ofensiva (X):</span>
-            <strong className="text-white">{data.medianX.toFixed(2)}</strong>
+            <span className="text-zinc-400">Mediana Chances de Gol (X):</span>
+            <strong className="text-white">{data.medianX.toFixed(1)}</strong>
           </div>
           <div className="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-1.5 flex items-center gap-2">
             <Shield className="h-3.5 w-3.5 text-cyan-400" />
-            <span className="text-zinc-400">Mediana Solidez (Y):</span>
-            <strong className="text-white">{data.medianY.toFixed(2)}</strong>
+            <span className="text-zinc-400">Mediana Recuperações Campo Adv. (Y):</span>
+            <strong className="text-white">{data.medianY.toFixed(1)}</strong>
           </div>
         </div>
       </div>
@@ -263,13 +263,13 @@ export function QuadrantScatterChart({ data, className }: QuadrantScatterChartPr
             <XAxis
               type="number"
               dataKey="offensiveEfficiency"
-              name="Eficiência Ofensiva"
+              name="Chances de gol"
               domain={[data.minX, data.maxX]}
               tick={{ fill: "#a1a1aa", fontSize: 11, fontFamily: "monospace" }}
               tickLine={false}
               axisLine={{ stroke: "rgba(255,255,255,0.15)" }}
               label={{
-                value: "Eficiência Ofensiva → (xG Esperado / Ações no Terço Final por Jogo)",
+                value: "Chances de gol → (Eixo X • Ofensividade)",
                 position: "insideBottom",
                 offset: -18,
                 fill: "#d4d4d8",
@@ -280,13 +280,13 @@ export function QuadrantScatterChart({ data, className }: QuadrantScatterChartPr
             <YAxis
               type="number"
               dataKey="defensiveSolidity"
-              name="Solidez Defensiva"
+              name="Recuperações da bola no campo adversário"
               domain={[data.minY, data.maxY]}
               tick={{ fill: "#a1a1aa", fontSize: 11, fontFamily: "monospace" }}
               tickLine={false}
               axisLine={{ stroke: "rgba(255,255,255,0.15)" }}
               label={{
-                value: "Solidez Defensiva ↑ (xGA Evitado / Índice de Bloqueio)",
+                value: "Recuperações da bola no campo adversário ↑ (Eixo Y • Controle)",
                 angle: -90,
                 position: "insideLeft",
                 offset: 5,
@@ -343,12 +343,12 @@ export function QuadrantScatterChart({ data, className }: QuadrantScatterChartPr
 
                       <div className="space-y-1.5 text-xs font-mono">
                         <div className="flex items-center justify-between">
-                          <span className="text-zinc-400">Eficiência Ofensiva (X):</span>
-                          <strong className="text-white">{pt.offensiveEfficiency}</strong>
+                          <span className="text-zinc-400">Chances de gol (X):</span>
+                          <strong className="text-white">{pt.goalChances ?? pt.offensiveEfficiency}</strong>
                         </div>
                         <div className="flex items-center justify-between">
-                          <span className="text-zinc-400">Solidez Defensiva (Y):</span>
-                          <strong className="text-white">{pt.defensiveSolidity}</strong>
+                          <span className="text-zinc-400">Recuperações Campo Adv. (Y):</span>
+                          <strong className="text-white">{pt.recoveriesOpponentHalf ?? pt.defensiveSolidity}</strong>
                         </div>
                         <div className="flex items-center justify-between pt-1 border-t border-white/10 text-[11px]">
                           <span className="text-zinc-400">Gols Pró / Sofridos:</span>
@@ -435,7 +435,7 @@ export function QuadrantScatterChart({ data, className }: QuadrantScatterChartPr
             <span>Q1: Dominância (Elite)</span>
           </div>
           <p className="text-[11px] text-zinc-300 mt-1 leading-tight">
-            Produção de xG acima da média e baixíssima taxa de chances concedidas. Candidatos ao topo.
+            Chances de gol e recuperações no campo adversário acima da média da Série A. Pressão alta e finalizações constantes.
           </p>
         </div>
 
@@ -445,7 +445,7 @@ export function QuadrantScatterChart({ data, className }: QuadrantScatterChartPr
             <span>Q2: Resiliência Defensiva</span>
           </div>
           <p className="text-[11px] text-zinc-300 mt-1 leading-tight">
-            Bloco defensivo sólido e protegido, porém com baixa geração de xG e dependência de bolas paradas.
+            Alta recuperação e contenção no campo adversário, porém com criação de chances de gol abaixo da média.
           </p>
         </div>
 
@@ -455,7 +455,7 @@ export function QuadrantScatterChart({ data, className }: QuadrantScatterChartPr
             <span>Q3: Desequilíbrio Ofensivo</span>
           </div>
           <p className="text-[11px] text-zinc-300 mt-1 leading-tight">
-            Alto volume de finalizações no terço final, mas exposição excessiva à transição adversária.
+            Alto volume de chances de gol com menor número de recuperações em campo alto. Transições e ataques diretos.
           </p>
         </div>
 
@@ -465,7 +465,7 @@ export function QuadrantScatterChart({ data, className }: QuadrantScatterChartPr
             <span>Q4: Vulnerabilidade (Risco)</span>
           </div>
           <p className="text-[11px] text-zinc-300 mt-1 leading-tight">
-            Criação de chances deficiente aliada a fragilidade estrutural do bloco. Zona de alerta e risco.
+            Baixa taxa de recuperação de posse ofensiva e carência na geração de chances de gol. Zona de risco.
           </p>
         </div>
       </div>

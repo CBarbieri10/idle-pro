@@ -344,8 +344,8 @@ export function LeagueLabView({ athletes }: LeagueLabViewProps) {
                     {a.name}
                   </h4>
                   <p className="text-[11px] text-zinc-400 truncate flex items-center gap-1">
-                    {a.team.logoUrl && <img src={a.team.logoUrl} alt={a.team.name} className="h-3 w-3 object-contain" />}
-                    {a.team.name}
+                    {a.team?.logoUrl && <img src={a.team.logoUrl} alt={a.team?.name ?? "Sem Clube"} className="h-3 w-3 object-contain" />}
+                    {a.team?.name ?? "Sem Clube"}
                   </p>
                 </div>
               </div>

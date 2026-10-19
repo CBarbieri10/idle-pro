@@ -21,7 +21,7 @@ export type CatalogAthlete = {
   nationality: string | null;
   height: number | null;
   weight: number | null;
-  footPreference: FootPreference;
+  footPreference: FootPreference | null;
   photoUrl: string | null;
   photoHasAlpha: boolean;
   idgScore?: number | null;
@@ -31,7 +31,7 @@ export type CatalogAthlete = {
     name: string;
     shortName: string | null;
     logoUrl?: string | null;
-  };
+  } | null;
   totalMinutes: number;
   totalMatches: number;
   metrics: Record<string, CatalogAthleteMetric>;
@@ -165,7 +165,7 @@ export async function getCatalogAthletes(
       athletes = athletes.filter(
         (a) =>
           a.name.toLowerCase().includes(q) ||
-          a.team.name.toLowerCase().includes(q) ||
+          (a.team?.name && a.team.name.toLowerCase().includes(q)) ||
           (a.nationality && a.nationality.toLowerCase().includes(q))
       );
     }
@@ -175,7 +175,7 @@ export async function getCatalogAthletes(
     }
 
     if (filters.teamId && filters.teamId !== "ALL") {
-      athletes = athletes.filter((a) => a.team.id === filters.teamId);
+      athletes = athletes.filter((a) => a.team?.id === filters.teamId);
     }
 
     if (filters.footPreference && filters.footPreference !== "ALL") {

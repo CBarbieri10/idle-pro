@@ -11,13 +11,13 @@ import { deleteAthleteUploads } from "@/lib/uploads";
 const AthleteSchema = z.object({
   name: z.string().min(1, "Nome é obrigatório"),
   position: z.nativeEnum(Position),
-  teamId: z.string().min(1, "Clube é obrigatório"),
+  teamId: z.string().optional().nullable(),
   nationalTeamId: z.string().optional().nullable(),
   birthDate: z.string().optional().nullable(),
   nationality: z.string().optional().nullable(),
   height: z.coerce.number().int().positive().optional().nullable(),
   weight: z.coerce.number().int().positive().optional().nullable(),
-  footPreference: z.nativeEnum(FootPreference).default("RIGHT"),
+  footPreference: z.nativeEnum(FootPreference).optional().nullable().default(FootPreference.UNKNOWN),
   notes: z.string().optional().nullable(),
 });
 
@@ -104,11 +104,17 @@ export async function getSimilarAthletes(currentAthleteId: string, position: Pos
     height: ath.height,
     photoUrl: ath.photoUrl,
     photoHasAlpha: ath.photoHasAlpha,
-    team: {
-      id: ath.team.id,
-      name: ath.team.name,
-      logoUrl: ath.team.logoUrl,
-    },
+    team: ath.team
+      ? {
+          id: ath.team.id,
+          name: ath.team.name,
+          logoUrl: ath.team.logoUrl,
+        }
+      : {
+          id: "sem-clube",
+          name: "Sem Clube",
+          logoUrl: null,
+        },
     similarityScore: baseScores[idx] ?? 75,
   }));
 }
@@ -119,13 +125,13 @@ function parseAthleteForm(formData: FormData) {
   return AthleteSchema.parse({
     name: formData.get("name"),
     position: formData.get("position"),
-    teamId: formData.get("teamId"),
+    teamId: formData.get("teamId") || null,
     nationalTeamId: formData.get("nationalTeamId") || null,
     birthDate: formData.get("birthDate") || null,
     nationality: formData.get("nationality") || null,
     height: formData.get("height") || null,
     weight: formData.get("weight") || null,
-    footPreference: formData.get("footPreference") || "RIGHT",
+    footPreference: formData.get("footPreference") || FootPreference.UNKNOWN,
     notes: formData.get("notes") || null,
   });
 }

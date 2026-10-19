@@ -6,7 +6,7 @@ import { AthleteFilters } from "@/components/athletes/athlete-filters";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Users, ChevronRight, Shield, Sparkles, UserPlus } from "lucide-react";
-import { POSITION_LABELS, POSITION_COLORS, FOOT_LABELS, formatAge, formatHeight } from "@/lib/domain";
+import { POSITION_LABELS, POSITION_COLORS, FOOT_LABELS, formatFootPreference, formatAge, formatHeight } from "@/lib/domain";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
@@ -205,12 +205,12 @@ export default async function AthletesPage({
                         {athlete.name}
                       </Link>
                       <div className="flex items-center gap-1.5 text-xs text-zinc-400 truncate mt-0.5">
-                        {athlete.team.logoUrl ? (
-                          <img src={athlete.team.logoUrl} alt={athlete.team.name} className="h-4 w-4 object-contain shrink-0" />
+                        {athlete.team?.logoUrl ? (
+                          <img src={athlete.team.logoUrl} alt={athlete.team?.name ?? "Sem Clube"} className="h-4 w-4 object-contain shrink-0" />
                         ) : (
                           <Shield className="h-3 w-3 shrink-0 text-indigo-400" />
                         )}
-                        <span className="truncate font-semibold">{athlete.team.name}</span>
+                        <span className="truncate font-semibold">{athlete.team?.name ?? "Sem Clube"}</span>
                         {athlete.nationality && (
                           <span className="text-[10px] opacity-70">&bull; {athlete.nationality}</span>
                         )}
@@ -231,7 +231,7 @@ export default async function AthletesPage({
                       <div>
                         <p className="text-[9px] text-zinc-500 uppercase">Pé</p>
                         <p className="font-bold text-white mt-0.5">
-                          {FOOT_LABELS[athlete.footPreference]}
+                          {formatFootPreference(athlete.footPreference)}
                         </p>
                       </div>
                       <div className="h-6 w-px bg-white/10" />

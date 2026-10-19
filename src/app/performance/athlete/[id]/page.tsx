@@ -216,7 +216,7 @@ export default async function AthletePerformancePage({
           </div>
 
           <p className="text-xs sm:text-sm text-zinc-400 mt-1">
-            {athlete.team.name} &bull; Histórico longitudinal de {matchPoints.length}{" "}
+            {athlete.team?.name ?? "Sem Clube"} &bull; Histórico longitudinal de {matchPoints.length}{" "}
             {matchPoints.length === 1 ? "partida importada" : "partidas importadas"}.
           </p>
         </div>
@@ -243,7 +243,7 @@ export default async function AthletePerformancePage({
           position: athlete.position,
           positionLabel:
             POSITION_LABELS[athlete.position] || athlete.position,
-          teamName: athlete.team.name,
+          teamName: athlete.team?.name ?? "Sem Clube",
           idgScore: athlete.idgScore,
           stabilityCategory: athlete.stabilityCategory,
         }}

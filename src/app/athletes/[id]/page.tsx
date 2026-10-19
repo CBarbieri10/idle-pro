@@ -33,6 +33,7 @@ import {
   POSITION_LABELS,
   POSITION_COLORS,
   FOOT_LABELS,
+  formatFootPreference,
   formatHeight,
   formatWeight,
   formatAge,
@@ -139,7 +140,7 @@ export default async function AthleteProfilePage({
     name: t.name,
     position: POSITION_LABELS[t.position] || t.position,
     photoUrl: t.photoUrl,
-    teamName: athlete.team.name,
+    teamName: athlete.team?.name ?? "Sem Clube",
     rawData: (t.rawMetrics?.[0]?.data as Record<string, unknown>) || null,
   }));
 
@@ -171,7 +172,7 @@ export default async function AthleteProfilePage({
   const leagueList = leagues.map((l) => ({ id: l.id, name: l.name }));
   const metricProps = {
     athleteId: athlete.id,
-    athleteTeamId: athlete.teamId,
+    athleteTeamId: athlete.teamId ?? "",
     position: athlete.position,
     matches: matchOptions,
     teams: teamList,
@@ -200,12 +201,14 @@ export default async function AthleteProfilePage({
     photoUrl: athlete.photoUrl,
     photoHasAlpha: athlete.photoHasAlpha,
     actionPhotoUrl: athlete.actionPhotoUrl,
-    team: {
-      id: athlete.team.id,
-      name: athlete.team.name,
-      shortName: athlete.team.shortName,
-      logoUrl: athlete.team.logoUrl,
-    },
+    team: athlete.team
+      ? {
+          id: athlete.team.id,
+          name: athlete.team.name,
+          shortName: athlete.team.shortName,
+          logoUrl: athlete.team.logoUrl,
+        }
+      : null,
     totalMinutes: athleteStats?.totalMinutes ?? 0,
     totalMatches: athleteStats?.totalMatches ?? 0,
     canonicalMetrics: athleteStats?.metrics ?? {},
@@ -325,7 +328,7 @@ export default async function AthleteProfilePage({
               athleteId={athlete.id}
               athleteName={athlete.name}
               athletePosition={POSITION_LABELS[athlete.position]}
-              teamName={athlete.team.name}
+              teamName={athlete.team?.name ?? "Sem Clube"}
               rawData={rawTelemetryData}
               teammates={teammateList}
               triggerVariant="button"
@@ -420,14 +423,14 @@ export default async function AthleteProfilePage({
             {/* Club & Physical Pills Bar */}
             <div className="mt-4 flex flex-wrap items-center gap-2">
               <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-black/35 px-3 py-1.5 backdrop-blur-md">
-                {athlete.team.logoUrl ? (
+                {athlete.team?.logoUrl ? (
                   <img src={athlete.team.logoUrl} alt={athlete.team.name} className="h-5 w-5 object-contain" />
                 ) : (
                   <Shield className="h-4 w-4 text-indigo-400" />
                 )}
                 <div>
                   <p className="text-[9px] uppercase font-bold tracking-wider text-white/50">Clube</p>
-                  <p className="text-xs font-bold text-white">{athlete.team.name}</p>
+                  <p className="text-xs font-bold text-white">{athlete.team?.name ?? "Sem Clube"}</p>
                 </div>
               </div>
 
@@ -626,7 +629,7 @@ export default async function AthleteProfilePage({
           athleteId={athlete.id}
           athleteName={athlete.name}
           athletePosition={POSITION_LABELS[athlete.position]}
-          teamName={athlete.team.name}
+          teamName={athlete.team?.name ?? "Sem Clube"}
           rawData={rawTelemetryData}
           teammates={teammateList}
           triggerVariant="banner"
@@ -681,7 +684,7 @@ export default async function AthleteProfilePage({
             value={formatDate(athlete.birthDate)}
           />
           <StatTile label="Idade" value={athlete.birthDate ? `${formatAge(athlete.birthDate)}` : "—"} />
-          <StatTile label="Pé Dominante" value={FOOT_LABELS[athlete.footPreference]} />
+          <StatTile label="Pé Dominante" value={formatFootPreference(athlete.footPreference)} />
           <StatTile label="Altura" value={formatHeight(athlete.height)} />
           <StatTile label="Peso" value={formatWeight(athlete.weight)} />
           <StatTile label="Nacionalidade" value={athlete.nationality ?? "—"} />
@@ -727,7 +730,7 @@ export default async function AthleteProfilePage({
         athleteId={athlete.id}
         athleteName={athlete.name}
         athletePosition={POSITION_LABELS[athlete.position]}
-        teamName={athlete.team.name}
+        teamName={athlete.team?.name ?? "Sem Clube"}
         history={matchLogEntries}
       />
 
