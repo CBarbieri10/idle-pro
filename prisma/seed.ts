@@ -8,17 +8,12 @@ import bcrypt from "bcryptjs";
 const prisma = new PrismaClient();
 
 async function main() {
-  const sampleAthlete = await prisma.athlete.findFirst({
-    where: { name: { contains: "Estêvão" } },
-  }) || await prisma.athlete.findFirst();
-
   const sampleTeam = await prisma.team.findFirst();
 
   const accounts = [
     { email: "admin@thenetscout.com", name: "Admin TNS", role: "ADMIN" as const, athleteId: null, teamId: null },
     { email: "analista@thenetscouting.com", name: "Analista de Desempenho", role: "ANALYST" as const, athleteId: null, teamId: null },
     { email: "clube@thenetscouting.com", name: "Diretoria do Clube", role: "CLUB" as const, athleteId: null, teamId: sampleTeam?.id ?? null },
-    { email: "atleta@thenetscouting.com", name: sampleAthlete?.name || "Atleta Profissional", role: "ATHLETE" as const, athleteId: sampleAthlete?.id ?? null, teamId: sampleAthlete?.teamId ?? null },
   ];
 
   const passwordHash = await bcrypt.hash("admin123", 12);
