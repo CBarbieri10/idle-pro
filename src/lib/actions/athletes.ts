@@ -163,3 +163,57 @@ export async function deleteAthlete(id: string) {
   revalidatePath("/athletes");
 }
 
+export interface MetricHistoryPoint {
+  round: string;
+  value: number;
+  date?: string;
+  opponent?: string;
+}
+
+/**
+ * Busca a pilha cronológica de CanonicalMetric do atleta para alimentar os Sparklines
+ */
+export async function getAthleteMetricHistoryAction(
+  athleteId: string,
+  metricName: string
+): Promise<MetricHistoryPoint[]> {
+  try {
+    const records = await prisma.canonicalMetric.findMany({
+      where: {
+        athleteId,
+        metricName,
+      },
+      include: {
+        match: {
+          select: {
+            round: true,
+            date: true,
+            opponentName: true,
+          },
+        },
+      },
+      orderBy: [
+        { round: "asc" },
+        { date: "asc" },
+      ],
+      take: 12,
+    });
+
+    if (records.length === 0) return [];
+
+    return records.map((r, i) => {
+      const roundLabel = r.round ? `R${r.round}` : r.match?.round || `R${i + 1}`;
+      return {
+        round: roundLabel,
+        value: Number(r.per90Value.toFixed(2)),
+        date: r.date.toISOString().slice(0, 10),
+        opponent: r.match?.opponentName || undefined,
+      };
+    });
+  } catch (error) {
+    console.error("Erro ao buscar histórico da métrica:", error);
+    return [];
+  }
+}
+
+

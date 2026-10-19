@@ -14,6 +14,8 @@ import {
 } from "@prisma/client";
 import { calculatePAdj, calculateXgPerShot } from "@/lib/math-engine";
 
+export type DetectedFileType = "ATHLETE" | "MATCH" | "TEAM";
+
 export interface ImportDetailItem {
   rowNumber: number;
   playerName: string;
@@ -26,6 +28,8 @@ export interface ImportDetailItem {
 
 export interface ImportResultSummary {
   success: boolean;
+  detectedType: DetectedFileType;
+  detectedTypeLabel: string;
   totalRows: number;
   matchedCount: number;
   createdCount: number;
@@ -70,7 +74,101 @@ function parseNum(val: unknown): number {
 }
 
 /**
+ * Passo 1: Auto-Detect & Roteamento Inteligente
+ * Detecta o tipo do arquivo analisando nome do arquivo e cabeçalhos da planilha
+ * Regras estritas:
+ * - 'jogador'/'athlete'/'player' em nome ou colunas -> ATHLETE
+ * - 'partida'/'match'/'jogo'/'confronto' em nome ou colunas -> MATCH
+ * - 'time'/'equipe'/'team'/'clube' (sem 'jogador') -> TEAM
+ */
+export async function detectFileType(fileName: string, headers: string[]): Promise<DetectedFileType> {
+  const lowerFileName = (fileName || "").toLowerCase();
+  const lowerHeaders = (headers || []).map((h) => String(h).toLowerCase().trim());
+
+  // 1. Identificadores de Jogador/Atleta
+  const hasAthleteHeader = lowerHeaders.some(
+    (h) =>
+      h === "jogador" ||
+      h === "player" ||
+      h === "athlete" ||
+      h === "atleta" ||
+      h.includes("jogador") ||
+      h.includes("player")
+  );
+  const hasAthleteName =
+    lowerFileName.includes("jogador") ||
+    lowerFileName.includes("athlete") ||
+    lowerFileName.includes("player") ||
+    lowerFileName.includes("atleta");
+
+  // 2. Identificadores de Partida/Confronto
+  const hasMatchHeader = lowerHeaders.some(
+    (h) =>
+      h.includes("match") ||
+      h.includes("partida") ||
+      h.includes("jogo") ||
+      h.includes("confronto") ||
+      h.includes("mandante") ||
+      h.includes("visitante")
+  );
+  const hasMatchName =
+    lowerFileName.includes("partida") ||
+    lowerFileName.includes("match") ||
+    lowerFileName.includes("jogo") ||
+    lowerFileName.includes("fixtures") ||
+    lowerFileName.includes("resultado");
+
+  // 3. Identificadores de Time/Equipe (sem jogador)
+  const hasTeamHeader = lowerHeaders.some(
+    (h) =>
+      h === "time" ||
+      h === "equipe" ||
+      h === "team" ||
+      h === "clube" ||
+      h === "club"
+  );
+  const hasTeamName =
+    (lowerFileName.includes("time") ||
+      lowerFileName.includes("team") ||
+      lowerFileName.includes("equipe") ||
+      lowerFileName.includes("clube")) &&
+    !hasAthleteName;
+
+  // Priorização estrita
+  if (hasAthleteHeader || hasAthleteName) {
+    return "ATHLETE";
+  }
+
+  if (hasMatchHeader || hasMatchName) {
+    return "MATCH";
+  }
+
+  if (hasTeamHeader || hasTeamName) {
+    return "TEAM";
+  }
+
+  // Fallback heurístico: se tem 'Time' ou 'Equipe' e não tem 'Jogador'
+  if (lowerHeaders.includes("time") && !lowerHeaders.includes("jogador")) {
+    return "TEAM";
+  }
+
+  return "ATHLETE";
+}
+
+export async function getDetectedTypeLabel(type: DetectedFileType): Promise<string> {
+  switch (type) {
+    case "ATHLETE":
+      return "Planilha de Atletas (ATHLETE)";
+    case "MATCH":
+      return "Planilha de Partidas / Rodadas (MATCH)";
+    case "TEAM":
+      return "Planilha de Clubes & Comportamento Coletivo (TEAM)";
+  }
+}
+
+/**
  * Server Action Principal: Processa o arquivo Excel ou CSV enviado via Dropzone
+ * com Auto-Detect automático e roteamento para o pipeline correspondente.
  */
 export async function importWyscoutSpreadsheetAction(
   formData: FormData
@@ -80,6 +178,8 @@ export async function importWyscoutSpreadsheetAction(
     if (!file) {
       return {
         success: false,
+        detectedType: "ATHLETE",
+        detectedTypeLabel: "Indefinido",
         totalRows: 0,
         matchedCount: 0,
         createdCount: 0,
@@ -100,6 +200,8 @@ export async function importWyscoutSpreadsheetAction(
     if (!sheetName) {
       return {
         success: false,
+        detectedType: "ATHLETE",
+        detectedTypeLabel: "Indefinido",
         totalRows: 0,
         matchedCount: 0,
         createdCount: 0,
@@ -117,6 +219,8 @@ export async function importWyscoutSpreadsheetAction(
     if (rawRows.length === 0) {
       return {
         success: false,
+        detectedType: "ATHLETE",
+        detectedTypeLabel: "Indefinido",
         totalRows: 0,
         matchedCount: 0,
         createdCount: 0,
@@ -126,82 +230,94 @@ export async function importWyscoutSpreadsheetAction(
       };
     }
 
-    // 1. Pré-carregar todos os atletas e clubes existentes no banco Neon/Prisma
-    const [existingAthletes, existingTeams, firstLeague] = await Promise.all([
-      prisma.athlete.findMany({
-        include: {
-          team: { select: { id: true, name: true, shortName: true } },
-        },
-      }),
-      prisma.team.findMany(),
-      prisma.league.findFirst(),
-    ]);
+    // Extrair cabeçalhos da primeira linha para detecção
+    const headers = Object.keys(rawRows[0] || {});
+    const detectedType = await detectFileType(file.name, headers);
+    const detectedTypeLabel = await getDetectedTypeLabel(detectedType);
 
-    const defaultLeague =
-      firstLeague ||
-      (await prisma.league.create({
-        data: {
-          name: "Brasileirão Série A",
-          country: "Brasil",
-          season: "2026",
-        },
-      }));
-
-    // Criar mapa de clubes para rápida resolução
-    const teamMapByName = new Map<string, typeof existingTeams[0]>();
-    for (const t of existingTeams) {
-      teamMapByName.set(t.name.toLowerCase().trim(), t);
-      if (t.shortName) teamMapByName.set(t.shortName.toLowerCase().trim(), t);
+    // Passo 2: Roteamento para Pipelines Independentes
+    switch (detectedType) {
+      case "MATCH":
+        return await processMatchFile(rawRows, file.name, detectedTypeLabel);
+      case "TEAM":
+        return await processTeamFile(rawRows, file.name, detectedTypeLabel);
+      case "ATHLETE":
+      default:
+        return await processAthleteFile(rawRows, file.name, detectedTypeLabel);
     }
+  } catch (error) {
+    console.error("Falha fatal na importação da planilha:", error);
+    return {
+      success: false,
+      detectedType: "ATHLETE",
+      detectedTypeLabel: "Erro",
+      totalRows: 0,
+      matchedCount: 0,
+      createdCount: 0,
+      errorCount: 1,
+      details: [],
+      error: error instanceof Error ? error.message : "Erro desconhecido ao processar arquivo.",
+    };
+  }
+}
 
-    // Candidatos para o Fuzzy Match
-    const candidateAthletes: CandidateAthlete[] = existingAthletes.map((a) => ({
-      id: a.id,
-      name: a.name,
-      teamId: a.teamId,
-      teamName: a.team?.name,
-      position: a.position,
+// ─────────────────────────────────────────────────────────────────────────────
+// PIPELINE 1: ATLETAS (Acúmulo Cronológico de Dados)
+// ─────────────────────────────────────────────────────────────────────────────
+export async function processAthleteFile(
+  rawRows: Record<string, unknown>[],
+  fileName: string,
+  detectedTypeLabel: string
+): Promise<ImportResultSummary> {
+  const [existingAthletes, existingTeams, firstLeague] = await Promise.all([
+    prisma.athlete.findMany({
+      include: {
+        team: { select: { id: true, name: true, shortName: true } },
+      },
+    }),
+    prisma.team.findMany(),
+    prisma.league.findFirst(),
+  ]);
+
+  const defaultLeague =
+    firstLeague ||
+    (await prisma.league.create({
+      data: {
+        name: "Brasileirão Série A",
+        country: "Brasil",
+        season: "2026",
+      },
     }));
 
-    // Garantir partida de referência para armazenar RawMetric e CanonicalMetric
-    const teamMatchMap = new Map<string, string>();
-    for (const team of existingTeams) {
-      const match = await prisma.match.findFirst({
-        where: { teamId: team.id },
-      });
-      if (match) {
-        teamMatchMap.set(team.id, match.id);
-      } else {
-        const createdMatch = await prisma.match.create({
-          data: {
-            teamId: team.id,
-            opponentName: "Wyscout Aggregated Data",
-            date: new Date("2026-08-01"),
-            competition: "Brasileirão Série A (Temporada)",
-            round: "Temporada Regular",
-            venue: MatchVenue.HOME,
-            leagueId: defaultLeague.id,
-          },
-        });
-        teamMatchMap.set(team.id, createdMatch.id);
-      }
-    }
+  const teamMapByName = new Map<string, typeof existingTeams[0]>();
+  for (const t of existingTeams) {
+    teamMapByName.set(t.name.toLowerCase().trim(), t);
+    if (t.shortName) teamMapByName.set(t.shortName.toLowerCase().trim(), t);
+  }
 
-    let matchedCount = 0;
-    let createdCount = 0;
-    let errorCount = 0;
-    const details: ImportDetailItem[] = [];
+  const candidateAthletes: CandidateAthlete[] = existingAthletes.map((a) => ({
+    id: a.id,
+    name: a.name,
+    teamName: a.team.name,
+  }));
 
-    // Processamento em lotes para performance
-    const BATCH_SIZE = 25;
-    for (let i = 0; i < rawRows.length; i += BATCH_SIZE) {
-      const batch = rawRows.slice(i, i + BATCH_SIZE);
+  const details: ImportDetailItem[] = [];
+  let matchedCount = 0;
+  let createdCount = 0;
+  let errorCount = 0;
 
-      await Promise.all(
-        batch.map(async (row, batchIdx) => {
-          const rowNumber = i + batchIdx + 2; // Linha 1 é cabeçalho
+  // Cache de partidas por clube + rodada para acúmulo
+  const roundMatchCache = new Map<string, string>();
 
-          // Detecção dinâmica de colunas
+  const CHUNK_SIZE = 25;
+  for (let i = 0; i < rawRows.length; i += CHUNK_SIZE) {
+    const chunk = rawRows.slice(i, i + CHUNK_SIZE);
+
+    await Promise.all(
+      chunk.map(async (row, chunkIdx) => {
+        const rowNumber = i + chunkIdx + 2;
+
+        try {
           const playerName = String(
             row["Jogador"] ||
               row["Player"] ||
@@ -225,10 +341,7 @@ export async function importWyscoutSpreadsheetAction(
             return;
           }
 
-          // Executar Fuzzy Match
-          const matchResult = matchAthleteName(playerName, candidateAthletes, rawTeam);
-
-          // Resolver ou criar o clube
+          // Resolver ou criar clube
           let team =
             teamMapByName.get(rawTeam.toLowerCase().trim()) ||
             existingTeams.find(
@@ -249,64 +362,65 @@ export async function importWyscoutSpreadsheetAction(
             teamMapByName.set(team.name.toLowerCase().trim(), team);
           }
 
-          // Garantir partida de referência para o time
-          let defaultMatchId = teamMatchMap.get(team.id);
-          if (!defaultMatchId) {
-            const m = await prisma.match.create({
-              data: {
-                teamId: team.id,
-                opponentName: "Wyscout Dataset",
-                date: new Date("2026-08-01"),
-                competition: "Brasileirão Série A",
-                venue: MatchVenue.HOME,
-                leagueId: defaultLeague.id,
-              },
-            });
-            defaultMatchId = m.id;
-            teamMatchMap.set(team.id, m.id);
+          // Parsing cronológico (Rodada e Data do Evento)
+          const rawRound = parseNum(row["Rodada"] || row["Round"] || row["Matchday"]);
+          const parsedRound = rawRound > 0 ? Math.round(rawRound) : null;
+
+          const rawDateStr = row["Data"] || row["Date"] || row["Data do Jogo"];
+          let eventDate = new Date("2026-08-01");
+          if (rawDateStr) {
+            const d = new Date(String(rawDateStr));
+            if (!isNaN(d.getTime())) eventDate = d;
+          } else if (parsedRound) {
+            // Gera datas espaçadas semana a semana por rodada
+            eventDate = new Date(2026, 3, 10 + parsedRound * 7);
           }
 
-          // Extração e normalização de variáveis biométricas e de jogo
-          const position = mapWyscoutPosition(
-            row["Posição"] ? String(row["Posição"]) : row["Position"] ? String(row["Position"]) : null
-          );
+          // Chave única para o evento da partida
+          const matchCacheKey = `${team.id}-R${parsedRound || 0}-${eventDate.toISOString().slice(0, 10)}`;
+          let matchId = roundMatchCache.get(matchCacheKey);
+
+          if (!matchId) {
+            const existingMatch = await prisma.match.findFirst({
+              where: {
+                teamId: team.id,
+                round: parsedRound ? `Rodada ${parsedRound}` : "Rodada Regular",
+                date: eventDate,
+              },
+            });
+
+            if (existingMatch) {
+              matchId = existingMatch.id;
+            } else {
+              const newMatch = await prisma.match.create({
+                data: {
+                  teamId: team.id,
+                  opponentName: "Série A 2026",
+                  date: eventDate,
+                  round: parsedRound ? `Rodada ${parsedRound}` : "Rodada Regular",
+                  competition: "Brasileirão Série A",
+                  leagueId: defaultLeague.id,
+                },
+              });
+              matchId = newMatch.id;
+            }
+            roundMatchCache.set(matchCacheKey, matchId);
+          }
+
+          // Fuzzy Match do Atleta
+          const matchResult = matchAthleteName(playerName, candidateAthletes, rawTeam);
+          const rawPos = String(row["Posição"] || row["Position"] || row["Pos"] || "");
+          const position = mapWyscoutPosition(rawPos);
           const age = parseNum(row["Idade"] || row["Age"]);
           const height = parseNum(row["Altura"] || row["Height"]);
           const weight = parseNum(row["Peso"] || row["Weight"]);
-          const nationality = String(row["Nacionalidade"] || row["Nationality"] || "Brasil");
-          const minutes = parseNum(row["Minutos jogados"] || row["Minutes"] || row["Minutos"]);
-          const matches = parseNum(row["Partidas jogadas"] || row["Matches"] || row["Jogos"]);
-          const rating = parseNum(row["Índice"] || row["Rating"]);
+          const nationality = String(row["Nacionalidade"] || row["País"] || "Brasil").trim();
+          const minutes = parseNum(row["Minutos jogados"] || row["Minutos"] || row["Minutes"] || 90);
+          const matches = parseNum(row["Partidas jogadas"] || row["Jogos"] || row["Matches"] || 1);
+          const rating = parseNum(row["Índice"] || row["Nota"] || row["Rating"] || 7.0);
 
-          // Métricas numéricas
-          const goals = parseNum(row["Gols"] || row["Goals"]);
-          const assists = parseNum(row["Assistências"] || row["Assists"]);
-          const shots = parseNum(row["Chutes"] || row["Shots"] || row["Finalizações"]);
-          const shotsOnTarget = parseNum(row["Chutes no alvo"] || row["Finalizações no alvo"]);
-          const xg = parseNum(row["xG (Gols esperados)"] || row["xG"]);
-          const passes = parseNum(row["Passes"]);
-          const passAccuracy = parseNum(row["Passes precisos, %"] || row["Pass accuracy, %"]);
-          const progPasses = parseNum(row["Passes progressivos"] || row["Progressive passes"]);
-          const keyPasses = parseNum(row["Passes-chave"] || row["Passes decisivos"] || row["Key passes"]);
-          const crosses = parseNum(row["Cruzamentos"] || row["Crosses"]);
-          const tackles = parseNum(row["Desarmes"] || row["Tackles"]);
-          const interceptions = parseNum(row["Interceptações"] || row["Interceptions"]);
-          const dribbles = parseNum(row["Dribles"] || row["Dribles com sucesso"]);
-          const aerialDuelsWon = parseNum(row["Duelos aéreos ganhos"] || row["Duelos aéreos"]);
-          const groundDuelsWon = parseNum(row["Duelos defensivos ganhos"] || row["Duelos defensivos"]);
-          const recoveries = parseNum(row["Recuperações da bola"] || row["Recuperações"]);
-
-          // Per-90 seguro
-          const per90 = (v: number) =>
-            minutes > 0 ? Math.round(((v / minutes) * 90) * 100) / 100 : 0;
-
-          // PAdj (Ajuste por posse)
-          const padjTackles = calculatePAdj(per90(tackles), 50);
-          const padjInterceptions = calculatePAdj(per90(interceptions), 50);
-          const xgPerShot = calculateXgPerShot(xg, shots);
-
-          // IDG & Estabilidade
-          const successfulActionsPct = parseNum(row["Ações bem-sucedidas, %"]);
+          // Cálculo do IDG e Estabilidade
+          const successfulActionsPct = parseNum(row["Ações com sucesso, %"]);
           const duelWinPct = parseNum(row["Duelos ganhos, %"]);
           const varianceBase = Math.abs(successfulActionsPct - 75) * 0.4 + Math.abs(duelWinPct - 50) * 0.3;
           const idgScore = Math.min(45, Math.max(8.5, Math.round((12.5 + varianceBase * 0.5) * 10) / 10));
@@ -318,11 +432,9 @@ export async function importWyscoutSpreadsheetAction(
               : StabilityCategory.LOW;
 
           const birthDate = age > 0 ? new Date(2026 - Math.round(age), 0, 1) : null;
-
           let targetAthleteId: string;
 
           if (matchResult.matched && matchResult.athlete) {
-            // CASO 1: Atleta já existe -> Atualizar perfil e métricas
             targetAthleteId = matchResult.athlete.id;
             await prisma.athlete.update({
               where: { id: targetAthleteId },
@@ -348,7 +460,6 @@ export async function importWyscoutSpreadsheetAction(
               action: "UPDATED",
             });
           } else {
-            // CASO 2: Atleta novo -> Criar no banco
             const newAthlete = await prisma.athlete.create({
               data: {
                 name: playerName,
@@ -359,20 +470,17 @@ export async function importWyscoutSpreadsheetAction(
                 nationality,
                 footPreference: FootPreference.RIGHT,
                 teamId: team.id,
-                notes: `Importado via Dropzone Wyscout. Índice: ${rating} (${matches} jogos, ${minutes} min).`,
+                notes: `Importado via Dropzone. Índice: ${rating} (${matches} jogos, ${minutes} min).`,
                 idgScore,
                 stabilityCategory,
               },
             });
 
             targetAthleteId = newAthlete.id;
-            // Registrar novo candidato para os próximos itens da mesma planilha
             candidateAthletes.push({
               id: newAthlete.id,
               name: newAthlete.name,
-              teamId: newAthlete.teamId,
               teamName: team.name,
-              position: newAthlete.position,
             });
 
             createdCount++;
@@ -387,30 +495,44 @@ export async function importWyscoutSpreadsheetAction(
             });
           }
 
-          // Parsing cronológico (Rodada e Data da Partida/Evento)
-          const rawRound = parseNum(row["Rodada"] || row["Round"] || row["Matchday"]);
-          const parsedRound = rawRound > 0 ? Math.round(rawRound) : null;
+          // Métricas numéricas
+          const goals = parseNum(row["Gols"] || row["Goals"]);
+          const assists = parseNum(row["Assistências"] || row["Assists"]);
+          const shots = parseNum(row["Chutes"] || row["Shots"] || row["Finalizações"]);
+          const shotsOnTarget = parseNum(row["Chutes no alvo"] || row["Finalizações no alvo"]);
+          const xg = parseNum(row["xG (Gols esperados)"] || row["xG"]);
+          const passes = parseNum(row["Passes"]);
+          const passAccuracy = parseNum(row["Passes precisos, %"] || row["Pass accuracy, %"]);
+          const progPasses = parseNum(row["Passes progressivos"] || row["Progressive passes"]);
+          const keyPasses = parseNum(row["Passes-chave"] || row["Passes decisivos"] || row["Key passes"]);
+          const crosses = parseNum(row["Cruzamentos"] || row["Crosses"]);
+          const tackles = parseNum(row["Desarmes"] || row["Tackles"]);
+          const interceptions = parseNum(row["Interceptações"] || row["Interceptions"]);
+          const dribbles = parseNum(row["Dribles"] || row["Dribles com sucesso"]);
+          const aerialDuelsWon = parseNum(row["Duelos aéreos ganhos"] || row["Duelos aéreos"]);
+          const groundDuelsWon = parseNum(row["Duelos defensivos ganhos"] || row["Duelos defensivos"]);
+          const recoveries = parseNum(row["Recuperações da bola"] || row["Recuperações"]);
 
-          const rawDateStr = row["Data"] || row["Date"] || row["Data do Jogo"];
-          let eventDate = new Date();
-          if (rawDateStr) {
-            const d = new Date(String(rawDateStr));
-            if (!isNaN(d.getTime())) eventDate = d;
-          }
+          const per90 = (v: number) =>
+            minutes > 0 ? Number(((v / minutes) * 90).toFixed(2)) : Number(v.toFixed(2));
 
-          // Gravação do JSONB bruto (todas as 75+ colunas da planilha)
-          // Limpa apenas da mesma partida/rodada, permitindo acúmulo longitudinal de eventos
+          const padjTackles = calculatePAdj(tackles, 50);
+          const padjInterceptions = calculatePAdj(interceptions, 50);
+          const xgPerShot = calculateXgPerShot(xg, shots);
+
+          // ─── A Regra de Ouro (Acúmulo Longitudinal): ──────────────────────
+          // NÃO fazemos delete indiscriminado. Substitui APENAS o registro da mesma partida/rodada!
           await prisma.rawMetric.deleteMany({
             where: {
               athleteId: targetAthleteId,
-              matchId: defaultMatchId,
+              matchId,
             },
           });
 
           const rawMetric = await prisma.rawMetric.create({
             data: {
               athleteId: targetAthleteId,
-              matchId: defaultMatchId,
+              matchId,
               round: parsedRound,
               date: eventDate,
               source: MetricSource.WYSCOUT,
@@ -419,11 +541,10 @@ export async function importWyscoutSpreadsheetAction(
             },
           });
 
-          // Gravação das métricas canônicas normalizadas
           await prisma.canonicalMetric.deleteMany({
             where: {
               athleteId: targetAthleteId,
-              matchId: defaultMatchId,
+              matchId,
             },
           });
 
@@ -453,7 +574,7 @@ export async function importWyscoutSpreadsheetAction(
             await prisma.canonicalMetric.create({
               data: {
                 athleteId: targetAthleteId,
-                matchId: defaultMatchId,
+                matchId,
                 rawMetricId: rawMetric.id,
                 round: parsedRound,
                 date: eventDate,
@@ -463,38 +584,294 @@ export async function importWyscoutSpreadsheetAction(
               },
             });
           }
-        })
-      );
-    }
+        } catch (rowErr) {
+          console.error(`Erro ao processar linha ${rowNumber}:`, rowErr);
+          errorCount++;
+        }
+      })
+    );
+  }
+
+  try {
+    revalidatePath("/athletes");
+    revalidatePath("/catalog");
+    revalidatePath("/competition/leaders");
+    revalidatePath("/dashboard");
+  } catch (e) {
+    console.warn("RevalidatePath ignorado no ambiente atual:", e);
+  }
+
+  return {
+    success: true,
+    detectedType: "ATHLETE",
+    detectedTypeLabel,
+    totalRows: rawRows.length,
+    matchedCount,
+    createdCount,
+    errorCount,
+    details,
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PIPELINE 2: PARTIDAS (Confrontos e Resultados por Rodada)
+// ─────────────────────────────────────────────────────────────────────────────
+export async function processMatchFile(
+  rawRows: Record<string, unknown>[],
+  fileName: string,
+  detectedTypeLabel: string
+): Promise<ImportResultSummary> {
+  const [existingTeams, firstLeague] = await Promise.all([
+    prisma.team.findMany(),
+    prisma.league.findFirst(),
+  ]);
+
+  const defaultLeague =
+    firstLeague ||
+    (await prisma.league.create({
+      data: {
+        name: "Brasileirão Série A",
+        country: "Brasil",
+        season: "2026",
+      },
+    }));
+
+  const teamMap = new Map<string, typeof existingTeams[0]>();
+  for (const t of existingTeams) {
+    teamMap.set(t.name.toLowerCase().trim(), t);
+    if (t.shortName) teamMap.set(t.shortName.toLowerCase().trim(), t);
+  }
+
+  let matchedCount = 0;
+  let createdCount = 0;
+  let errorCount = 0;
+  const details: ImportDetailItem[] = [];
+
+  for (let i = 0; i < rawRows.length; i++) {
+    const row = rawRows[i];
+    const rowNumber = i + 2;
 
     try {
-      revalidatePath("/athletes");
-      revalidatePath("/catalog");
-      revalidatePath("/scouting");
-      revalidatePath("/admin/import");
-    } catch {
-      // Ignorar fora do ciclo de renderização
-    }
+      const homeTeamName = String(
+        row["Mandante"] || row["Home Team"] || row["Time Mandante"] || row["Home"] || ""
+      ).trim();
+      const awayTeamName = String(
+        row["Visitante"] || row["Away Team"] || row["Time Visitante"] || row["Away"] || ""
+      ).trim();
 
-    return {
-      success: true,
-      totalRows: rawRows.length,
-      matchedCount,
-      createdCount,
-      errorCount,
-      details,
-    };
-  } catch (err: unknown) {
-    const message =
-      err instanceof Error ? err.message : "Erro desconhecido ao processar planilha";
-    return {
-      success: false,
-      totalRows: 0,
-      matchedCount: 0,
-      createdCount: 0,
-      errorCount: 1,
-      details: [],
-      error: `Falha no processamento: ${message}`,
-    };
+      if (!homeTeamName || !awayTeamName) {
+        errorCount++;
+        continue;
+      }
+
+      const homeTeam =
+        teamMap.get(homeTeamName.toLowerCase()) ||
+        existingTeams.find((t) => t.name.toLowerCase().includes(homeTeamName.toLowerCase()));
+      const awayTeam =
+        teamMap.get(awayTeamName.toLowerCase()) ||
+        existingTeams.find((t) => t.name.toLowerCase().includes(awayTeamName.toLowerCase()));
+
+      if (!homeTeam) {
+        errorCount++;
+        continue;
+      }
+
+      const rawRound = parseNum(row["Rodada"] || row["Round"] || row["Matchday"]);
+      const parsedRound = rawRound > 0 ? Math.round(rawRound) : null;
+      const roundLabel = parsedRound ? `Rodada ${parsedRound}` : "Rodada Regular";
+
+      const rawDateStr = row["Data"] || row["Date"] || row["Data do Jogo"];
+      let matchDate = new Date("2026-08-01");
+      if (rawDateStr) {
+        const d = new Date(String(rawDateStr));
+        if (!isNaN(d.getTime())) matchDate = d;
+      }
+
+      const goalsFor = parseNum(row["Gols Mandante"] || row["Home Goals"] || row["Gols Pró"]);
+      const goalsAgainst = parseNum(row["Gols Visitante"] || row["Away Goals"] || row["Gols Sofridos"]);
+      const possession = parseNum(row["Posse Mandante, %"] || row["Posse, %"] || row["Possession"] || 50);
+      const xgHome = parseNum(row["xG Mandante"] || row["Home xG"] || row["xG"]);
+
+      // Persiste o confronto no modelo Match (perspectiva do mandante)
+      await prisma.match.create({
+        data: {
+          teamId: homeTeam.id,
+          opponentId: awayTeam?.id || null,
+          opponentName: awayTeam?.name || awayTeamName,
+          venue: MatchVenue.HOME,
+          date: matchDate,
+          round: roundLabel,
+          competition: "Brasileirão Série A",
+          leagueId: defaultLeague.id,
+          goalsFor: Math.round(goalsFor),
+          goalsAgainst: Math.round(goalsAgainst),
+          possession,
+          opponentPossession: Math.max(0, 100 - possession),
+          notes: `xG: ${xgHome.toFixed(2)} • Importado via Pipeline Match`,
+        },
+      });
+
+      createdCount++;
+      details.push({
+        rowNumber,
+        playerName: `${homeTeam.name} vs ${awayTeam?.name || awayTeamName}`,
+        teamName: homeTeam.name,
+        similarityScore: 100,
+        action: "CREATED",
+      });
+    } catch (err) {
+      console.error(`Erro ao processar partida linha ${rowNumber}:`, err);
+      errorCount++;
+    }
   }
+
+  try {
+    revalidatePath("/competition/leaders");
+    revalidatePath("/league");
+    revalidatePath("/dashboard");
+  } catch (e) {
+    console.warn("RevalidatePath ignorado:", e);
+  }
+
+  return {
+    success: true,
+    detectedType: "MATCH",
+    detectedTypeLabel,
+    totalRows: rawRows.length,
+    matchedCount,
+    createdCount,
+    errorCount,
+    details,
+  };
+}
+
+// ─────────────────────────────────────────────────────────────────────────────
+// PIPELINE 3: CLUBES (Estatísticas Coletivas & Eficiência de Bloco)
+// ─────────────────────────────────────────────────────────────────────────────
+export async function processTeamFile(
+  rawRows: Record<string, unknown>[],
+  fileName: string,
+  detectedTypeLabel: string
+): Promise<ImportResultSummary> {
+  const [existingTeams, firstLeague] = await Promise.all([
+    prisma.team.findMany(),
+    prisma.league.findFirst(),
+  ]);
+
+  const defaultLeague =
+    firstLeague ||
+    (await prisma.league.create({
+      data: {
+        name: "Brasileirão Série A",
+        country: "Brasil",
+        season: "2026",
+      },
+    }));
+
+  const teamMap = new Map<string, typeof existingTeams[0]>();
+  for (const t of existingTeams) {
+    teamMap.set(t.name.toLowerCase().trim(), t);
+    if (t.shortName) teamMap.set(t.shortName.toLowerCase().trim(), t);
+  }
+
+  let matchedCount = 0;
+  let createdCount = 0;
+  let errorCount = 0;
+  const details: ImportDetailItem[] = [];
+
+  for (let i = 0; i < rawRows.length; i++) {
+    const row = rawRows[i];
+    const rowNumber = i + 2;
+
+    try {
+      const teamName = String(
+        row["Time"] || row["Equipe"] || row["Team"] || row["Clube"] || row["Club"] || ""
+      ).trim();
+
+      if (!teamName) {
+        errorCount++;
+        continue;
+      }
+
+      let team =
+        teamMap.get(teamName.toLowerCase()) ||
+        existingTeams.find((t) => t.name.toLowerCase().includes(teamName.toLowerCase()));
+
+      if (!team) {
+        team = await prisma.team.create({
+          data: {
+            name: teamName,
+            country: "Brasil",
+            leagueId: defaultLeague.id,
+          },
+        });
+        teamMap.set(team.name.toLowerCase(), team);
+        createdCount++;
+      } else {
+        matchedCount++;
+      }
+
+      const rawRound = parseNum(row["Rodada"] || row["Round"] || row["Matchday"]);
+      const parsedRound = rawRound > 0 ? Math.round(rawRound) : null;
+      const roundLabel = parsedRound ? `Rodada ${parsedRound}` : "Rodada Regular";
+
+      const rawDateStr = row["Data"] || row["Date"];
+      let eventDate = new Date("2026-08-01");
+      if (rawDateStr) {
+        const d = new Date(String(rawDateStr));
+        if (!isNaN(d.getTime())) eventDate = d;
+      }
+
+      const xg = parseNum(row["xG"] || row["xG Total"] || row["Gols Esperados"] || 1.6);
+      const xga = parseNum(row["xGA"] || row["xG Concedido"] || row["xGA Total"] || 1.3);
+      const goalsFor = parseNum(row["Gols Pró"] || row["Gols"] || row["GF"]);
+      const goalsAgainst = parseNum(row["Gols Sofridos"] || row["GA"]);
+      const possession = parseNum(row["Posse de bola, %"] || row["Posse, %"] || 50);
+
+      // Registra partida coletiva com o xG e xGA empilhados na série temporal
+      await prisma.match.create({
+        data: {
+          teamId: team.id,
+          opponentName: "Série A 2026",
+          date: eventDate,
+          round: roundLabel,
+          competition: "Brasileirão Série A",
+          leagueId: defaultLeague.id,
+          goalsFor: Math.round(goalsFor),
+          goalsAgainst: Math.round(goalsAgainst),
+          possession,
+          notes: `xG: ${xg.toFixed(2)} | xGA: ${xga.toFixed(2)} | Importado via Pipeline Team`,
+        },
+      });
+
+      details.push({
+        rowNumber,
+        playerName: team.name,
+        teamName: team.name,
+        similarityScore: 100,
+        action: "UPDATED",
+      });
+    } catch (err) {
+      console.error(`Erro ao processar time linha ${rowNumber}:`, err);
+      errorCount++;
+    }
+  }
+
+  try {
+    revalidatePath("/competition/leaders");
+    revalidatePath("/league");
+  } catch (e) {
+    console.warn("RevalidatePath ignorado:", e);
+  }
+
+  return {
+    success: true,
+    detectedType: "TEAM",
+    detectedTypeLabel,
+    totalRows: rawRows.length,
+    matchedCount,
+    createdCount,
+    errorCount,
+    details,
+  };
 }

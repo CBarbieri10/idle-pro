@@ -797,6 +797,7 @@ export async function getLeagueQuadrantsData(): Promise<LeagueQuadrantsPayload> 
           goalsFor: true,
           goalsAgainst: true,
           possession: true,
+          notes: true,
         },
       },
       athletes: {
@@ -855,17 +856,50 @@ export async function getLeagueQuadrantsData(): Promise<LeagueQuadrantsPayload> 
     let ga = fallback.ga;
     let matchesCount = t.matches.length || 12;
 
-    // Se houver partidas registradas no banco
+    // Se houver partidas registradas no banco (geradas por processMatchFile ou processTeamFile)
     if (t.matches.length > 0) {
       matchesCount = t.matches.length;
       const totalGf = t.matches.reduce((acc, m) => acc + (m.goalsFor ?? 0), 0);
       const totalGa = t.matches.reduce((acc, m) => acc + (m.goalsAgainst ?? 0), 0);
       gf = totalGf;
       ga = totalGa;
-      off = Number((totalGf / matchesCount).toFixed(2));
-      // Solidez defensiva: quanto menor o xGA / gols sofridos, maior a solidez
-      const gaPerMatch = totalGa / matchesCount;
-      def = Number(Math.max(0.5, 3.0 - gaPerMatch).toFixed(2));
+
+      // Extração de telemetria xG / xGA acumulados das partidas
+      let xgSum = 0;
+      let xgaSum = 0;
+      let customXgCount = 0;
+
+      for (const m of t.matches) {
+        if (m.notes && m.notes.includes("xG:")) {
+          const matchXg = m.notes.match(/xG:\s*([\d.]+)/);
+          const matchXga = m.notes.match(/xGA:\s*([\d.]+)/);
+          if (matchXg) {
+            xgSum += parseFloat(matchXg[1]);
+            customXgCount++;
+          }
+          if (matchXga) {
+            xgaSum += parseFloat(matchXga[1]);
+          }
+        }
+      }
+
+      if (customXgCount > 0) {
+        off = Number((xgSum / customXgCount).toFixed(2));
+        const avgXga = xgaSum > 0 ? xgaSum / customXgCount : totalGa / matchesCount;
+        def = Number(Math.max(0.5, 3.2 - avgXga).toFixed(2));
+      } else {
+        const athleteXgMetrics = t.athletes.flatMap((a) =>
+          a.canonicalMetrics.filter((m) => m.metricName === "xg")
+        );
+        const athleteXgSum = athleteXgMetrics.reduce((sum, m) => sum + m.absoluteValue, 0);
+
+        off =
+          athleteXgSum > 0
+            ? Number((athleteXgSum / matchesCount).toFixed(2))
+            : Number((totalGf / matchesCount).toFixed(2));
+        const gaPerMatch = totalGa / matchesCount;
+        def = Number(Math.max(0.5, 3.0 - gaPerMatch).toFixed(2));
+      }
     }
 
     return {

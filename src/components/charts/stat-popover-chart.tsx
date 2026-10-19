@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/popover";
 import { TrendingUp, TrendingDown, Minus, Activity, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getAthleteMetricHistoryAction } from "@/lib/actions/athletes";
 
 export interface StatHistoryPoint {
   round: number | string;
@@ -31,6 +32,8 @@ export interface StatPopoverChartProps {
   value: string | number;
   unit?: string;
   history?: StatHistoryPoint[];
+  athleteId?: string;
+  metricKey?: string;
   per90Value?: number | string;
   colorVariant?: "emerald" | "cyan" | "indigo" | "rose" | "amber";
   className?: string;
@@ -76,6 +79,8 @@ export function StatPopoverChart({
   value,
   unit = "",
   history,
+  athleteId,
+  metricKey,
   per90Value,
   colorVariant = "emerald",
   className,
@@ -83,11 +88,32 @@ export function StatPopoverChart({
   children,
 }: StatPopoverChartProps) {
   const colors = COLOR_MAP[colorVariant] || COLOR_MAP.emerald;
+  const [asyncHistory, setAsyncHistory] = React.useState<StatHistoryPoint[] | null>(null);
+  const [isLoading, setIsLoading] = React.useState(false);
 
-  // Se não houver histórico fornecido, sintetiza uma distribuição coerente para visualização longitudinal
+  // Busca a pilha histórica de CanonicalMetric do atleta ao clicar/abrir o popover
+  const handleOpenChange = async (open: boolean) => {
+    if (open && athleteId && metricKey && !asyncHistory && (!history || history.length === 0)) {
+      setIsLoading(true);
+      try {
+        const fetched = await getAthleteMetricHistoryAction(athleteId, metricKey);
+        if (fetched && fetched.length > 0) {
+          setAsyncHistory(fetched);
+        }
+      } catch (err) {
+        console.error("Falha ao carregar histórico longitudinal:", err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+  };
+
+  const activeHistory = asyncHistory && asyncHistory.length > 0 ? asyncHistory : history;
+
+  // Se não houver histórico fornecido ou retornado, sintetiza uma distribuição coerente para visualização longitudinal
   const chartData = useMemo(() => {
-    if (history && history.length > 0) {
-      return history.map((pt, i) => ({
+    if (activeHistory && activeHistory.length > 0) {
+      return activeHistory.map((pt, i) => ({
         round: pt.round ?? `R${i + 1}`,
         value: Number(pt.value.toFixed(2)),
         opponent: pt.opponent,
@@ -100,7 +126,7 @@ export function StatPopoverChart({
     const base = isNaN(num) ? 5 : num;
     const rounds = [1, 2, 3, 4, 5];
     return rounds.map((r, i) => {
-      const variation = (Math.sin(i * 1.5) * 0.15 + (i * 0.04));
+      const variation = Math.sin(i * 1.5) * 0.15 + i * 0.04;
       const v = Math.max(0, Number((base * (0.85 + variation)).toFixed(2)));
       return {
         round: `R${r}`,
@@ -109,7 +135,7 @@ export function StatPopoverChart({
         date: undefined,
       };
     });
-  }, [history, value]);
+  }, [activeHistory, value]);
 
   // Estatísticas calculadas
   const values = chartData.map((d) => d.value);
@@ -125,7 +151,7 @@ export function StatPopoverChart({
   const trendPercent = firstVal > 0 ? ((delta / firstVal) * 100).toFixed(0) : "0";
 
   return (
-    <Popover>
+    <Popover onOpenChange={handleOpenChange}>
       <PopoverTrigger asChild>
         {children ? (
           <div

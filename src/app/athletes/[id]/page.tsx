@@ -492,6 +492,8 @@ export default async function AthleteProfilePage({
                     label={m.label}
                     value={m.per90}
                     unit="/90"
+                    athleteId={athlete.id}
+                    metricKey={k}
                     colorVariant={isHigh ? "emerald" : "indigo"}
                     triggerClassName="w-full block"
                   >
@@ -535,54 +537,84 @@ export default async function AthleteProfilePage({
 
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
             {athleteStats.metrics["xg_per_shot"] && (
-              <div className="rounded-xl border border-border-strong bg-bg-surface-elevated p-3">
-                <div className="flex items-center justify-between text-[10px] text-muted-foreground font-bold uppercase">
-                  <span>Qualidade de Finalização</span>
-                  <span className="text-rose-400 font-mono">xG/Fin</span>
+              <StatPopoverChart
+                label="Qualidade de Finalização (xG/Shot)"
+                value={athleteStats.metrics["xg_per_shot"].per90.toFixed(2)}
+                unit="xG/Fin"
+                athleteId={athlete.id}
+                metricKey="xg_per_shot"
+                colorVariant="rose"
+                triggerClassName="w-full block"
+              >
+                <div className="rounded-xl border border-border-strong bg-bg-surface-elevated p-3 hover:border-rose-500/40 transition-all cursor-pointer">
+                  <div className="flex items-center justify-between text-[10px] text-muted-foreground font-bold uppercase">
+                    <span>Qualidade de Finalização</span>
+                    <span className="text-rose-400 font-mono">xG/Fin &bull; 📈</span>
+                  </div>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <span className="font-mono font-black text-xl text-foreground">
+                      {athleteStats.metrics["xg_per_shot"].per90.toFixed(2)}
+                    </span>
+                    <span className="text-[10px] text-zinc-400 font-sans">
+                      {athleteStats.metrics["xg_per_shot"].per90 >= 0.18 ? "🔥 Alta Letalidade" : "Volume Periférico"}
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-baseline gap-2 mt-1">
-                  <span className="font-mono font-black text-xl text-foreground">
-                    {athleteStats.metrics["xg_per_shot"].per90.toFixed(2)}
-                  </span>
-                  <span className="text-[10px] text-zinc-400 font-sans">
-                    {athleteStats.metrics["xg_per_shot"].per90 >= 0.18 ? "🔥 Alta Letalidade" : "Volume Periférico"}
-                  </span>
-                </div>
-              </div>
+              </StatPopoverChart>
             )}
 
             {athleteStats.metrics["padj_tackles"] && (
-              <div className="rounded-xl border border-border-strong bg-bg-surface-elevated p-3">
-                <div className="flex items-center justify-between text-[10px] text-muted-foreground font-bold uppercase">
-                  <span>Desarmes Ajustados por Posse</span>
-                  <span className="text-emerald-400 font-mono">PAdj</span>
+              <StatPopoverChart
+                label="Desarmes Ajustados por Posse (PAdj)"
+                value={athleteStats.metrics["padj_tackles"].per90.toFixed(1)}
+                unit="PAdj"
+                athleteId={athlete.id}
+                metricKey="padj_tackles"
+                colorVariant="emerald"
+                triggerClassName="w-full block"
+              >
+                <div className="rounded-xl border border-border-strong bg-bg-surface-elevated p-3 hover:border-emerald-500/40 transition-all cursor-pointer">
+                  <div className="flex items-center justify-between text-[10px] text-muted-foreground font-bold uppercase">
+                    <span>Desarmes Ajustados por Posse</span>
+                    <span className="text-emerald-400 font-mono">PAdj &bull; 📈</span>
+                  </div>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <span className="font-mono font-black text-xl text-emerald-400">
+                      {athleteStats.metrics["padj_tackles"].per90.toFixed(1)}
+                    </span>
+                    <span className="text-[10px] text-zinc-400 font-mono">
+                      /90 (bruto: {athleteStats.metrics["tackles"]?.per90.toFixed(1) ?? "—"})
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-baseline gap-2 mt-1">
-                  <span className="font-mono font-black text-xl text-emerald-400">
-                    {athleteStats.metrics["padj_tackles"].per90.toFixed(1)}
-                  </span>
-                  <span className="text-[10px] text-zinc-400 font-mono">
-                    /90 (bruto: {athleteStats.metrics["tackles"]?.per90.toFixed(1) ?? "—"})
-                  </span>
-                </div>
-              </div>
+              </StatPopoverChart>
             )}
 
             {athleteStats.metrics["padj_interceptions"] && (
-              <div className="rounded-xl border border-border-strong bg-bg-surface-elevated p-3">
-                <div className="flex items-center justify-between text-[10px] text-muted-foreground font-bold uppercase">
-                  <span>Interceptações Ajustadas</span>
-                  <span className="text-emerald-400 font-mono">PAdj</span>
+              <StatPopoverChart
+                label="Interceptações Ajustadas (PAdj)"
+                value={athleteStats.metrics["padj_interceptions"].per90.toFixed(1)}
+                unit="PAdj"
+                athleteId={athlete.id}
+                metricKey="padj_interceptions"
+                colorVariant="emerald"
+                triggerClassName="w-full block"
+              >
+                <div className="rounded-xl border border-border-strong bg-bg-surface-elevated p-3 hover:border-emerald-500/40 transition-all cursor-pointer">
+                  <div className="flex items-center justify-between text-[10px] text-muted-foreground font-bold uppercase">
+                    <span>Interceptações Ajustadas</span>
+                    <span className="text-emerald-400 font-mono">PAdj &bull; 📈</span>
+                  </div>
+                  <div className="flex items-baseline gap-2 mt-1">
+                    <span className="font-mono font-black text-xl text-emerald-400">
+                      {athleteStats.metrics["padj_interceptions"].per90.toFixed(1)}
+                    </span>
+                    <span className="text-[10px] text-zinc-400 font-mono">
+                      /90 (bruto: {athleteStats.metrics["interceptions"]?.per90.toFixed(1) ?? "—"})
+                    </span>
+                  </div>
                 </div>
-                <div className="flex items-baseline gap-2 mt-1">
-                  <span className="font-mono font-black text-xl text-emerald-400">
-                    {athleteStats.metrics["padj_interceptions"].per90.toFixed(1)}
-                  </span>
-                  <span className="text-[10px] text-zinc-400 font-mono">
-                    /90 (bruto: {athleteStats.metrics["interceptions"]?.per90.toFixed(1) ?? "—"})
-                  </span>
-                </div>
-              </div>
+              </StatPopoverChart>
             )}
           </div>
         </Card>

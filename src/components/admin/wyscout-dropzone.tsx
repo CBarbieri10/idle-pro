@@ -182,6 +182,25 @@ export function WyscoutDropzone() {
                       {(selectedFile.size / 1024).toFixed(1)} KB &bull; Pronto para fusão no banco Neon
                     </p>
                   </div>
+
+                  {/* Badge Verde de Auto-Detect */}
+                  <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-emerald-300 font-mono text-xs shadow-[0_0_15px_rgba(16,185,129,0.2)] animate-in fade-in">
+                    <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400" />
+                    <span>
+                      Tipo Detectado Automaticamente:{" "}
+                      <strong className="text-white">
+                        {selectedFile.name.toLowerCase().includes("partida") ||
+                        selectedFile.name.toLowerCase().includes("match") ||
+                        selectedFile.name.toLowerCase().includes("jogo")
+                          ? "Planilha de Partidas (MATCH)"
+                          : selectedFile.name.toLowerCase().includes("time") ||
+                            selectedFile.name.toLowerCase().includes("equipe") ||
+                            selectedFile.name.toLowerCase().includes("clube")
+                          ? "Planilha de Clubes (TEAM)"
+                          : "Planilha de Atletas (ATHLETE)"}
+                      </strong>
+                    </span>
+                  </div>
                 </>
               ) : (
                 <>
@@ -239,6 +258,20 @@ export function WyscoutDropzone() {
       {/* ─── Resultado da Ingestão & Relatório de Fuzzy Match ────────────── */}
       {result && (
         <Card className="rounded-3xl border border-white/[0.12] bg-[#0c101d]/85 backdrop-blur-2xl p-6 shadow-2xl space-y-6 animate-in fade-in duration-300">
+          {/* Header com Badge Verde de Auto-Detect Confirmado */}
+          <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-white/[0.08]">
+            <div className="flex items-center gap-2">
+              <Sparkles className="h-4 w-4 text-emerald-400" />
+              <h3 className="text-sm font-black text-white">
+                Ingestão Concluída &bull; Fusão Longitudinal Realizada
+              </h3>
+            </div>
+            <Badge className="bg-emerald-500/20 text-emerald-300 border-emerald-500/40 text-xs font-mono py-1 px-3 shadow-[0_0_15px_rgba(16,185,129,0.2)]">
+              <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 mr-1.5" />
+              Auto-Detect: {result.detectedTypeLabel}
+            </Badge>
+          </div>
+
           {/* Summary KPIs */}
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
             <div className="rounded-2xl border border-white/[0.08] bg-white/[0.03] p-4 text-center">
