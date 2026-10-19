@@ -228,3 +228,13 @@ export async function processTeamFile(
 ): Promise<ImportResultSummary> {
   return teamAgent.process(rawRows, fileName, detectedTypeLabel);
 }
+
+/**
+ * Alias de compatibilidade para a Server Action de upload da Dropzone
+ * Roteia arquivos em buffer/FormData diretamente para os Agentes DDD
+ */
+export async function uploadWyscoutFiles(
+  formData: FormData
+): Promise<ImportResultSummary> {
+  return importWyscoutSpreadsheetAction(formData);
+}

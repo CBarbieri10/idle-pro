@@ -14,6 +14,7 @@ import {
   Shield,
   Film,
   Sparkles,
+  Loader2,
 } from "lucide-react";
 import { parseVideoUrl, getCategoryTheme } from "@/lib/video-helpers";
 import { POSITION_LABELS } from "@/lib/domain";
@@ -56,10 +57,17 @@ interface VideoPlayerModalProps {
 
 export function VideoPlayerModal({ clip, isOpen, onClose }: VideoPlayerModalProps) {
   const [mounted, setMounted] = useState(false);
+  const [isMediaLoading, setIsMediaLoading] = useState(true);
 
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (isOpen) {
+      setIsMediaLoading(true);
+    }
+  }, [isOpen, clip?.id, clip?.url]);
 
   // Fecha no Esc e bloqueia scroll do body
   useEffect(() => {
@@ -142,6 +150,14 @@ export function VideoPlayerModal({ clip, isOpen, onClose }: VideoPlayerModalProp
 
         {/* Video Player Viewport (16:9 Aspect Ratio) */}
         <div className="relative w-full aspect-video bg-black flex items-center justify-center overflow-hidden border-b border-white/10">
+          {/* Loading Fallback Spinner for 4G/5G connections */}
+          {isMediaLoading && embedInfo.type !== "other" && (
+            <div className="absolute inset-0 z-10 flex flex-col items-center justify-center bg-black/80 backdrop-blur-xs text-zinc-400 gap-2">
+              <Loader2 className="h-8 w-8 animate-spin text-emerald-400" />
+              <span className="text-xs font-mono font-bold text-zinc-300">Carregando lance tático...</span>
+            </div>
+          )}
+
           {embedInfo.type === "youtube" && embedInfo.embedUrl && (
             <iframe
               src={embedInfo.embedUrl}
@@ -149,6 +165,7 @@ export function VideoPlayerModal({ clip, isOpen, onClose }: VideoPlayerModalProp
               className="absolute inset-0 w-full h-full border-0"
               allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
               allowFullScreen
+              onLoad={() => setIsMediaLoading(false)}
             />
           )}
 
@@ -159,6 +176,7 @@ export function VideoPlayerModal({ clip, isOpen, onClose }: VideoPlayerModalProp
               className="absolute inset-0 w-full h-full border-0"
               allow="autoplay; fullscreen; picture-in-picture"
               allowFullScreen
+              onLoad={() => setIsMediaLoading(false)}
             />
           )}
 
@@ -168,6 +186,7 @@ export function VideoPlayerModal({ clip, isOpen, onClose }: VideoPlayerModalProp
               controls
               autoPlay
               className="w-full h-full object-contain bg-black"
+              onLoadedData={() => setIsMediaLoading(false)}
             >
               Seu navegador não suporta a reprodução deste arquivo de vídeo.
             </video>

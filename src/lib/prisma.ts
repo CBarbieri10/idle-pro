@@ -4,6 +4,15 @@ const globalForPrisma = globalThis as unknown as {
   prisma: PrismaClient | undefined;
 };
 
-export const prisma = globalForPrisma.prisma ?? new PrismaClient();
+/**
+ * Instância singleton do Prisma Client otimizada para Serverless (Vercel + Neon PostgreSQL)
+ * Reutiliza instâncias ativas para prevenir exaustão do connection pool do Neon.
+ */
+export const prisma =
+  globalForPrisma.prisma ??
+  new PrismaClient({
+    log: process.env.NODE_ENV === "development" ? ["error", "warn"] : ["error"],
+  });
 
-if (process.env.NODE_ENV !== "production") globalForPrisma.prisma = prisma;
+// Preserva o client global em Serverless (Vercel Lambdas) e desenvolvimento
+globalForPrisma.prisma = prisma;
