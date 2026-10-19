@@ -263,13 +263,13 @@
 @media print {
   @page {
     size: A4 portrait;
-    margin: 8mm 10mm 8mm 10mm;
+    margin: 0;
   }
 
   html,
   body {
-    background: #fdfcf8 !important;
-    color: #09090b !important;
+    background: #ffffff !important;
+    color: #000000 !important;
     height: auto !important;
     min-height: auto !important;
     overflow: visible !important;
@@ -279,13 +279,12 @@
     print-color-adjust: exact !important;
   }
 
-  /* Completely isolate print: hide app-shell, sidebar, headers and dialog overlays */
-  #app-shell,
+  /* Completely isolate print: hide navigation, headers, dialog overlays and print-hidden elements */
   aside,
   header,
   nav,
-  main,
   footer,
+  .print-hidden,
   [data-slot="dialog-overlay"],
   [data-slot="dialog-close"],
   [data-slot="dialog-trigger"] {
@@ -293,7 +292,25 @@
     visibility: hidden !important;
   }
 
-  /* Reset the Base UI / Radix dialog popup container for direct full-page A4 flow */
+  #app-shell {
+    display: block !important;
+    background: #ffffff !important;
+    min-height: auto !important;
+    margin: 0 !important;
+    padding: 0 !important;
+  }
+
+  main {
+    display: block !important;
+    background: #ffffff !important;
+    color: #000000 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    max-width: none !important;
+    width: 100% !important;
+  }
+
+  /* Reset dialog popup container for direct full-page A4 flow if opened in modal */
   [data-slot="dialog-content"] {
     position: static !important;
     top: auto !important;
@@ -307,39 +324,30 @@
     padding: 0 !important;
     border: none !important;
     box-shadow: none !important;
-    background: #fdfcf8 !important;
-    color: #09090b !important;
+    background: #ffffff !important;
+    color: #000000 !important;
     overflow: visible !important;
     display: block !important;
   }
 
-  /* The Executive Dossier container */
+  /* The Executive Dossier A4 container */
+  #a4-print-dossier,
   #executive-dossier-container,
   #raio-x-report-sheet {
-    display: block !important;
-    width: 100% !important;
-    max-width: 190mm !important;
+    display: flex !important;
+    flex-direction: column !important;
+    width: 210mm !important;
+    height: 297mm !important;
+    max-height: 297mm !important;
     margin: 0 auto !important;
-    padding: 0 !important;
-    background: #fdfcf8 !important;
-    color: #09090b !important;
+    padding: 8mm !important;
+    background: #ffffff !important;
+    color: #000000 !important;
     box-shadow: none !important;
     border: none !important;
-  }
-
-  .print-page-break {
-    page-break-after: always !important;
-    break-after: page !important;
-    display: block !important;
-    clear: both !important;
-  }
-
-  .dossier-page-sheet {
-    display: block !important;
-    width: 100% !important;
-    max-width: 190mm !important;
-    margin: 0 auto !important;
-    padding: 0 !important;
+    overflow: hidden !important;
+    page-break-after: avoid !important;
+    break-after: avoid !important;
   }
 
   .print-avoid-break {

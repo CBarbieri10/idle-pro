@@ -39,7 +39,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {/* Global Cinematic B&W Stadium & Folded Texture Backdrop */}
             <div
               aria-hidden
-              className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[#06080a]"
+              className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[#06080a] print:hidden"
             >
               {/* Tactical dark vignette */}
               <div className="absolute inset-0 bg-gradient-to-b from-[#06080a] via-[#080b0f] to-[#040608]" />
@@ -52,9 +52,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <AppSidebar />
 
             {/* Main content area */}
-            <div className="relative z-10 flex flex-1 flex-col min-w-0 w-full">
+            <div className="relative z-10 flex flex-1 flex-col min-w-0 w-full print:block print:w-full print:p-0">
               <AppHeader />
-              <main className="flex-1 min-w-0 w-full px-4 py-6 md:px-8 lg:px-10 max-w-[1720px] mx-auto">
+              <main className="flex-1 min-w-0 w-full px-4 py-6 md:px-8 lg:px-10 max-w-[1720px] mx-auto print:p-0 print:m-0 print:max-w-none print:w-full print:bg-white">
                 {children}
               </main>
             </div>

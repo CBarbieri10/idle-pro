@@ -13,6 +13,8 @@ import { RadarChart } from "@/components/charts/radar-chart";
 import { TacticalPitchHeatmap } from "@/components/charts/tactical-pitch-heatmap";
 import { SimilarAthletes } from "@/components/athletes/similar-athletes";
 import { AthleteRaioXModal, type RaioXAthleteData } from "@/components/reports/athlete-raio-x-modal";
+import { AthleteRaioXExportButton } from "@/components/athletes/athlete-raio-x-export-button";
+import { AthleteRaioXPrintSheet } from "@/components/athletes/athlete-raio-x-print-sheet";
 import { AthleteTelemetryModal } from "@/components/athletes/athlete-telemetry-modal";
 import { AthleteMatchLog, type AthleteMatchEntry } from "@/components/athletes/athlete-match-log";
 import { getVideoLinksByAthlete } from "@/lib/actions/video-links";
@@ -284,58 +286,63 @@ export default async function AthleteProfilePage({
   });
 
   return (
-    <div className="space-y-6 w-full">
-      {/* ─── Breadcrumb & Action Toolbar ──────────────────────────────────── */}
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle pb-4">
-        {isAnalystOrClub ? (
-          <Link
-            href="/athletes"
-            className="inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors"
-          >
-            <ArrowLeft className="h-3.5 w-3.5 text-indigo-400" />
-            Voltar para lista de atletas
-          </Link>
-        ) : (
-          <div className="inline-flex items-center gap-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 px-3 py-1 text-xs font-bold text-emerald-400">
-            <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-            Painel do Atleta &bull; Meu Perfil Oficial
+    <>
+      {/* ─── Web Interactive View (Hidden during Print) ───────────────────── */}
+      <div className="space-y-6 w-full print:hidden">
+        {/* ─── Breadcrumb & Action Toolbar ──────────────────────────────────── */}
+        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle pb-4">
+          {isAnalystOrClub ? (
+            <Link
+              href="/athletes"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors"
+            >
+              <ArrowLeft className="h-3.5 w-3.5 text-indigo-400" />
+              Voltar para lista de atletas
+            </Link>
+          ) : (
+            <div className="inline-flex items-center gap-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 px-3 py-1 text-xs font-bold text-emerald-400">
+              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+              Painel do Atleta &bull; Meu Perfil Oficial
+            </div>
+          )}
+
+          {/* Executive Action Toolbar */}
+          <div className="flex flex-wrap items-center gap-2">
+            {/* Ação 1: Botão de Exportação Raio-X PDF Nativo */}
+            <AthleteRaioXExportButton athleteName={athlete.name} />
+
+            {isAnalystOrClub && (
+              <PortfolioToggleButton
+                athleteId={athlete.id}
+                athleteName={athlete.name}
+                initialInPortfolio={inPortfolio}
+              />
+            )}
+
+            <Link
+              href={`/athletes/${athlete.id}/raio-x`}
+              target="_blank"
+              className="inline-flex items-center gap-1.5 rounded-lg border border-border-strong bg-bg-surface-elevated px-3 py-1.5 text-xs font-semibold text-zinc-300 hover:bg-bg-surface-highlight transition-all"
+            >
+              <ExternalLink className="h-3.5 w-3.5 text-indigo-400" />
+              Dossiê A4 (Tela Cheia)
+            </Link>
+
+            <AthleteRaioXModal athlete={raioXData} />
+
+            {isAnalystOrClub && (
+              <AthleteTelemetryModal
+                athleteId={athlete.id}
+                athleteName={athlete.name}
+                athletePosition={POSITION_LABELS[athlete.position]}
+                teamName={athlete.team?.name ?? "Sem Clube"}
+                rawData={rawTelemetryData}
+                teammates={teammateList}
+                triggerVariant="button"
+              />
+            )}
           </div>
-        )}
-
-        {/* Executive Action Toolbar */}
-        <div className="flex items-center gap-2">
-          {isAnalystOrClub && (
-            <PortfolioToggleButton
-              athleteId={athlete.id}
-              athleteName={athlete.name}
-              initialInPortfolio={inPortfolio}
-            />
-          )}
-
-          <Link
-            href={`/athletes/${athlete.id}/raio-x`}
-            target="_blank"
-            className="inline-flex items-center gap-1.5 rounded-lg border border-border-strong bg-bg-surface-elevated px-3 py-1.5 text-xs font-semibold text-zinc-300 hover:bg-bg-surface-highlight transition-all"
-          >
-            <ExternalLink className="h-3.5 w-3.5 text-indigo-400" />
-            Dossiê A4 (Tela Cheia)
-          </Link>
-
-          <AthleteRaioXModal athlete={raioXData} />
-
-          {isAnalystOrClub && (
-            <AthleteTelemetryModal
-              athleteId={athlete.id}
-              athleteName={athlete.name}
-              athletePosition={POSITION_LABELS[athlete.position]}
-              teamName={athlete.team?.name ?? "Sem Clube"}
-              rawData={rawTelemetryData}
-              teammates={teammateList}
-              triggerVariant="button"
-            />
-          )}
         </div>
-      </div>
 
       {/* ─── Hero Executive Header ────────────────────────────────────────── */}
       <section className="relative mt-2">
@@ -750,5 +757,11 @@ export default async function AthleteProfilePage({
         <AthleteMatchHistory history={history} {...metricProps} />
       </Card>
     </div>
+
+    {/* ─── A4 Executive One-Pager Dossier Container (Visible strictly on Print) ─── */}
+    <div className="hidden print:block print:w-[210mm] print:h-[297mm] print:max-h-[297mm] print:overflow-hidden print:bg-white print:text-black print:mx-auto print:p-0">
+      <AthleteRaioXPrintSheet athlete={raioXData} />
+    </div>
+  </>
   );
 }
