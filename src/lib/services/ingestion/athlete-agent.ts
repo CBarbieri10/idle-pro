@@ -553,8 +553,8 @@ export class AthleteAgent implements IngestionAgent {
       revalidatePath("/league/lab");
       revalidatePath("/performance/squad");
       revalidatePath("/dashboard");
-    } catch (e) {
-      console.warn("RevalidatePath ignorado:", e);
+    } catch {
+      // Ignora silenciosamente quando executado fora do contexto HTTP do Next.js (ex: CLI / scripts)
     }
 
     return {

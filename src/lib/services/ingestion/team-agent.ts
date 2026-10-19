@@ -195,8 +195,8 @@ export class TeamAgent implements IngestionAgent {
       revalidatePath("/competition/leaders");
       revalidatePath("/league");
       revalidatePath("/dashboard");
-    } catch (e) {
-      console.warn("RevalidatePath ignorado:", e);
+    } catch {
+      // Ignora silenciosamente quando executado fora do contexto HTTP do Next.js (ex: CLI / scripts)
     }
 
     return {

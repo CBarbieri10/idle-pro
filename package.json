@@ -10,7 +10,8 @@
     "lint": "eslint",
     "db:seed": "tsx prisma/seed.ts",
     "db:showroom": "tsx prisma/seed-showroom.ts",
-    "db:import-wyscout": "tsx scripts/import-wyscout-data.ts"
+    "db:import-wyscout": "tsx scripts/import-wyscout-data.ts",
+    "seed:stats": "npx tsx scripts/auto-seed.ts"
   },
   "prisma": {
     "seed": "tsx prisma/seed.ts"
