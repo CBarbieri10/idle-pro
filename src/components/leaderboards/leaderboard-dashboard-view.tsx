@@ -20,9 +20,11 @@ import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import { LeaderboardCard } from "./leaderboard-card";
 import { TeamLeaderboardCard } from "./team-leaderboard-card";
+import { QuadrantScatterChart } from "@/components/charts/quadrant-scatter-chart";
 import type {
   LeaderboardCardData,
   TeamLeaderboardCardData,
+  LeagueQuadrantsPayload,
 } from "@/lib/actions/leaderboards";
 
 export type LeaderboardTabKey = "geral" | "ofensiva" | "defensiva";
@@ -33,6 +35,7 @@ interface LeaderboardDashboardViewProps {
   ofensiva: LeaderboardCardData[];
   defensiva: LeaderboardCardData[];
   teamCards?: TeamLeaderboardCardData[];
+  quadrantsData?: LeagueQuadrantsPayload;
 }
 
 export function LeaderboardDashboardView({
@@ -40,6 +43,7 @@ export function LeaderboardDashboardView({
   ofensiva,
   defensiva,
   teamCards = [],
+  quadrantsData,
 }: LeaderboardDashboardViewProps) {
   // Passo 2: Toggle entre Atletas e Clubes
   const [scope, setScope] = useState<LeaderboardScope>("athletes");
@@ -192,6 +196,9 @@ export function LeaderboardDashboardView({
               </Badge>
             </div>
           </div>
+
+          {/* ─── Gráfico de Quadrantes: Dashboard de Dispersão 2D dos Clubes ─── */}
+          {quadrantsData && <QuadrantScatterChart data={quadrantsData} />}
 
           {/* ─── Passo 3: 3 Cards Coletivos (Pressão Alta, Volume Ofensivo, Solidez de Bloco) ─ */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 animate-in fade-in duration-300">

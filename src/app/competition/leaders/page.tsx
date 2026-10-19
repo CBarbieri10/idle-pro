@@ -16,6 +16,7 @@ import { auth } from "@/lib/auth";
 import {
   getLeaderboardDashboard,
   getTeamLeaderboardDashboard,
+  getLeagueQuadrantsData,
 } from "@/lib/actions/leaderboards";
 import { LeaderboardDashboardView } from "@/components/leaderboards/leaderboard-dashboard-view";
 
@@ -41,9 +42,10 @@ export default async function CompetitionLeadersPage() {
     redirect("/");
   }
 
-  const [dashboard, teamCards] = await Promise.all([
+  const [dashboard, teamCards, quadrantsData] = await Promise.all([
     getLeaderboardDashboard(),
     getTeamLeaderboardDashboard(),
+    getLeagueQuadrantsData(),
   ]);
 
   return (
@@ -126,6 +128,7 @@ export default async function CompetitionLeadersPage() {
         ofensiva={dashboard.ofensiva}
         defensiva={dashboard.defensiva}
         teamCards={teamCards}
+        quadrantsData={quadrantsData}
       />
     </div>
   );

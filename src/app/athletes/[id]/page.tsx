@@ -24,6 +24,7 @@ import { StabilityBadge } from "@/components/athletes/stability-badge";
 import { AthleteTacticalAiSummary } from "@/components/athletes/athlete-tactical-ai-summary";
 import { AthleteTacticalInferenceCard } from "@/components/athletes/athlete-tactical-inference-card";
 import { AthleteTabsView } from "@/components/athletes/athlete-tabs-view";
+import { StatPopoverChart } from "@/components/charts/stat-popover-chart";
 import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
@@ -486,23 +487,29 @@ export default async function AthleteProfilePage({
               .map(([k, m]) => {
                 const isHigh = m.per90 >= 2.0 || k === "goals" || k === "xg" || k === "key_passes";
                 return (
-                  <div
+                  <StatPopoverChart
                     key={k}
-                    className="rounded-xl border border-border-strong bg-bg-surface-elevated p-3 text-center"
+                    label={m.label}
+                    value={m.per90}
+                    unit="/90"
+                    colorVariant={isHigh ? "emerald" : "indigo"}
+                    triggerClassName="w-full block"
                   >
-                    <p className="text-[10px] text-muted-foreground font-bold uppercase truncate">
-                      {m.label}
-                    </p>
-                    <p
-                      className={cn(
-                        "mt-1 font-mono font-black text-lg tabular-nums",
-                        isHigh ? "text-emerald-400" : "text-foreground"
-                      )}
-                    >
-                      {m.per90}
-                    </p>
-                    <span className="text-[9px] text-muted-foreground font-mono">/90 min</span>
-                  </div>
+                    <div className="rounded-xl border border-border-strong bg-bg-surface-elevated p-3 text-center w-full hover:border-emerald-500/50 hover:bg-white/[0.04] transition-all cursor-pointer">
+                      <p className="text-[10px] text-muted-foreground font-bold uppercase truncate">
+                        {m.label}
+                      </p>
+                      <p
+                        className={cn(
+                          "mt-1 font-mono font-black text-lg tabular-nums",
+                          isHigh ? "text-emerald-400" : "text-foreground"
+                        )}
+                      >
+                        {m.per90}
+                      </p>
+                      <span className="text-[9px] text-muted-foreground font-mono">/90 min &bull; 📈</span>
+                    </div>
+                  </StatPopoverChart>
                 );
               })}
           </div>

@@ -387,15 +387,32 @@ export async function importWyscoutSpreadsheetAction(
             });
           }
 
+          // Parsing cronológico (Rodada e Data da Partida/Evento)
+          const rawRound = parseNum(row["Rodada"] || row["Round"] || row["Matchday"]);
+          const parsedRound = rawRound > 0 ? Math.round(rawRound) : null;
+
+          const rawDateStr = row["Data"] || row["Date"] || row["Data do Jogo"];
+          let eventDate = new Date();
+          if (rawDateStr) {
+            const d = new Date(String(rawDateStr));
+            if (!isNaN(d.getTime())) eventDate = d;
+          }
+
           // Gravação do JSONB bruto (todas as 75+ colunas da planilha)
+          // Limpa apenas da mesma partida/rodada, permitindo acúmulo longitudinal de eventos
           await prisma.rawMetric.deleteMany({
-            where: { athleteId: targetAthleteId },
+            where: {
+              athleteId: targetAthleteId,
+              matchId: defaultMatchId,
+            },
           });
 
           const rawMetric = await prisma.rawMetric.create({
             data: {
               athleteId: targetAthleteId,
               matchId: defaultMatchId,
+              round: parsedRound,
+              date: eventDate,
               source: MetricSource.WYSCOUT,
               minutesPlayed: Math.round(minutes),
               data: row as Prisma.InputJsonValue,
@@ -404,7 +421,10 @@ export async function importWyscoutSpreadsheetAction(
 
           // Gravação das métricas canônicas normalizadas
           await prisma.canonicalMetric.deleteMany({
-            where: { athleteId: targetAthleteId },
+            where: {
+              athleteId: targetAthleteId,
+              matchId: defaultMatchId,
+            },
           });
 
           const canonicalRecords = [
@@ -435,6 +455,8 @@ export async function importWyscoutSpreadsheetAction(
                 athleteId: targetAthleteId,
                 matchId: defaultMatchId,
                 rawMetricId: rawMetric.id,
+                round: parsedRound,
+                date: eventDate,
                 metricName: item.metricName,
                 absoluteValue: item.absoluteValue,
                 per90Value: item.per90Value,

@@ -14,6 +14,7 @@ import {
   Wind,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { StatPopoverChart } from "@/components/charts/stat-popover-chart";
 
 interface MetricDataShape {
   label: string;
@@ -445,13 +446,21 @@ export function AthleteContextualHighlights({
                 {c.label}
               </p>
 
-              {/* Big value display */}
-              <div className="flex items-baseline gap-1.5 mt-1">
-                <span className={`text-2xl font-black font-mono tracking-tight ${colors.textVal}`}>
-                  {c.value}
-                </span>
-                <span className="text-[10px] text-zinc-500 font-mono">{c.unit}</span>
-              </div>
+              {/* Big value display with StatPopoverChart */}
+              <StatPopoverChart
+                label={c.label}
+                value={c.value}
+                unit={c.unit}
+                colorVariant={c.colorScheme}
+                triggerClassName="inline-block mt-1"
+              >
+                <div className="flex items-baseline gap-1.5 cursor-pointer hover:opacity-85 transition-opacity">
+                  <span className={`text-2xl font-black font-mono tracking-tight ${colors.textVal}`}>
+                    {c.value}
+                  </span>
+                  <span className="text-[10px] text-zinc-500 font-mono">{c.unit}</span>
+                </div>
+              </StatPopoverChart>
             </div>
 
             {/* Bottom Percentile Bar */}

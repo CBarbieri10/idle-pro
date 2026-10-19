@@ -188,6 +188,8 @@ model RawMetric {
   id            String       @id @default(cuid())
   matchId       String
   athleteId     String
+  round         Int?         // Rodada cronológica do evento (ex: 1..38)
+  date          DateTime     @default(now()) // Data cronológica da realização
   source        MetricSource @default(MANUAL)
   minutesPlayed Int?
   data          Json         @db.JsonB // { "goals": 1, "shots": 3, "Chutes para fora": 2, ... }
@@ -200,6 +202,8 @@ model RawMetric {
 
   @@unique([matchId, athleteId, source])
   @@index([athleteId])
+  @@index([round])
+  @@index([date])
   @@map("raw_metrics")
 }
 
@@ -209,7 +213,9 @@ model CanonicalMetric {
   athleteId     String
   matchId       String
   rawMetricId   String?
-  metricName    String // ex: "goals", "assists", "passes", "xg", "tackles"
+  round         Int?     // Rodada cronológica da métrica
+  date          DateTime @default(now()) // Data cronológica do evento
+  metricName    String   // ex: "goals", "assists", "passes", "xg", "tackles"
   absoluteValue Float
   per90Value    Float
   createdAt     DateTime @default(now())
@@ -223,6 +229,8 @@ model CanonicalMetric {
   @@index([athleteId])
   @@index([matchId])
   @@index([metricName])
+  @@index([round])
+  @@index([date])
   @@map("canonical_metrics")
 }
 
