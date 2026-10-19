@@ -39,7 +39,7 @@ const menuGroups = [
     title: "ANÁLISE DE DESEMPENHO",
     items: [
       { label: "Sala de Guerra", href: "/performance/squad", icon: Swords },
-      { label: "Evolução Individual", href: "/performance/athlete/demo-id", icon: TrendingUp },
+      { label: "Evolução Individual", href: "/performance/athlete", icon: TrendingUp },
       { label: "Central de Vídeos", href: "/performance/videos", icon: Video },
     ],
   },

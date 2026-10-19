@@ -9,14 +9,28 @@ interface Clip {
   seconds: number;
 }
 
-export function VideoTacticalBoard() {
-  const [activeClip, setActiveClip] = useState<Clip | null>(null);
+export interface TacticalClipItem {
+  id: string;
+  title: string;
+  timeStr: string;
+  seconds: number;
+  url?: string;
+  category?: string;
+}
 
-  const mockClips: Clip[] = [
-    { id: "1", title: "Perda de bola no setor 2", timeStr: "14:22", seconds: 862 },
-    { id: "2", title: "Ação de Pressão Alta", timeStr: "22:15", seconds: 1335 },
-    { id: "3", title: "Assistência xG+ alta", timeStr: "41:05", seconds: 2465 },
+export function VideoTacticalBoard({
+  initialClips,
+}: {
+  initialClips?: TacticalClipItem[];
+}) {
+  const defaultClips: TacticalClipItem[] = [
+    { id: "1", title: "Perda de bola no setor 2", timeStr: "14:22", seconds: 862, category: "Transição Defensiva" },
+    { id: "2", title: "Ação de Pressão Alta", timeStr: "22:15", seconds: 1335, category: "Marcação Pressão" },
+    { id: "3", title: "Assistência xG+ alta", timeStr: "41:05", seconds: 2465, category: "Finalização" },
   ];
+
+  const clips = initialClips && initialClips.length > 0 ? initialClips : defaultClips;
+  const [activeClip, setActiveClip] = useState<TacticalClipItem | null>(clips[0] || null);
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -45,7 +59,7 @@ export function VideoTacticalBoard() {
         </div>
         
         <div className="flex-1 overflow-y-auto p-3 space-y-2">
-          {mockClips.map(clip => (
+          {clips.map((clip: TacticalClipItem) => (
             <button
               key={clip.id}
               onClick={() => setActiveClip(clip)}

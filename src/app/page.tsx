@@ -32,6 +32,8 @@ import { POSITION_LABELS, POSITION_COLORS } from "@/lib/domain";
 import Link from "next/link";
 import type { Metadata } from "next";
 
+export const dynamic = "force-dynamic";
+
 export const metadata: Metadata = {
   title: "Dashboard do Analista | The Net Scouting",
   description: "Painel de operações, portfólio de atletas e destaques de métricas Per-90",

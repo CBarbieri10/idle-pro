@@ -131,6 +131,7 @@ model Athlete {
   portfolioAthletes PortfolioAthlete[]
   videoLinks   VideoLink[]
   goals        AthleteGoal[]
+  agendaEvents AgendaEvent[]
   user         User?
 
   @@map("athletes")
@@ -316,6 +317,26 @@ model AthleteGoal {
   @@index([athleteId])
   @@index([category])
   @@map("goals")
+}
+
+// ─── Agenda & Compromissos Táticos ─────────────────────────────────────────
+
+model AgendaEvent {
+  id          String   @id @default(cuid())
+  title       String
+  type        String   @default("session") // "session" | "material" | "general"
+  date        DateTime
+  time        String?  @default("10:00")   // HH:mm
+  color       String?  @default("bg-emerald-500")
+  description String?
+  athleteId   String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  athlete Athlete? @relation(fields: [athleteId], references: [id], onDelete: SetNull)
+
+  @@index([date])
+  @@map("agenda_events")
 }
 
 
