@@ -127,6 +127,7 @@ async function wipeDatabase(): Promise<void> {
   // Expurga dados dependentes mantendo Clubes Canônicos, Ligas e Usuários Administrativos
   await prisma.portfolioAthlete.deleteMany({});
   await prisma.videoLink.deleteMany({});
+  await prisma.videoClip.deleteMany({});
   await prisma.athleteGoal.deleteMany({});
   await prisma.canonicalMetric.deleteMany({});
   await prisma.rawMetric.deleteMany({});
@@ -303,14 +304,97 @@ async function main() {
     )
   );
 
+  // Etapa 4: Mock de Decupagem Tática (Ação 2 - Sprint Central de Vídeos)
+  console.log(chalk.magenta("4/4. 🎥 Gerando Decupagens Táticas de Vídeo (Central de Vídeos)..."));
+  const targetNames = ["Pedro", "Alex Sandro", "Arrascaeta", "Gerson", "Estêvão", "Veiga"];
+  let eliteAthletes = await prisma.athlete.findMany({
+    where: {
+      OR: targetNames.map((name) => ({ name: { contains: name, mode: "insensitive" } })),
+    },
+    include: { team: true },
+    take: 6,
+  });
+
+  if (eliteAthletes.length === 0) {
+    eliteAthletes = await prisma.athlete.findMany({
+      include: { team: true },
+      take: 6,
+    });
+  }
+
+  const sampleMatches = await prisma.match.findMany({
+    take: 10,
+    orderBy: { date: "desc" },
+  });
+
+  const sampleClipsTemplates = [
+    {
+      category: "Gol",
+      titleSuffix: "Finalização de primeira na grande área após cruzamento rasteiro",
+      url: "https://www.youtube.com/watch?v=0e3GPea1Tyg",
+      thumbnailUrl: "https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=800&q=80",
+      timestamp: "14:22",
+    },
+    {
+      category: "Passe Progressivo",
+      titleSuffix: "Ruptura vertical quebrando 2 linhas de marcação compacta",
+      url: "https://www.youtube.com/watch?v=7wtfhZwyrcc",
+      thumbnailUrl: "https://images.unsplash.com/photo-1517466787929-bc90951d0974?auto=format&fit=crop&w=800&q=80",
+      timestamp: "38:45",
+    },
+    {
+      category: "Desarme",
+      titleSuffix: "Recuperação imediata pós-perda com desarme frontal limpo",
+      url: "https://www.youtube.com/watch?v=fJ9rUzIMcZQ",
+      thumbnailUrl: "https://images.unsplash.com/photo-1517927033932-b3d18e61fb3a?auto=format&fit=crop&w=800&q=80",
+      timestamp: "67:10",
+    },
+    {
+      category: "Perda de Posse",
+      titleSuffix: "Pressão adversária em zona 14 e perda sob dobra de marcação",
+      url: "https://www.youtube.com/watch?v=kJQP7kiw5Fk",
+      thumbnailUrl: "https://images.unsplash.com/photo-1508098682722-e99c43a406b2?auto=format&fit=crop&w=800&q=80",
+      timestamp: "82:04",
+    },
+  ];
+
+  let createdClipsCount = 0;
+  for (let i = 0; i < eliteAthletes.length; i++) {
+    const athlete = eliteAthletes[i];
+    const match = sampleMatches[i % sampleMatches.length] || null;
+    const countToCreate = i % 2 === 0 ? 3 : 2;
+
+    for (let c = 0; c < countToCreate; c++) {
+      const template = sampleClipsTemplates[(i + c) % sampleClipsTemplates.length];
+      await prisma.videoClip.create({
+        data: {
+          title: `${athlete.name} • ${template.titleSuffix}`,
+          url: template.url,
+          thumbnailUrl: template.thumbnailUrl,
+          category: template.category,
+          timestamp: template.timestamp,
+          athleteId: athlete.id,
+          matchId: match ? match.id : undefined,
+        },
+      });
+      createdClipsCount++;
+    }
+  }
+  console.log(
+    chalk.green(
+      `     ✔ Decupagens táticas geradas: ${createdClipsCount} clipes vinculados aos atletas de elite.\n`
+    )
+  );
+
   // 5. Censo Final Pós-Ingestão
-  const [totalAthletes, totalMatches, totalRawMetrics, totalCanonicalMetrics, totalTeams] =
+  const [totalAthletes, totalMatches, totalRawMetrics, totalCanonicalMetrics, totalTeams, totalVideoClips] =
     await Promise.all([
       prisma.athlete.count(),
       prisma.match.count(),
       prisma.rawMetric.count(),
       prisma.canonicalMetric.count(),
       prisma.team.count(),
+      prisma.videoClip.count(),
     ]);
 
   console.log(chalk.bold.cyan("================================================================================"));
@@ -319,6 +403,7 @@ async function main() {
   console.log(chalk.white(`   • Atletas no banco:           ${chalk.bold.green(totalAthletes)}`));
   console.log(chalk.white(`   • Partidas registradas:       ${chalk.bold.green(totalMatches)}`));
   console.log(chalk.white(`   • Clubes cadastrados:         ${chalk.bold.green(totalTeams)}`));
+  console.log(chalk.white(`   • Clipes Táticos (Vídeos):    ${chalk.bold.green(totalVideoClips)}`));
   console.log(chalk.white(`   • Métricas Brutas (Raw):      ${chalk.bold.green(totalRawMetrics)}`));
   console.log(chalk.white(`   • Métricas Canônicas:         ${chalk.bold.green(totalCanonicalMetrics)}`));
   console.log(chalk.bold.cyan("================================================================================\n"));

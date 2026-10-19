@@ -19,6 +19,7 @@ import { AthleteTelemetryModal } from "@/components/athletes/athlete-telemetry-m
 import { AthleteMatchLog, type AthleteMatchEntry } from "@/components/athletes/athlete-match-log";
 import { getVideoLinksByAthlete } from "@/lib/actions/video-links";
 import { AthleteVideoLinks } from "@/components/athletes/athlete-video-links";
+import { AthleteVideoClipsSection } from "@/components/athletes/athlete-video-clips-section";
 import { getGoalsByAthlete } from "@/lib/actions/goals";
 import { AthleteGoals } from "@/components/athletes/athlete-goals";
 import { PortfolioToggleButton } from "@/components/portfolio/portfolio-toggle-button";
@@ -92,7 +93,7 @@ export default async function AthleteProfilePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const [athlete, teams, leagues, history, matchOptions, athleteStats, inPortfolio, videoLinks, goals] =
+  const [athlete, teams, leagues, history, matchOptions, athleteStats, inPortfolio, videoLinks, goals, videoClips] =
     await Promise.all([
       getAthleteById(id),
       getTeams(),
@@ -103,6 +104,18 @@ export default async function AthleteProfilePage({
       isAthleteInPortfolio(id),
       getVideoLinksByAthlete(id),
       getGoalsByAthlete(id),
+      prisma.videoClip.findMany({
+        where: { athleteId: id },
+        include: {
+          athlete: {
+            include: {
+              team: true,
+            },
+          },
+          match: true,
+        },
+        orderBy: { createdAt: "desc" },
+      }),
     ]);
 
   if (!athlete) notFound();
@@ -666,6 +679,12 @@ export default async function AthleteProfilePage({
         athleteId={athlete.id}
         athleteName={athlete.name}
         goals={goals}
+      />
+
+      {/* ─── Central de Vídeos Táticos & Decupagem (Sprint Central de Vídeos) ── */}
+      <AthleteVideoClipsSection
+        athlete={athlete}
+        clips={videoClips}
       />
 
       {/* ─── Videoteca Tática & Decupagens (Fase 4 - Issue #11) ───────────── */}
