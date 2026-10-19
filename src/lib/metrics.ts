@@ -20,6 +20,8 @@ export interface MetricDef {
 export const METRICS: MetricDef[] = [
   // Geral
   { key: "rating", label: "Nota", short: "Nota", unit: "decimal", group: "Geral", max: 10 },
+  { key: "minutes_played", label: "Minutos Jogados", short: "Min", unit: "count", group: "Geral" },
+  { key: "jersey_number", label: "Número da Camisa", short: "Nº", unit: "count", group: "Geral" },
   // Ataque
   { key: "goals", label: "Gols", short: "G", unit: "count", group: "Ataque" },
   { key: "assists", label: "Assistências", short: "A", unit: "count", group: "Ataque" },
@@ -29,6 +31,7 @@ export const METRICS: MetricDef[] = [
   { key: "xg_per_shot", label: "xG por Finalização", short: "xG/Fin", unit: "decimal", group: "Ataque", max: 1 },
   { key: "dribbles_completed", label: "Dribles Certos", short: "Dri", unit: "count", group: "Ataque" },
   { key: "key_passes", label: "Passes Decisivos", short: "PD", unit: "count", group: "Ataque" },
+  { key: "key_passes_accurate", label: "Passes-Chave Precisos", short: "PCP", unit: "count", group: "Ataque" },
   // Passe
   { key: "passes", label: "Passes Certos", short: "PC", unit: "count", group: "Passe" },
   { key: "pass_accuracy", label: "Precisão de Passe", short: "%P", unit: "percent", group: "Passe", max: 100 },
@@ -43,6 +46,7 @@ export const METRICS: MetricDef[] = [
   { key: "clearances", label: "Cortes", short: "Cor", unit: "count", group: "Defesa" },
   { key: "aerial_duels_won", label: "Duelos Aéreos Ganhos", short: "DA", unit: "count", group: "Defesa" },
   { key: "ground_duels_won", label: "Duelos no Chão Ganhos", short: "DC", unit: "count", group: "Defesa" },
+  { key: "defensive_duels_won_pct", label: "Duelos Defensivos Ganhos (%)", short: "%DDG", unit: "percent", group: "Defesa", max: 100 },
   { key: "recoveries", label: "Recuperações", short: "Rec", unit: "count", group: "Defesa" },
   { key: "blocks", label: "Bloqueios", short: "Blq", unit: "count", group: "Defesa" },
   { key: "fouls_committed", label: "Faltas Cometidas", short: "FC", unit: "count", group: "Defesa" },

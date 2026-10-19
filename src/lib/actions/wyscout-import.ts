@@ -13,6 +13,15 @@ import {
   Prisma,
 } from "@prisma/client";
 import { calculatePAdj, calculateXgPerShot } from "@/lib/math-engine";
+import {
+  SPORTSBASE_MATCH_MAP,
+  SPORTSBASE_ATHLETE_MAP,
+  normalizeSportsBaseMatchRow,
+  normalizeSportsBaseAthleteRow,
+  parseIsoDate,
+  parseMatchString,
+  parseFlexibleNumber,
+} from "@/lib/normalization";
 
 export type DetectedFileType = "ATHLETE" | "MATCH" | "TEAM";
 
@@ -92,8 +101,11 @@ export async function detectFileType(fileName: string, headers: string[]): Promi
       h === "player" ||
       h === "athlete" ||
       h === "atleta" ||
+      h === "№" ||
+      h === "no" ||
       h.includes("jogador") ||
-      h.includes("player")
+      h.includes("player") ||
+      h.includes("minutos jogados")
   );
   const hasAthleteName =
     lowerFileName.includes("jogador") ||
@@ -104,12 +116,16 @@ export async function detectFileType(fileName: string, headers: string[]): Promi
   // 2. Identificadores de Partida/Confronto
   const hasMatchHeader = lowerHeaders.some(
     (h) =>
+      h === "match" ||
       h.includes("match") ||
       h.includes("partida") ||
       h.includes("jogo") ||
       h.includes("confronto") ||
       h.includes("mandante") ||
-      h.includes("visitante")
+      h.includes("visitante") ||
+      h.includes("tática (inicial)") ||
+      h.includes("tatica (inicial)") ||
+      h.includes("posse de bola")
   );
   const hasMatchName =
     lowerFileName.includes("partida") ||
@@ -362,19 +378,16 @@ export async function processAthleteFile(
             teamMapByName.set(team.name.toLowerCase().trim(), team);
           }
 
-          // Parsing cronológico (Rodada e Data do Evento)
+          // Parsing cronológico (Rodada e Data do Evento com parseIsoDate)
           const rawRound = parseNum(row["Rodada"] || row["Round"] || row["Matchday"]);
           const parsedRound = rawRound > 0 ? Math.round(rawRound) : null;
 
           const rawDateStr = row["Data"] || row["Date"] || row["Data do Jogo"];
-          let eventDate = new Date("2026-08-01");
-          if (rawDateStr) {
-            const d = new Date(String(rawDateStr));
-            if (!isNaN(d.getTime())) eventDate = d;
-          } else if (parsedRound) {
-            // Gera datas espaçadas semana a semana por rodada
-            eventDate = new Date(2026, 3, 10 + parsedRound * 7);
-          }
+          let eventDate = rawDateStr
+            ? parseIsoDate(rawDateStr)
+            : parsedRound
+            ? new Date(2026, 3, 10 + parsedRound * 7)
+            : new Date("2026-08-01T12:00:00.000Z");
 
           // Chave única para o evento da partida
           const matchCacheKey = `${team.id}-R${parsedRound || 0}-${eventDate.toISOString().slice(0, 10)}`;
@@ -407,6 +420,14 @@ export async function processAthleteFile(
             roundMatchCache.set(matchCacheKey, matchId);
           }
 
+          // Normalização via SportsBase Athlete Map:
+          // '№' -> jersey_number
+          // 'Minutos jogados' -> minutes_played
+          // 'Passes precisos, %' -> pass_accuracy
+          // 'Duelos defensivos ganhos, %' -> defensive_duels_won_pct
+          // 'Passes-chave precisos' -> key_passes_accurate
+          const sbAthlete = normalizeSportsBaseAthleteRow(row);
+
           // Fuzzy Match do Atleta
           const matchResult = matchAthleteName(playerName, candidateAthletes, rawTeam);
           const rawPos = String(row["Posição"] || row["Position"] || row["Pos"] || "");
@@ -415,9 +436,10 @@ export async function processAthleteFile(
           const height = parseNum(row["Altura"] || row["Height"]);
           const weight = parseNum(row["Peso"] || row["Weight"]);
           const nationality = String(row["Nacionalidade"] || row["País"] || "Brasil").trim();
-          const minutes = parseNum(row["Minutos jogados"] || row["Minutos"] || row["Minutes"] || 90);
+          const minutes = sbAthlete.minutes_played > 0 ? sbAthlete.minutes_played : parseNum(row["Minutos jogados"] || row["Minutos"] || 90);
           const matches = parseNum(row["Partidas jogadas"] || row["Jogos"] || row["Matches"] || 1);
           const rating = parseNum(row["Índice"] || row["Nota"] || row["Rating"] || 7.0);
+          const jerseyNumber = sbAthlete.jersey_number;
 
           // Cálculo do IDG e Estabilidade
           const successfulActionsPct = parseNum(row["Ações com sucesso, %"]);
@@ -433,6 +455,7 @@ export async function processAthleteFile(
 
           const birthDate = age > 0 ? new Date(2026 - Math.round(age), 0, 1) : null;
           let targetAthleteId: string;
+          const jerseyNote = jerseyNumber !== null ? `Camisa: #${jerseyNumber}` : null;
 
           if (matchResult.matched && matchResult.athlete) {
             targetAthleteId = matchResult.athlete.id;
@@ -470,7 +493,7 @@ export async function processAthleteFile(
                 nationality,
                 footPreference: FootPreference.RIGHT,
                 teamId: team.id,
-                notes: `Importado via Dropzone. Índice: ${rating} (${matches} jogos, ${minutes} min).`,
+                notes: [jerseyNote, `Importado via Dropzone. Índice: ${rating} (${matches} jogos, ${minutes} min).`].filter(Boolean).join(" • "),
                 idgScore,
                 stabilityCategory,
               },
@@ -502,15 +525,17 @@ export async function processAthleteFile(
           const shotsOnTarget = parseNum(row["Chutes no alvo"] || row["Finalizações no alvo"]);
           const xg = parseNum(row["xG (Gols esperados)"] || row["xG"]);
           const passes = parseNum(row["Passes"]);
-          const passAccuracy = parseNum(row["Passes precisos, %"] || row["Pass accuracy, %"]);
+          const passAccuracy = sbAthlete.pass_accuracy > 0 ? sbAthlete.pass_accuracy : parseNum(row["Passes precisos, %"] || row["Pass accuracy, %"]);
           const progPasses = parseNum(row["Passes progressivos"] || row["Progressive passes"]);
           const keyPasses = parseNum(row["Passes-chave"] || row["Passes decisivos"] || row["Key passes"]);
+          const keyPassesAccurate = sbAthlete.key_passes_accurate > 0 ? sbAthlete.key_passes_accurate : keyPasses;
           const crosses = parseNum(row["Cruzamentos"] || row["Crosses"]);
           const tackles = parseNum(row["Desarmes"] || row["Tackles"]);
           const interceptions = parseNum(row["Interceptações"] || row["Interceptions"]);
           const dribbles = parseNum(row["Dribles"] || row["Dribles com sucesso"]);
           const aerialDuelsWon = parseNum(row["Duelos aéreos ganhos"] || row["Duelos aéreos"]);
           const groundDuelsWon = parseNum(row["Duelos defensivos ganhos"] || row["Duelos defensivos"]);
+          const defDuelsWonPct = sbAthlete.defensive_duels_won_pct > 0 ? sbAthlete.defensive_duels_won_pct : (groundDuelsWon > 0 ? 50 : 0);
           const recoveries = parseNum(row["Recuperações da bola"] || row["Recuperações"]);
 
           const per90 = (v: number) =>
@@ -535,9 +560,16 @@ export async function processAthleteFile(
               matchId,
               round: parsedRound,
               date: eventDate,
-              source: MetricSource.WYSCOUT,
+              source: MetricSource.SPORTSBASE,
               minutesPlayed: Math.round(minutes),
-              data: row as Prisma.InputJsonValue,
+              data: {
+                ...row,
+                jersey_number: jerseyNumber,
+                minutes_played: minutes,
+                pass_accuracy: passAccuracy,
+                defensive_duels_won_pct: defDuelsWonPct,
+                key_passes_accurate: keyPassesAccurate,
+              } as Prisma.InputJsonValue,
             },
           });
 
@@ -559,6 +591,7 @@ export async function processAthleteFile(
             { metricName: "pass_accuracy", absoluteValue: passAccuracy, per90Value: passAccuracy },
             { metricName: "progressive_passes", absoluteValue: progPasses, per90Value: per90(progPasses) },
             { metricName: "key_passes", absoluteValue: keyPasses, per90Value: per90(keyPasses) },
+            { metricName: "key_passes_accurate", absoluteValue: keyPassesAccurate, per90Value: per90(keyPassesAccurate) },
             { metricName: "crosses_accurate", absoluteValue: crosses, per90Value: per90(crosses) },
             { metricName: "tackles", absoluteValue: tackles, per90Value: per90(tackles) },
             { metricName: "padj_tackles", absoluteValue: padjTackles, per90Value: padjTackles },
@@ -567,6 +600,7 @@ export async function processAthleteFile(
             { metricName: "dribbles_completed", absoluteValue: dribbles, per90Value: per90(dribbles) },
             { metricName: "aerial_duels_won", absoluteValue: aerialDuelsWon, per90Value: per90(aerialDuelsWon) },
             { metricName: "ground_duels_won", absoluteValue: groundDuelsWon, per90Value: per90(groundDuelsWon) },
+            { metricName: "defensive_duels_won_pct", absoluteValue: defDuelsWonPct, per90Value: defDuelsWonPct },
             { metricName: "recoveries", absoluteValue: recoveries, per90Value: per90(recoveries) },
           ];
 
@@ -652,73 +686,133 @@ export async function processMatchFile(
     const rowNumber = i + 2;
 
     try {
-      const homeTeamName = String(
-        row["Mandante"] || row["Home Team"] || row["Time Mandante"] || row["Home"] || ""
-      ).trim();
-      const awayTeamName = String(
-        row["Visitante"] || row["Away Team"] || row["Time Visitante"] || row["Away"] || ""
-      ).trim();
+      // Normalização via SportsBase Match Map:
+      // 'Data' -> date (ISO)
+      // 'Match' -> match_string (separar mandante e visitante)
+      // 'Posse de bola, %' -> possession_percentage
+      // 'Tática (inicial)' -> starting_formation
+      // 'Pressão do time bem-sucedida, %' -> successful_pressing_pct
+      // 'Entradas no campo adversário' -> entries_final_third_team
+      const sbMatch = normalizeSportsBaseMatchRow(row);
 
-      if (!homeTeamName || !awayTeamName) {
+      const homeTeamName = sbMatch.homeTeam;
+      const awayTeamName = sbMatch.awayTeam;
+
+      if (!homeTeamName) {
         errorCount++;
         continue;
       }
 
-      const homeTeam =
+      let homeTeam =
         teamMap.get(homeTeamName.toLowerCase()) ||
         existingTeams.find((t) => t.name.toLowerCase().includes(homeTeamName.toLowerCase()));
-      const awayTeam =
-        teamMap.get(awayTeamName.toLowerCase()) ||
-        existingTeams.find((t) => t.name.toLowerCase().includes(awayTeamName.toLowerCase()));
 
       if (!homeTeam) {
-        errorCount++;
-        continue;
+        homeTeam = await prisma.team.create({
+          data: {
+            name: homeTeamName,
+            country: "Brasil",
+            leagueId: defaultLeague.id,
+          },
+        });
+        teamMap.set(homeTeam.name.toLowerCase(), homeTeam);
+        existingTeams.push(homeTeam);
+      }
+
+      let awayTeam = awayTeamName
+        ? teamMap.get(awayTeamName.toLowerCase()) ||
+          existingTeams.find((t) => t.name.toLowerCase().includes(awayTeamName.toLowerCase()))
+        : null;
+
+      if (awayTeamName && !awayTeam) {
+        awayTeam = await prisma.team.create({
+          data: {
+            name: awayTeamName,
+            country: "Brasil",
+            leagueId: defaultLeague.id,
+          },
+        });
+        teamMap.set(awayTeam.name.toLowerCase(), awayTeam);
+        existingTeams.push(awayTeam);
       }
 
       const rawRound = parseNum(row["Rodada"] || row["Round"] || row["Matchday"]);
       const parsedRound = rawRound > 0 ? Math.round(rawRound) : null;
       const roundLabel = parsedRound ? `Rodada ${parsedRound}` : "Rodada Regular";
 
-      const rawDateStr = row["Data"] || row["Date"] || row["Data do Jogo"];
-      let matchDate = new Date("2026-08-01");
-      if (rawDateStr) {
-        const d = new Date(String(rawDateStr));
-        if (!isNaN(d.getTime())) matchDate = d;
-      }
+      const matchDate = sbMatch.date; // Garantido DateTime ISO
 
-      const goalsFor = parseNum(row["Gols Mandante"] || row["Home Goals"] || row["Gols Pró"]);
-      const goalsAgainst = parseNum(row["Gols Visitante"] || row["Away Goals"] || row["Gols Sofridos"]);
-      const possession = parseNum(row["Posse Mandante, %"] || row["Posse, %"] || row["Possession"] || 50);
+      const goalsFor = sbMatch.goalsFor ?? parseNum(row["Gols Mandante"] || row["Home Goals"] || row["Gols Pró"]);
+      const goalsAgainst = sbMatch.goalsAgainst ?? parseNum(row["Gols Visitante"] || row["Away Goals"] || row["Gols Sofridos"]);
+      const possession = sbMatch.possession_percentage;
       const xgHome = parseNum(row["xG Mandante"] || row["Home xG"] || row["xG"]);
 
-      // Persiste o confronto no modelo Match (perspectiva do mandante)
-      await prisma.match.create({
-        data: {
+      const notesParts = [
+        sbMatch.match_string ? `Confronto: ${sbMatch.match_string}` : null,
+        sbMatch.starting_formation ? `Tática: ${sbMatch.starting_formation}` : null,
+        sbMatch.successful_pressing_pct > 0 ? `Pressão: ${sbMatch.successful_pressing_pct}%` : null,
+        sbMatch.entries_final_third_team > 0 ? `Entradas Terço Final: ${sbMatch.entries_final_third_team}` : null,
+        xgHome > 0 ? `xG: ${xgHome.toFixed(2)}` : null,
+        "Importado via SportsBase Match Pipeline",
+      ].filter(Boolean);
+
+      // Upsert / Busca da partida para acumular sem duplicar
+      const existingMatch = await prisma.match.findFirst({
+        where: {
           teamId: homeTeam.id,
-          opponentId: awayTeam?.id || null,
-          opponentName: awayTeam?.name || awayTeamName,
-          venue: MatchVenue.HOME,
-          date: matchDate,
           round: roundLabel,
-          competition: "Brasileirão Série A",
-          leagueId: defaultLeague.id,
-          goalsFor: Math.round(goalsFor),
-          goalsAgainst: Math.round(goalsAgainst),
-          possession,
-          opponentPossession: Math.max(0, 100 - possession),
-          notes: `xG: ${xgHome.toFixed(2)} • Importado via Pipeline Match`,
+          date: matchDate,
         },
       });
 
-      createdCount++;
-      details.push({
-        rowNumber,
-        playerName: `${homeTeam.name} vs ${awayTeam?.name || awayTeamName}`,
-        teamName: homeTeam.name,
-        similarityScore: 100,
-        action: "CREATED",
-      });
+      if (existingMatch) {
+        await prisma.match.update({
+          where: { id: existingMatch.id },
+          data: {
+            opponentId: awayTeam?.id || null,
+            opponentName: awayTeam?.name || awayTeamName || "Adversário",
+            goalsFor: Math.round(goalsFor),
+            goalsAgainst: Math.round(goalsAgainst),
+            possession,
+            opponentPossession: Math.max(0, 100 - possession),
+            notes: notesParts.join(" • "),
+          },
+        });
+        matchedCount++;
+        details.push({
+          rowNumber,
+          playerName: sbMatch.match_string || `${homeTeam.name} vs ${awayTeam?.name || awayTeamName}`,
+          teamName: homeTeam.name,
+          similarityScore: 100,
+          action: "UPDATED",
+        });
+      } else {
+        await prisma.match.create({
+          data: {
+            teamId: homeTeam.id,
+            opponentId: awayTeam?.id || null,
+            opponentName: awayTeam?.name || awayTeamName || "Adversário",
+            venue: MatchVenue.HOME,
+            date: matchDate,
+            round: roundLabel,
+            competition: "Brasileirão Série A",
+            leagueId: defaultLeague.id,
+            goalsFor: Math.round(goalsFor),
+            goalsAgainst: Math.round(goalsAgainst),
+            possession,
+            opponentPossession: Math.max(0, 100 - possession),
+            notes: notesParts.join(" • "),
+          },
+        });
+        createdCount++;
+        details.push({
+          rowNumber,
+          playerName: sbMatch.match_string || `${homeTeam.name} vs ${awayTeam?.name || awayTeamName}`,
+          teamName: homeTeam.name,
+          similarityScore: 100,
+          action: "CREATED",
+        });
+      }
     } catch (err) {
       console.error(`Erro ao processar partida linha ${rowNumber}:`, err);
       errorCount++;
@@ -815,18 +909,26 @@ export async function processTeamFile(
       const parsedRound = rawRound > 0 ? Math.round(rawRound) : null;
       const roundLabel = parsedRound ? `Rodada ${parsedRound}` : "Rodada Regular";
 
-      const rawDateStr = row["Data"] || row["Date"];
-      let eventDate = new Date("2026-08-01");
-      if (rawDateStr) {
-        const d = new Date(String(rawDateStr));
-        if (!isNaN(d.getTime())) eventDate = d;
-      }
+      const rawDateStr = row["Data"] || row["Date"] || row["Data do Jogo"];
+      const eventDate = parseIsoDate(rawDateStr);
 
       const xg = parseNum(row["xG"] || row["xG Total"] || row["Gols Esperados"] || 1.6);
       const xga = parseNum(row["xGA"] || row["xG Concedido"] || row["xGA Total"] || 1.3);
       const goalsFor = parseNum(row["Gols Pró"] || row["Gols"] || row["GF"]);
       const goalsAgainst = parseNum(row["Gols Sofridos"] || row["GA"]);
-      const possession = parseNum(row["Posse de bola, %"] || row["Posse, %"] || 50);
+      const possession = parseFlexibleNumber(row["Posse de bola, %"] || row["possession_percentage"] || row["Posse, %"] || 50);
+      const startingFormation = String(row["Tática (inicial)"] || row["starting_formation"] || "").trim();
+      const pressing = parseFlexibleNumber(row["Pressão do time bem-sucedida, %"] || row["successful_pressing_pct"]);
+      const entries = parseFlexibleNumber(row["Entradas no campo adversário"] || row["entries_final_third_team"]);
+
+      const teamNotesParts = [
+        `xG: ${xg.toFixed(2)}`,
+        `xGA: ${xga.toFixed(2)}`,
+        startingFormation ? `Tática: ${startingFormation}` : null,
+        pressing > 0 ? `Pressão: ${pressing}%` : null,
+        entries > 0 ? `Entradas Terço Final: ${entries}` : null,
+        "Importado via SportsBase Team Pipeline",
+      ].filter(Boolean);
 
       // Registra partida coletiva com o xG e xGA empilhados na série temporal
       await prisma.match.create({
@@ -840,7 +942,8 @@ export async function processTeamFile(
           goalsFor: Math.round(goalsFor),
           goalsAgainst: Math.round(goalsAgainst),
           possession,
-          notes: `xG: ${xg.toFixed(2)} | xGA: ${xga.toFixed(2)} | Importado via Pipeline Team`,
+          opponentPossession: Math.max(0, 100 - possession),
+          notes: teamNotesParts.join(" • "),
         },
       });
 

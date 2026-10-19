@@ -53,6 +53,7 @@ export function normalizeHeader(s: string): string {
     .normalize("NFD")
     .replace(/[\u0300-\u036f]/g, "")
     .toLowerCase()
+    .replace(/№/g, "no")
     .replace(/%/g, "pct")
     .replace(/[^a-z0-9]/g, "");
 }
@@ -76,10 +77,10 @@ const IDENTITY_ALIASES: Record<IdentityField, string[]> = {
   competition: ["competicao", "competition", "campeonato", "torneio", "tournament", "liga", "league"],
   round: ["rodada", "round", "fase", "matchday", "jornada", "stage"],
   venue: ["mando", "venue", "local", "homeaway", "casafora", "ha"],
-  score: ["placar", "resultado", "score", "result", "finalscore"],
+  score: ["placar", "resultado", "score", "result", "finalscore", "match"],
   goalsFor: ["golspro", "gf", "goalsfor", "golsmarcados"],
   goalsAgainst: ["golscontra", "ga", "goalsagainst"],
-  minutes: ["minutos", "min", "mins", "minutes", "minutosjogados", "minutesplayed", "minjogados"],
+  minutes: ["minutos", "min", "mins", "minutes", "minutosjogados", "minutesplayed", "minjogados", "minutos jogados"],
 };
 
 const METRIC_ALIASES: Record<string, string[]> = {
@@ -91,8 +92,9 @@ const METRIC_ALIASES: Record<string, string[]> = {
   xg: ["xg", "expectedgoals", "golsesperados"],
   dribbles_completed: ["dribbles", "successfuldribbles", "dribblescompleted", "driblescertos", "dribles", "driblesbemsucedidos"],
   key_passes: ["keypasses", "kp", "passesdecisivos", "passeschave"],
+  key_passes_accurate: ["keypassesaccurate", "passeschaveprecisos", "passes-chave precisos", "passes decisivos precisos"],
   passes: ["passes", "accuratepasses", "passescertos", "passescompleted", "passescompletos"],
-  pass_accuracy: ["passaccuracy", "passpct", "passespct", "accuratepassespct", "precisaodepasse", "precisaodepasses", "passescertospct"],
+  pass_accuracy: ["passaccuracy", "passpct", "passespct", "accuratepassespct", "precisaodepasse", "precisaodepasses", "passescertospct", "passes precisos, %", "passesprecisospct"],
   progressive_passes: ["progressivepasses", "passesprogressivos"],
   long_balls_accurate: ["accuratelongballs", "longballs", "bolaslongascertas", "bolaslongas", "lancamentoscertos"],
   crosses_accurate: ["accuratecrosses", "crosses", "cruzamentoscertos", "cruzamentos"],
@@ -101,6 +103,7 @@ const METRIC_ALIASES: Record<string, string[]> = {
   clearances: ["clearances", "cortes", "afastamentos"],
   aerial_duels_won: ["aerialduelswon", "aerialswon", "aerialduels", "duelosaereosganhos", "duelosaereos"],
   ground_duels_won: ["groundduelswon", "groundduels", "duelosnochaoganhos", "duelosnochao"],
+  defensive_duels_won_pct: ["defensiveduelswonpct", "duelosdefensivosganhospct", "duelos defensivos ganhos, %", "duelos defensivos ganhos"],
   recoveries: ["recoveries", "ballrecoveries", "recuperacoes", "recuperacoesdebola", "recuperacoesdeposse"],
   blocks: ["blocks", "blockedshots", "bloqueios"],
   fouls_committed: ["fouls", "foulscommitted", "faltascometidas", "faltas"],
@@ -108,6 +111,8 @@ const METRIC_ALIASES: Record<string, string[]> = {
   saves_inside_box: ["savesinsidebox", "savesfrominsidebox", "defesasdentrodaarea"],
   goals_conceded: ["goalsconceded", "golssofridos"],
   high_claims: ["highclaims", "saidasdogol", "saidas"],
+  jersey_number: ["jerseynumber", "numero", "camisa", "no", "№"],
+  minutes_played: ["minutesplayed", "minutosjogados", "minutos jogados"],
 };
 
 /** normalized alias → target. Identity aliases win over metric aliases. */

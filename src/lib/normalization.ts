@@ -35,6 +35,254 @@ export function calculatePer90(
   return Math.round(per90 * 100) / 100;
 }
 
+/**
+ * Dicionário Oficial de Mapeamento SportsBase - Partidas (processMatchFile)
+ */
+export const SPORTSBASE_MATCH_MAP = {
+  "Data": "date",
+  "Match": "match_string",
+  "Posse de bola, %": "possession_percentage",
+  "Tática (inicial)": "starting_formation",
+  "Pressão do time bem-sucedida, %": "successful_pressing_pct",
+  "Entradas no campo adversário": "entries_final_third_team",
+} as const;
+
+/**
+ * Dicionário Oficial de Mapeamento SportsBase - Atletas (processAthleteFile)
+ */
+export const SPORTSBASE_ATHLETE_MAP = {
+  "№": "jersey_number",
+  "Minutos jogados": "minutes_played",
+  "Passes precisos, %": "pass_accuracy",
+  "Duelos defensivos ganhos, %": "defensive_duels_won_pct",
+  "Passes-chave precisos": "key_passes_accurate",
+} as const;
+
+/**
+ * Converte formatos variados de datas (ISO, DD/MM/YYYY, DD.MM.YYYY, timestamp ou Excel serial)
+ * para um objeto Date garantido compatível com DateTime ISO do Prisma.
+ */
+export function parseIsoDate(dateVal: unknown): Date {
+  if (!dateVal) return new Date("2026-08-01T12:00:00.000Z");
+  if (dateVal instanceof Date) {
+    return isNaN(dateVal.getTime()) ? new Date("2026-08-01T12:00:00.000Z") : dateVal;
+  }
+  if (typeof dateVal === "number") {
+    // Excel serial date (ex: 46152)
+    if (dateVal > 10000 && dateVal < 80000) {
+      const dt = new Date(Math.round((Math.floor(dateVal) - 25569) * 86400000));
+      return isNaN(dt.getTime()) ? new Date("2026-08-01T12:00:00.000Z") : dt;
+    }
+    const dt = new Date(dateVal);
+    return isNaN(dt.getTime()) ? new Date("2026-08-01T12:00:00.000Z") : dt;
+  }
+  const str = String(dateVal).trim();
+  if (!str) return new Date("2026-08-01T12:00:00.000Z");
+
+  // Formato brasileiro DD/MM/YYYY ou DD.MM.YYYY ou DD-MM-YYYY
+  const brMatch = str.match(/^(\d{1,2})[\/\.-](\d{1,2})[\/\.-](\d{2,4})/);
+  if (brMatch) {
+    let year = parseInt(brMatch[3], 10);
+    if (year < 100) year += 2000;
+    const month = parseInt(brMatch[2], 10) - 1;
+    const day = parseInt(brMatch[1], 10);
+    const d = new Date(Date.UTC(year, month, day, 12, 0, 0));
+    if (!isNaN(d.getTime())) return d;
+  }
+
+  // Formato ISO padrão ou YYYY-MM-DD
+  const isoMatch = str.match(/^(\d{4})[\/\.-](\d{1,2})[\/\.-](\d{1,2})/);
+  if (isoMatch) {
+    const year = parseInt(isoMatch[1], 10);
+    const month = parseInt(isoMatch[2], 10) - 1;
+    const day = parseInt(isoMatch[3], 10);
+    const d = new Date(Date.UTC(year, month, day, 12, 0, 0));
+    if (!isNaN(d.getTime())) return d;
+  }
+
+  const parsed = new Date(str);
+  if (!isNaN(parsed.getTime())) return parsed;
+
+  return new Date("2026-08-01T12:00:00.000Z");
+}
+
+export interface ParsedMatchString {
+  matchString: string;
+  homeTeam: string;
+  awayTeam: string;
+  goalsFor: number | null;
+  goalsAgainst: number | null;
+}
+
+/**
+ * Faz o parsing inteligente da coluna 'Match' (ex: 'Flamengo 2 - 1 Palmeiras', 'Grêmio 1x0 Inter', 'Vasco - Bahia')
+ * separando mandante, visitante e placares.
+ */
+export function parseMatchString(rawMatch: unknown): ParsedMatchString {
+  const matchString = String(rawMatch || "").trim();
+  if (!matchString) {
+    return {
+      matchString: "",
+      homeTeam: "",
+      awayTeam: "",
+      goalsFor: null,
+      goalsAgainst: null,
+    };
+  }
+
+  // 1. Padrão com placar explícito (ex: "Flamengo 2 - 1 Palmeiras" ou "Flamengo 2x1 Palmeiras")
+  const scoreRegex = /^(.+?)\s+(\d{1,2})\s*(?:[-–—x×:]|\s+x\s+)\s*(\d{1,2})\s+(.+)$/i;
+  const scoreMatch = matchString.match(scoreRegex);
+  if (scoreMatch) {
+    return {
+      matchString,
+      homeTeam: scoreMatch[1].trim(),
+      awayTeam: scoreMatch[4].trim(),
+      goalsFor: parseInt(scoreMatch[2], 10),
+      goalsAgainst: parseInt(scoreMatch[3], 10),
+    };
+  }
+
+  // 2. Padrão sem placar (ex: "Flamengo - Palmeiras", "Flamengo vs Palmeiras", "Flamengo x Palmeiras")
+  const vsParts = matchString.split(/\s+(?:vs\.?|x|[-–—])\s+/i);
+  if (vsParts.length >= 2) {
+    return {
+      matchString,
+      homeTeam: vsParts[0].trim(),
+      awayTeam: vsParts.slice(1).join(" - ").trim(),
+      goalsFor: null,
+      goalsAgainst: null,
+    };
+  }
+
+  return {
+    matchString,
+    homeTeam: matchString,
+    awayTeam: "",
+    goalsFor: null,
+    goalsAgainst: null,
+  };
+}
+
+/**
+ * Converte valores textuais e numéricos variados ("64,5%", "2.4", etc.) em número puro seguro
+ */
+export function parseFlexibleNumber(val: unknown, fallback = 0): number {
+  if (typeof val === "number") return isNaN(val) ? fallback : val;
+  if (typeof val === "string") {
+    const clean = val.replace("%", "").replace(",", ".").trim();
+    const parsed = parseFloat(clean);
+    return isNaN(parsed) ? fallback : parsed;
+  }
+  return fallback;
+}
+
+export interface NormalizedMatchRow {
+  date: Date;
+  dateIso: string;
+  match_string: string;
+  homeTeam: string;
+  awayTeam: string;
+  goalsFor: number | null;
+  goalsAgainst: number | null;
+  possession_percentage: number;
+  starting_formation: string;
+  successful_pressing_pct: number;
+  entries_final_third_team: number;
+  raw: Record<string, unknown>;
+}
+
+/**
+ * Normaliza os dados brutos de uma linha de partida de acordo com o dicionário SportsBase
+ */
+export function normalizeSportsBaseMatchRow(row: Record<string, unknown>): NormalizedMatchRow {
+  // 'Data' -> date (ISO)
+  const rawDate = row["Data"] ?? row["date"] ?? row["Date"] ?? row["Data do Jogo"];
+  const date = parseIsoDate(rawDate);
+
+  // 'Match' -> match_string (separar mandante e visitante)
+  const rawMatch = row["Match"] ?? row["match_string"] ?? row["match"] ?? row["Confronto"];
+  const parsedMatch = parseMatchString(rawMatch);
+
+  const homeTeam = parsedMatch.homeTeam || String(row["Mandante"] ?? row["Home Team"] ?? row["Time Mandante"] ?? "").trim();
+  const awayTeam = parsedMatch.awayTeam || String(row["Visitante"] ?? row["Away Team"] ?? row["Time Visitante"] ?? "").trim();
+
+  // 'Posse de bola, %' -> possession_percentage
+  const rawPoss = row["Posse de bola, %"] ?? row["possession_percentage"] ?? row["Posse Mandante, %"] ?? row["Posse, %"];
+  const possession_percentage = parseFlexibleNumber(rawPoss, 50);
+
+  // 'Tática (inicial)' -> starting_formation
+  const rawFormation = row["Tática (inicial)"] ?? row["starting_formation"] ?? row["Tatica (inicial)"] ?? row["Formação"];
+  const starting_formation = String(rawFormation || "").trim();
+
+  // 'Pressão do time bem-sucedida, %' -> successful_pressing_pct
+  const rawPressing = row["Pressão do time bem-sucedida, %"] ?? row["successful_pressing_pct"] ?? row["Pressao do time bem-sucedida, %"];
+  const successful_pressing_pct = parseFlexibleNumber(rawPressing, 0);
+
+  // 'Entradas no campo adversário' -> entries_final_third_team
+  const rawEntries = row["Entradas no campo adversário"] ?? row["entries_final_third_team"] ?? row["Entradas no campo adversario"];
+  const entries_final_third_team = parseFlexibleNumber(rawEntries, 0);
+
+  return {
+    date,
+    dateIso: date.toISOString(),
+    match_string: parsedMatch.matchString || (homeTeam && awayTeam ? `${homeTeam} vs ${awayTeam}` : ""),
+    homeTeam,
+    awayTeam,
+    goalsFor: parsedMatch.goalsFor,
+    goalsAgainst: parsedMatch.goalsAgainst,
+    possession_percentage,
+    starting_formation,
+    successful_pressing_pct,
+    entries_final_third_team,
+    raw: row,
+  };
+}
+
+export interface NormalizedAthleteRow {
+  jersey_number: number | null;
+  minutes_played: number;
+  pass_accuracy: number;
+  defensive_duels_won_pct: number;
+  key_passes_accurate: number;
+  raw: Record<string, unknown>;
+}
+
+/**
+ * Normaliza os dados brutos de uma linha de atleta de acordo com o dicionário SportsBase
+ */
+export function normalizeSportsBaseAthleteRow(row: Record<string, unknown>): NormalizedAthleteRow {
+  // '№' -> jersey_number
+  const rawJersey = row["№"] ?? row["jersey_number"] ?? row["Numero"] ?? row["Número"] ?? row["No"];
+  const parsedJersey = parseFlexibleNumber(rawJersey, -1);
+  const jersey_number = parsedJersey >= 0 ? Math.round(parsedJersey) : null;
+
+  // 'Minutos jogados' -> minutes_played
+  const rawMinutes = row["Minutos jogados"] ?? row["minutes_played"] ?? row["Minutos"] ?? row["Minutes"];
+  const minutes_played = Math.round(parseFlexibleNumber(rawMinutes, 90));
+
+  // 'Passes precisos, %' -> pass_accuracy
+  const rawPassAcc = row["Passes precisos, %"] ?? row["pass_accuracy"] ?? row["Pass accuracy, %"];
+  const pass_accuracy = parseFlexibleNumber(rawPassAcc, 0);
+
+  // 'Duelos defensivos ganhos, %' -> defensive_duels_won_pct
+  const rawDefDuels = row["Duelos defensivos ganhos, %"] ?? row["defensive_duels_won_pct"] ?? row["Defensive duels won, %"];
+  const defensive_duels_won_pct = parseFlexibleNumber(rawDefDuels, 0);
+
+  // 'Passes-chave precisos' -> key_passes_accurate
+  const rawKeyPasses = row["Passes-chave precisos"] ?? row["key_passes_accurate"] ?? row["Passes chave precisos"];
+  const key_passes_accurate = parseFlexibleNumber(rawKeyPasses, 0);
+
+  return {
+    jersey_number,
+    minutes_played,
+    pass_accuracy,
+    defensive_duels_won_pct,
+    key_passes_accurate,
+    raw: row,
+  };
+}
+
 /** Known aliases to resolve raw keys to canonical vocabulary */
 const CANONICAL_ALIASES: Record<string, string> = {
   gols: "goals",
@@ -102,6 +350,21 @@ const CANONICAL_ALIASES: Record<string, string> = {
   rating: "rating",
   sofascorerating: "rating",
   avaliacao: "rating",
+  // SportsBase Atletas
+  passesprecisospct: "pass_accuracy",
+  duelosdefensivosganhospct: "defensive_duels_won_pct",
+  passeschaveprecisos: "key_passes_accurate",
+  minutosjogados: "minutes_played",
+  no: "jersey_number",
+  numero: "jersey_number",
+  jerseynumber: "jersey_number",
+  // SportsBase Partidas / Coletivo
+  possedebolapct: "possession_percentage",
+  taticainicial: "starting_formation",
+  pressaodotimebemsucedidapct: "successful_pressing_pct",
+  entradasnocampoadversario: "entries_final_third_team",
+  match: "match_string",
+  data: "date",
 };
 
 export interface MatchNormalizationContext {
@@ -128,6 +391,15 @@ export function extractCanonicalMetrics(
     if (METRIC_BY_KEY[rawKey]) {
       result.set(rawKey, val);
       continue;
+    }
+
+    // Check direct SportsBase Athlete Map hit
+    if (SPORTSBASE_ATHLETE_MAP[rawKey as keyof typeof SPORTSBASE_ATHLETE_MAP]) {
+      const canonicalKey = SPORTSBASE_ATHLETE_MAP[rawKey as keyof typeof SPORTSBASE_ATHLETE_MAP];
+      if (METRIC_BY_KEY[canonicalKey] && !result.has(canonicalKey)) {
+        result.set(canonicalKey, val);
+        continue;
+      }
     }
 
     // Check normalized alias
