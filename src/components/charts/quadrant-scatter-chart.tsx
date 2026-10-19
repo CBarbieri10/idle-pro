@@ -222,8 +222,8 @@ export function QuadrantScatterChart({ data, className }: QuadrantScatterChartPr
         </div>
       </div>
 
-      {/* ─── Área do Gráfico Cartesiano com Paleta Térmica de Fundo ─────────── */}
-      <div className="relative w-full h-[480px] mt-4 rounded-2xl border border-white/10 bg-[#080d1a] overflow-hidden">
+      {/* ─── Área do Gráfico Cartesiano com Paleta Térmica de Fundo (Restrições Rígidas) ─── */}
+      <div className="relative w-full h-[60vh] max-h-[600px] min-h-[400px] mt-4 rounded-2xl border border-white/10 bg-[#080d1a] overflow-hidden">
         {/* Camadas Térmicas nos 4 Quadrantes */}
         <div className="absolute inset-0 pointer-events-none grid grid-cols-2 grid-rows-2">
           {/* Q2: Top-Left (Resiliência Defensiva - Ciano) */}

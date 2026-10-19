@@ -142,11 +142,12 @@ export function ScatterPlotMatrix({
         </div>
       </div>
 
-      {/* ─── SVG Scatter Canvas ───────────────────────────────────────────── */}
-      <div className="relative w-full aspect-[860/540]">
+      {/* ─── SVG Scatter Canvas (Restrições Rígidas de Viewport) ───────────── */}
+      <div className="relative w-full h-[60vh] max-h-[600px] min-h-[400px] flex items-center justify-center overflow-hidden">
         <svg
           viewBox={`0 0 ${width} ${height}`}
-          className="w-full h-full overflow-visible"
+          className="w-full h-full max-h-[600px] object-contain overflow-visible"
+          preserveAspectRatio="xMidYMid meet"
         >
           <defs>
             {/* Gradiente sutil para o quadrante de Elite */}
