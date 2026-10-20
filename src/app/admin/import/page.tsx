@@ -6,7 +6,7 @@ import { ChevronRight, ShieldCheck, Database, Sparkles, Layers, Cpu } from "luci
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Importação de Planilhas Wyscout | The Net Scouting",
+  title: "Importação de Planilhas Wyscout | Overview Scout",
   description:
     "Motor Híbrido de Ingestão com Fuzzy Match para enriquecimento de dados estatísticos dos atletas do Brasileirão",
 };

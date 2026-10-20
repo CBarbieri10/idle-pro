@@ -1,6 +1,6 @@
 /**
  * Algoritmo de Similaridade e Fusão de Dados (Fuzzy Match Engine)
- * The Net Scouting — Motor Híbrido de Ingestão
+ * Overview Scout — Motor Híbrido de Ingestão
  * 
  * Cruza nomes de atletas vindos de planilhas de terceiros (Wyscout/Sofascore)
  * com a base canônica de atletas do Brasileirão cadastrados no banco de dados.

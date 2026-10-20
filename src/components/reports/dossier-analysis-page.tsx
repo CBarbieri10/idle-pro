@@ -45,7 +45,7 @@ export function DossierAnalysisPage({
   pageIndex = 3,
   totalPages = 4,
 }: DossierAnalysisPageProps) {
-  const docRef = `TNS-DOSSIER-${athlete.id.slice(0, 6).toUpperCase()}`;
+  const docRef = `OVS-DOSSIER-${athlete.id.slice(0, 6).toUpperCase()}`;
 
   // Default tactical intelligence based on player's position
   const isAttacker =
@@ -164,11 +164,11 @@ export function DossierAnalysisPage({
         printColorAdjust: "exact",
       }}
     >
-      {/* ─── Top Header (Editorial TNS Minimalist) ─────────────────────────── */}
+      {/* ─── Top Header (Editorial OVS Minimalist) ─────────────────────────── */}
       <div className="flex items-center justify-between border-b-2 border-zinc-950 pb-3">
         <div className="flex items-center gap-2.5">
           <div className="h-8 w-8 rounded-lg bg-zinc-950 flex items-center justify-center text-white font-black text-xs print:bg-black print:text-white">
-            TNS
+            OVS
           </div>
           <div>
             <div className="flex items-center gap-2">
@@ -380,7 +380,7 @@ export function DossierAnalysisPage({
 
       {/* ─── Bottom Footer ─────────────────────────────────────────────────── */}
       <div className="pt-3 border-t border-zinc-200 flex items-center justify-between text-[10px] text-zinc-500 print-avoid-break">
-        <span>The Net Scouting &bull; Divisão de Inteligência &amp; Análise Qualitativa</span>
+        <span>Overview Scout &bull; Divisão de Inteligência &amp; Análise Qualitativa</span>
         <span className="font-mono font-bold text-zinc-950">
           Página {pageIndex} de {totalPages} &bull; Análise Qualitativa &amp; Espacial
         </span>

@@ -35,7 +35,7 @@ import type { Metadata } from "next";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Dashboard do Analista | The Net Scouting",
+  title: "Dashboard do Analista | Overview Scout",
   description: "Painel de operações, portfólio de atletas e destaques de métricas Per-90",
 };
 

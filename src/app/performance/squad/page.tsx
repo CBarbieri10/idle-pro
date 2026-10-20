@@ -24,7 +24,7 @@ import type { Metadata } from "next";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Sala de Guerra & Saúde do Elenco | The Net Scouting",
+  title: "Sala de Guerra & Saúde do Elenco | Overview Scout",
   description:
     "Monitoramento longitudinal de minutagem (L5), estabilidade do IDG e risco de oscilação do elenco",
 };

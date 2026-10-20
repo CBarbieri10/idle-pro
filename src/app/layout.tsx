@@ -23,9 +23,9 @@ const lora = Lora({
 });
 
 export const metadata: Metadata = {
-  title: "The Net Scouting | Portal de Inteligência Esportiva",
+  title: "Overview Scout - Plataforma de Inteligência Esportiva e Scouting",
   description:
-    "Sistema de scout e análise de performance para o futebol de base. Gerencie atletas, clubes, métricas e relatórios em um só lugar.",
+    "Overview Scout - Plataforma de Inteligência Esportiva e Scouting. Sistema de scout e análise de performance para o futebol de elite e de base. Gerencie atletas, clubes, métricas e relatórios em um só lugar.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

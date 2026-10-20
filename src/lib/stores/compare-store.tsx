@@ -23,7 +23,8 @@ interface CompareStoreContextType {
   count: number;
 }
 
-const STORAGE_KEY = "the-net-scouting:compare-dock";
+const STORAGE_KEY = "overview-scout:compare-dock";
+const OLD_STORAGE_KEY = "the-net-scouting:compare-dock";
 const MAX_COMPARE = 3;
 
 const CompareContext = createContext<CompareStoreContextType | null>(null);
@@ -35,7 +36,7 @@ export function CompareProvider({ children }: { children: React.ReactNode }) {
   // Hidratação a partir do localStorage
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(STORAGE_KEY);
+      const saved = localStorage.getItem(STORAGE_KEY) || localStorage.getItem(OLD_STORAGE_KEY);
       if (saved) {
         const parsed = JSON.parse(saved);
         if (Array.isArray(parsed)) {

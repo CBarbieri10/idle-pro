@@ -22,7 +22,7 @@ export async function generateMetadata({
   const athlete = await getAthleteById(id);
   if (!athlete) return { title: "Dossiê Executivo" };
   return {
-    title: `Dossiê Executivo (4 Páginas) — ${athlete.name} | The Net Scouting`,
+    title: `Dossiê Executivo (4 Páginas) — ${athlete.name} | Overview Scout`,
     description: `Relatório executivo confidencial de scouting para ${athlete.name}`,
   };
 }

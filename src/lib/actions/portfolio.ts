@@ -28,10 +28,10 @@ async function getOrCreateCurrentUserId(): Promise<string> {
   if (!defaultUser) {
     defaultUser = await prisma.user.create({
       data: {
-        email: "analista@thenetscouting.com",
-        name: "Analista de Desempenho",
+        email: "admin@overviewscout.com",
+        name: "Admin Overview Scout",
         password: "hashed_default_pwd",
-        role: "ANALYST",
+        role: "ADMIN",
       },
     });
   }

@@ -1,5 +1,5 @@
 /**
- * Utilitário de Cores e Identidade Visual dos Clubes (The Net Scouting)
+ * Utilitário de Cores e Identidade Visual dos Clubes (Overview Scout)
  * Mapeamento oficial dos 20 clubes da Série A do Brasileirão
  */
 
@@ -17,7 +17,7 @@ export const DEFAULT_CLUB_COLORS: ClubColors = {
   primaryColor: "#27272a", // Zinc 800
   secondaryColor: "#52525b", // Zinc 600
   textColor: "#ffffff",
-  accentColor: "#00e676", // Verde The Net Scouting
+  accentColor: "#00e676", // Verde Overview Scout
 };
 
 /**

@@ -47,7 +47,7 @@ export function AppHeader() {
       ) : (
         <div className="hidden md:flex items-center gap-2">
           <span className="text-xs font-bold text-zinc-400 font-mono">
-            Portal Individual de Performance &bull; The Net Scouting
+            Portal Individual de Performance &bull; Overview Scout
           </span>
         </div>
       )}
@@ -80,7 +80,7 @@ export function AppHeader() {
                 </span>
               )}
             </div>
-            <p className="text-xs text-muted-foreground mt-0.5">The Net Scouting</p>
+            <p className="text-xs text-muted-foreground mt-0.5">Overview Scout</p>
           </div>
         </div>
 

@@ -1,5 +1,5 @@
 /**
- * ⚽ Motor Matemático e Estatístico Avançado (The Net Scouting Engine)
+ * ⚽ Motor Matemático e Estatístico Avançado (Overview Scout Engine)
  *
  * Fundamentação Teórica:
  * - CEREBRO / Aula 02: Validação de Modelos, Outliers e Índice de Desempenho Global (IDG) - Prof. Eleandro

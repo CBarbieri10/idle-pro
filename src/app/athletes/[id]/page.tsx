@@ -72,7 +72,7 @@ export async function generateMetadata({
   const athlete = await getAthleteById(id);
   if (!athlete) return { title: "Atleta não encontrado" };
   return {
-    title: `${athlete.name} | The Net Scouting`,
+    title: `${athlete.name} | Overview Scout`,
     description: `Perfil e inteligência de performance de ${athlete.name} — ${POSITION_LABELS[athlete.position]}`,
   };
 }

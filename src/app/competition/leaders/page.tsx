@@ -21,7 +21,7 @@ import {
 import { LeaderboardDashboardView } from "@/components/leaderboards/leaderboard-dashboard-view";
 
 export const metadata: Metadata = {
-  title: "Líderes da Competição | The Net Scouting",
+  title: "Líderes da Competição | Overview Scout",
   description:
     "Dashboard oficial de líderes e rankings estatísticos calibrados com o Motor de Inferência Tática (Aulas 1, 2 e 3).",
 };

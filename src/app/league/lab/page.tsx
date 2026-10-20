@@ -3,7 +3,7 @@ import { LeagueLabView } from "@/components/catalog/league-lab-view";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Laboratório Analítico 2D (Moneyball) | The Net Scouting",
+  title: "Laboratório Analítico 2D (Moneyball) | Overview Scout",
   description:
     "Matrizes de dispersão multidimensionais e detecção de anomalias estatísticas com medianas cruzadas",
 };

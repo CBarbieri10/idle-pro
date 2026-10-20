@@ -71,7 +71,7 @@ function LoginForm() {
             id="email"
             type="email"
             autoComplete="email"
-            placeholder="analista@thenetscout.com"
+            placeholder="admin@overviewscout.com"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
             required
@@ -157,7 +157,7 @@ export default function LoginPage() {
           </div>
           <div>
             <h1 className="text-2xl font-bold tracking-tight text-foreground">
-              The Net Scouting
+              Overview Scout
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
               Portal de Inteligência Esportiva
@@ -178,7 +178,7 @@ export default function LoginPage() {
 
         {/* Footer */}
         <p className="text-center text-xs text-muted-foreground/50">
-          Acesso exclusivo para analistas da The Net Scouting
+          Acesso exclusivo para analistas da Overview Scout
         </p>
       </div>
     </div>

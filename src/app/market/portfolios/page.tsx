@@ -10,7 +10,7 @@ import { Bookmark, Shield, Sparkles, FolderKanban } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Shadow Board • Gestão de Portfólios | The Net Scouting",
+  title: "Shadow Board • Gestão de Portfólios | Overview Scout",
   description:
     "A Sala do Diretor: Gestão de shortlists estratégicas, anotações de observação e monitoramento de alvos prioritários de mercado.",
 };

@@ -259,7 +259,7 @@ export function MatchH2HStats({
               Barras normalizadas e calibradas com dados oficiais
             </span>
             <span className="text-[11px] font-mono text-zinc-400">
-              The Net Scouting &bull; Match Intelligence
+              Overview Scout &bull; Match Intelligence
             </span>
           </div>
         </div>

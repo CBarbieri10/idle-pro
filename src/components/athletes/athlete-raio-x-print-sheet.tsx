@@ -92,7 +92,7 @@ export function AthleteRaioXPrintSheet({
       .toUpperCase();
   }, [athlete.name]);
 
-  const docRef = `TNS-RX-${athlete.id.slice(0, 6).toUpperCase()}`;
+  const docRef = `OVS-RX-${athlete.id.slice(0, 6).toUpperCase()}`;
 
   // Data Science: Seleção inteligente das 5 métricas de maior destaque / percentil relativo
   const top5Metrics = useMemo(() => {
@@ -151,11 +151,11 @@ export function AthleteRaioXPrintSheet({
       <div className="flex items-center justify-between border-b-2 border-zinc-950 pb-3">
         <div className="flex items-center gap-3">
           <div className="h-9 w-9 rounded-lg bg-zinc-950 flex items-center justify-center text-white font-black text-sm shadow-xs">
-            TNS
+            OVS
           </div>
           <div>
             <h1 className="text-sm font-black tracking-wider uppercase text-zinc-950 leading-tight">
-              The Net Scouting &bull; Divisão de Inteligência
+              Overview Scout &bull; Divisão de Inteligência
             </h1>
             <p className="text-[10px] font-bold tracking-widest text-zinc-600 uppercase mt-0.5">
               Dossiê Executivo de Scouting &bull; Raio-X Oficial A4
@@ -404,7 +404,7 @@ export function AthleteRaioXPrintSheet({
 
       {/* ─── 5. Document Footer (Audit & Authenticity) ────────────────────── */}
       <div className="border-t border-zinc-300 pt-2 flex items-center justify-between text-[9px] text-zinc-500 font-mono">
-        <p>The Net Scouting Intelligence Suite &bull; Documento confidencial homologado</p>
+        <p>Overview Scout Intelligence Suite &bull; Documento confidencial homologado</p>
         <p className="font-bold text-zinc-900">Página 1 de 1 &bull; Dossiê Raio-X A4</p>
       </div>
     </div>

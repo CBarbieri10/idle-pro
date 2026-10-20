@@ -5,7 +5,7 @@ import { LeagueCatalog } from "@/components/catalog/league-catalog";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Catálogo da Liga | The Net Scouting",
+  title: "Catálogo da Liga | Overview Scout",
   description: "Browse de atletas da liga com métricas Per-90, filtros avançados e comparação lado a lado",
 };
 

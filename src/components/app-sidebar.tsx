@@ -114,15 +114,15 @@ export function AppSidebar() {
         <div className="flex items-center gap-3.5 px-6 pt-6 pb-4">
           <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-gradient-to-br from-emerald-400 via-emerald-500 to-emerald-600 shadow-[0_0_20px_rgba(0,230,118,0.35)] ring-1 ring-white/20 shrink-0">
             <span className="text-sm font-black text-black font-mono tracking-tighter">
-              TNS
+              OVS
             </span>
           </div>
           <div className="min-w-0">
             <h1 className="text-base font-black tracking-tight text-white leading-none">
-              THE NET
+              OVERVIEW
             </h1>
             <p className="text-[10px] font-bold tracking-[0.25em] text-emerald-400 mt-1 uppercase">
-              SCOUTING PRO
+              SCOUT
             </p>
           </div>
         </div>

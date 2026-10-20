@@ -1,5 +1,5 @@
 /**
- * 🇧🇷 Pipeline Oficial de Ingestão de Dados do Brasileirão Série A (Wyscout / TNS Engine)
+ * 🇧🇷 Pipeline Oficial de Ingestão de Dados do Brasileirão Série A (Wyscout / Overview Scout Engine)
  *
  * Execução: npx tsx scripts/import-wyscout-data.ts
  */

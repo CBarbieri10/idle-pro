@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Agenda Tática | The Net Scouting",
+  title: "Agenda Tática | Overview Scout",
   description: "Planejamento e agendamento de sessões de vídeo, decupagem e relatórios táticos salvos no banco",
 };
 

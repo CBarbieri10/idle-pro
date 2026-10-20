@@ -203,7 +203,7 @@ export function AthleteTacticalAiSummary({
               <FileText className="h-3.5 w-3.5" />
               Texto sincronizado com o Dossiê PDF (Página 3 de Análise)
             </span>
-            <span className="text-zinc-500 font-mono">TNS-AI Engine v2.0</span>
+            <span className="text-zinc-500 font-mono">OVS-AI Engine v2.0</span>
           </div>
         </div>
       )}

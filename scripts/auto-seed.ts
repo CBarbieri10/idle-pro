@@ -1,5 +1,5 @@
 /**
- * Auto-Seeder de Alta Fidelidade (The Net Scouting)
+ * Auto-Seeder de Alta Fidelidade (Overview Scout)
  * 
  * Localiza dinamicamente a pasta ~/Desktop/stats no sistema operacional do usuário,
  * varre e identifica as 3 planilhas do SportsBase (Partidas, Times e Jogadores),
@@ -15,6 +15,7 @@ import path from "node:path";
 import fs from "node:fs";
 import * as XLSX from "xlsx";
 import chalk from "chalk";
+import bcrypt from "bcryptjs";
 import { prisma } from "../src/lib/prisma";
 import {
   matchAgent,
@@ -176,22 +177,34 @@ async function wipeDatabase(): Promise<void> {
     );
   }
 
-  // AÇÃO 3: Atribui clube de origem ao usuário analista (Flamengo)
+  // AÇÃO 3: Atribui clube de origem ao usuário analista/admin (Flamengo)
   const flamengo = await prisma.team.findFirst({
     where: { name: "Flamengo" },
   });
   if (flamengo) {
-    const updated = await prisma.user.updateMany({
-      where: { email: "analista@thenetscouting.com" },
+    const passwordHash = await bcrypt.hash("admin123", 12);
+    await prisma.user.upsert({
+      where: { email: "admin@overviewscout.com" },
+      update: { teamId: flamengo.id, role: "ADMIN" },
+      create: {
+        email: "admin@overviewscout.com",
+        name: "Admin Overview Scout",
+        password: passwordHash,
+        role: "ADMIN",
+        teamId: flamengo.id,
+      },
+    });
+
+    await prisma.user.updateMany({
+      where: { email: { in: ["analista@overviewscout.com", "admin@overviewscout.com"] } },
       data: { teamId: flamengo.id },
     });
-    if (updated.count > 0) {
-      console.log(
-        chalk.green(
-          `   ✔ Usuário analista@thenetscouting.com vinculado ao clube ${flamengo.name} (${flamengo.id}).`
-        )
-      );
-    }
+
+    console.log(
+      chalk.green(
+        `   ✔ Usuário admin@overviewscout.com vinculado ao clube ${flamengo.name} (${flamengo.id}).`
+      )
+    );
   }
 
   console.log(
@@ -208,7 +221,7 @@ async function wipeDatabase(): Promise<void> {
 
 async function main() {
   console.log(chalk.bold.cyan("\n================================================================================"));
-  console.log(chalk.bold.cyan("     THE NET SCOUTING • AUTO-SEEDER DO SISTEMA OPERACIONAL (~/Desktop/stats)"));
+  console.log(chalk.bold.cyan("     OVERVIEW SCOUT • AUTO-SEEDER DO SISTEMA OPERACIONAL (~/Desktop/stats)"));
   console.log(chalk.bold.cyan("================================================================================\n"));
 
   // 1. Localização dinâmica da pasta stats na Área de Trabalho

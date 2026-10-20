@@ -1,5 +1,5 @@
 /**
- * Motor de Inferência Tática (TNS Tactical Inference Engine)
+ * Motor de Inferência Tática (Overview Scout Tactical Inference Engine)
  * Base Metodológica: CÉREBRO — Aulas 1, 2 e 3 (Professor Roberto Torrecilhas / S.E. Palmeiras)
  * 
  * Traduz dados estatísticos brutos e métricas canônicas em insights táticos

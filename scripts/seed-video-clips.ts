@@ -3,7 +3,7 @@ import { prisma } from "../src/lib/prisma";
 
 async function main() {
   console.log(chalk.bold.cyan("\n================================================================================"));
-  console.log(chalk.bold.cyan("     THE NET SCOUTING • MOCK DE DECUPAGEM TÁTICA (VIDEO CLIPS)"));
+  console.log(chalk.bold.cyan("     OVERVIEW SCOUT • MOCK DE DECUPAGEM TÁTICA (VIDEO CLIPS)"));
   console.log(chalk.bold.cyan("================================================================================\n"));
 
   console.log(chalk.yellow("🧹 Limpando VideoClips prévios para recriação limpa..."));

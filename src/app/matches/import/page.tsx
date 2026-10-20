@@ -6,7 +6,7 @@ import { ChevronRight } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Importação de Métricas | The Net Scouting",
+  title: "Importação de Métricas | Overview Scout",
   description: "Importação de métricas por arquivo Excel ou CSV com área de revisão e resolução de atletas",
 };
 

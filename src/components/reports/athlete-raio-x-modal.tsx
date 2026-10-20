@@ -69,7 +69,7 @@ export function AthleteRaioXModal({ athlete, triggerButton }: AthleteRaioXModalP
             <html lang="pt-BR">
               <head>
                 <meta charset="utf-8" />
-                <title>The Net Scouting - Dossiê Executivo - ${athlete.name}</title>
+                <title>Overview Scout - Dossiê Executivo - ${athlete.name}</title>
                 ${styles}
                 <style>
                   @page {
@@ -145,7 +145,7 @@ export function AthleteRaioXModal({ athlete, triggerButton }: AthleteRaioXModalP
     .join(",");
   const dossierHref = `/athletes/${athlete.id}/raio-x${activeKeys ? `?pages=${activeKeys}` : ""}`;
 
-  const docRef = `TNS-RX-${athlete.id.slice(0, 6).toUpperCase()}`;
+  const docRef = `OVS-RX-${athlete.id.slice(0, 6).toUpperCase()}`;
 
   return (
     <>
@@ -169,7 +169,7 @@ export function AthleteRaioXModal({ athlete, triggerButton }: AthleteRaioXModalP
           <div className="flex items-center justify-between px-6 py-3 border-b border-zinc-800 bg-zinc-900 print:hidden">
             <div className="flex items-center gap-2">
               <div className="h-6 w-6 rounded bg-indigo-600 flex items-center justify-center text-[10px] font-black text-white">
-                TNS
+                OVS
               </div>
               <DialogTitle className="text-sm font-bold tracking-tight">
                 Dossiê Executivo &bull; Raio-X do Atleta ({docRef})

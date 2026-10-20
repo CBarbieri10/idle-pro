@@ -37,10 +37,10 @@ export async function generateMetadata({
     select: { name: true, position: true },
   });
 
-  if (!athlete) return { title: "Laboratório Longitudinal | The Net Scouting" };
+  if (!athlete) return { title: "Laboratório Longitudinal | Overview Scout" };
 
   return {
-    title: `Laboratório Longitudinal — ${athlete.name} | The Net Scouting`,
+    title: `Laboratório Longitudinal — ${athlete.name} | Overview Scout`,
     description: `Análise cronológica real de performance, médias móveis e telemetria de ${athlete.name}`,
   };
 }

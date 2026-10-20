@@ -3,10 +3,10 @@ import { getCatalogAthletes, type CatalogAthlete } from "@/lib/actions/catalog";
 import { POSITION_LABELS } from "@/lib/domain";
 
 export const SYSTEM_PROMPT_HEAD_SCOUT = `
-Você é o Head Scout e Cientista de Dados de Elite da plataforma The Net Scouting (TNS Intelligence System).
+Você é o Head Scout e Cientista de Dados de Elite da plataforma Overview Scout (Overview Scout Intelligence System).
 Seu papel é fornecer análises de futebol de altíssimo nível para diretores de futebol, comissões técnicas e agentes de topo do mercado internacional.
 
-Pilares Metodológicos do The Net Scouting:
+Pilares Metodológicos do Overview Scout:
 1. IDG (Índice de Desempenho Global):
    - Métrica de estabilidade e consistência longitudinal jogo a jogo.
    - Calculado via Z-Score (|Z| >= 2.0 para eliminação de anomalias/outliers) e Coeficiente de Variação (CVP de Pearson para séries homogêneas e CVT de Tornqvist para séries com dispersão).
@@ -66,7 +66,7 @@ export async function buildScoutingContext(): Promise<{
     } | Partidas: ${a.totalMatches} | Gols/90: ${goalsPer90} | Assists/90: ${assistsPer90} | xG/90: ${xgPer90} | xG/Shot: ${xgPerShot} | PAdj Desarmes: ${padjTackles} | PAdj Interceptações: ${padjInterceptions} | Cruzamentos/90: ${crossesPer90} | Passes Progressivos/90: ${progPassesPer90} | Dribles/90: ${dribblesPer90} | Duelos Aéreos/90: ${aerialWonPer90}`;
   });
 
-  const contextText = `BASE CANÔNICA DE DADOS DO THE NET SCOUTING (${athletes.length} ATLETAS INDEXADOS):\n${lines.join(
+  const contextText = `BASE CANÔNICA DE DADOS DO OVERVIEW SCOUT (${athletes.length} ATLETAS INDEXADOS):\n${lines.join(
     "\n"
   )}`;
 
@@ -377,7 +377,7 @@ export async function askScoutingCopilot(
       answer += `- **IDG:** ${atleta.idgScore?.toFixed(1) ?? "—"}% de consistência.\n\n`;
     });
   } else if (wantsMoneyball) {
-    answer = `### 💎 Destaques Moneyball: Quadrante de Ouro TNS\n\nIdentificação de anomalias estatísticas com alto rendimento técnico e baixo risco de variabilidade (IDG Estável):\n\n`;
+    answer = `### 💎 Destaques Moneyball: Quadrante de Ouro Overview Scout\n\nIdentificação de anomalias estatísticas com alto rendimento técnico e baixo risco de variabilidade (IDG Estável):\n\n`;
 
     const moneyballAthletes = athletes
       .filter((a) => a.stabilityCategory === "HIGH" || a.stabilityCategory === "MODERATE")
@@ -394,7 +394,7 @@ export async function askScoutingCopilot(
     });
   } else {
     // Resposta contextual genérica com base na busca
-    answer = `### 🧠 Relatório de Inteligência Tática — The Net Scouting\n\nProcessamos sua solicitação cruzando a base de dados canônica com os motores estatísticos de **IDG**, **PAdj** e **xG**:\n\n`;
+    answer = `### 🧠 Relatório de Inteligência Tática — Overview Scout\n\nProcessamos sua solicitação cruzando a base de dados canônica com os motores estatísticos de **IDG**, **PAdj** e **xG**:\n\n`;
 
     topMatches.forEach((atleta, idx) => {
       answer += `**${idx + 1}. ${atleta.name}** (${POSITION_LABELS[atleta.position]} • ${atleta.team?.name ?? "Sem Clube"})\n`;

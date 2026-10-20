@@ -2,7 +2,7 @@
 
 **Status:** accepted
 **Date:** 2026-09-28
-**Context:** O analista precisa comparar seus atletas com outros jogadores da mesma posição na liga. Isso requer um catálogo com todos os ~600 atletas do campeonato (20 times × 30 jogadores), atualizado por rodada via importação de Excel das plataformas. No MVP single-tenant, esse catálogo é gerido pela The Net Scouting. Na V2 multi-tenant, será dado compartilhado entre organizações.
+**Context:** O analista precisa comparar seus atletas com outros jogadores da mesma posição na liga. Isso requer um catálogo com todos os ~600 atletas do campeonato (20 times × 30 jogadores), atualizado por rodada via importação de Excel das plataformas. No MVP single-tenant, esse catálogo é gerido pela Overview Scout. Na V2 multi-tenant, será dado compartilhado entre organizações.
 **Decision:**
 1. Existem dois conceitos distintos de "atleta no sistema":
    - **Catálogo da Liga:** Todos os atletas do campeonato com métricas canônicas atualizadas por rodada. Usado para comparações, rankings por posição e benchmarking.

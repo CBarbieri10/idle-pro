@@ -14,7 +14,7 @@ import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Motor de Busca Avançada • Catálogo da Liga | The Net Scouting",
+  title: "Motor de Busca Avançada • Catálogo da Liga | Overview Scout",
   description:
     "Filtros multidimensionais, térmicos e biométricos para recrutamento de atletas na Série A.",
 };

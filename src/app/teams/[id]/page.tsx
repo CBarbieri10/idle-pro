@@ -21,7 +21,7 @@ export async function generateMetadata({
   });
   if (!team) return { title: "Clube não encontrado" };
   return {
-    title: `${team.name} • Vestiário e Elenco | The Net Scouting`,
+    title: `${team.name} • Vestiário e Elenco | Overview Scout`,
     description: `Vestiário interativo, decupagem do elenco e métricas de performance de ${team.name}`,
   };
 }

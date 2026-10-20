@@ -32,7 +32,7 @@ export function ReportCover({
     year: "numeric",
   });
 
-  const docRef = `TNS-DOSSIER-${athlete.id.slice(0, 6).toUpperCase()}`;
+  const docRef = `OVS-DOSSIER-${athlete.id.slice(0, 6).toUpperCase()}`;
 
   return (
     <div
@@ -52,11 +52,11 @@ export function ReportCover({
       <div className="flex items-start justify-between border-b-2 border-zinc-950 pb-4">
         <div className="flex items-center gap-3">
           <div className="h-10 w-10 rounded-xl bg-zinc-950 flex items-center justify-center text-white font-black text-sm tracking-tighter shadow-md print:bg-black print:text-white">
-            TNS
+            OVS
           </div>
           <div>
             <h1 className="text-base font-black tracking-tighter uppercase leading-none text-zinc-950 font-sans">
-              The Net Scouting
+              Overview Scout
             </h1>
             <p className="text-[10px] font-bold tracking-[0.25em] text-zinc-500 uppercase mt-1">
               Divisão de Inteligência & Scouting Executivo
@@ -172,7 +172,7 @@ export function ReportCover({
 
         {/* Bottom Micro Footer */}
         <div className="flex items-center justify-between pt-4 mt-4 border-t border-zinc-200 text-[9px] text-zinc-500 font-mono">
-          <span>The Net Scouting &bull; Sistema Integrado de Inteligência do Futebol</span>
+          <span>Overview Scout &bull; Sistema Integrado de Inteligência do Futebol</span>
           <span className="font-bold text-zinc-900 uppercase">Página {pageIndex} de {totalPages} &bull; Capa Oficial</span>
         </div>
       </div>

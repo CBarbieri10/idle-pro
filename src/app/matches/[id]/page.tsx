@@ -28,7 +28,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
   if (!matchData) {
     return {
-      title: "Partida não encontrada | The Net Scouting",
+      title: "Partida não encontrada | Overview Scout",
     };
   }
 
@@ -39,7 +39,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
       : "vs";
 
   return {
-    title: `${homeTeam.name} ${scoreText} ${awayTeam.name} — Match Report | The Net Scouting`,
+    title: `${homeTeam.name} ${scoreText} ${awayTeam.name} — Match Report | Overview Scout`,
     description: `Relatório tático e estatísticas completas do confronto entre ${homeTeam.name} e ${awayTeam.name} pela ${match.competition}.`,
   };
 }

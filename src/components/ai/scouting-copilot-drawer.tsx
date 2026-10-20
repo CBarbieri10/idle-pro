@@ -74,7 +74,7 @@ export function ScoutingCopilotDrawer() {
       id: "welcome",
       role: "assistant",
       content:
-        "Olá, Analista! Eu sou o **Head Scout & Copilot de IA** do The Net Scouting.\n\nTenho acesso direto à **base canônica de atletas**, aos cálculos de **IDG (Índice de Desempenho Global)**, **PAdj (Possession-Adjusted)** e **xG/Shot**.\n\nComo posso apoiar a sua tomada de decisão no mercado hoje?",
+        "Olá, Analista! Eu sou o **Head Scout & Copilot de IA** do Overview Scout.\n\nTenho acesso direto à **base canônica de atletas**, aos cálculos de **IDG (Índice de Desempenho Global)**, **PAdj (Possession-Adjusted)** e **xG/Shot**.\n\nComo posso apoiar a sua tomada de decisão no mercado hoje?",
       timeLabel: "Agora",
     },
   ]);
@@ -207,7 +207,7 @@ export function ScoutingCopilotDrawer() {
                       </Badge>
                     </div>
                     <p className="text-[11px] text-zinc-400">
-                      Cientista de Dados de Elite & Head Scout TNS
+                      Cientista de Dados de Elite & Head Scout Overview Scout
                     </p>
                   </div>
                 </div>

@@ -4,7 +4,7 @@ import { Film, Sparkles, Video, Play, Users, Calendar } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Central de Vídeos Táticos • The Net Scouting",
+  title: "Central de Vídeos Táticos • Overview Scout",
   description: "Repositório global de decupagens táticas, recortes de lances e análise em vídeo de atletas e partidas.",
 };
 

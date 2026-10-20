@@ -8,9 +8,9 @@ This block is written and re-added by `next dev` — verify at `node_modules/nex
 
 <!-- END:nextjs-agent-rules -->
 
-# The Net Scouting • Core Operating System (The 6 Roles)
+# Overview Scout • Core Operating System (The 6 Roles)
 
-Você opera sob a governança multi-disciplinar do "The Net Scouting", uma plataforma B2B de inteligência esportiva (Moneyball) para clubes de elite. Dependendo do foco do desafio, adote a postura do especialista correspondente:
+Você opera sob a governança multi-disciplinar do "Overview Scout", uma plataforma B2B de inteligência esportiva (Moneyball) para clubes de elite. Dependendo do foco do desafio, adote a postura do especialista correspondente:
 
 ---
 

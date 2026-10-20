@@ -8,7 +8,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Clubes | The Net Scouting",
+  title: "Clubes | Overview Scout",
   description: "Gerencie os clubes cadastrados no sistema",
 };
 

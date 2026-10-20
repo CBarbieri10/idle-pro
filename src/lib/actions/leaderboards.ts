@@ -473,7 +473,7 @@ export async function getTopPlayersByMetric(
     title: metricKey,
     subtitle: "Ranking Oficial da Competição",
     category: "geral",
-    microInsight: "Métrica canônica processada pelo The Net Scouting.",
+    microInsight: "Métrica canônica processada pelo Overview Scout.",
     lessonTag: "Aula 01",
     accentColor: "indigo",
     unit: "Total",

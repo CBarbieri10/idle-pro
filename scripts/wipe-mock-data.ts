@@ -1,5 +1,5 @@
 /**
- * Script de Expurgo / Wipe da Base de Dados (The Net Scouting)
+ * Script de Expurgo / Wipe da Base de Dados (Overview Scout)
  * 
  * Limpa todos os atletas, partidas, métricas e dados de mock gerados pelo seed legado,
  * deixando o banco virgem para a importação das planilhas reais do Brasileirão 2026
@@ -19,7 +19,7 @@ const prisma = new PrismaClient();
 
 async function main() {
   console.log("================================================================================");
-  console.log("   THE NET SCOUTING • ROTINA DE EXPURGO SEGURO DA BASE (WIPE SEED FAKE)");
+  console.log("   OVERVIEW SCOUT • ROTINA DE EXPURGO SEGURO DA BASE (WIPE SEED FAKE)");
   console.log("================================================================================\n");
 
   // 1. Diagnóstico Pré-Wipe

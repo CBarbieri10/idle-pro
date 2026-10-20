@@ -21,7 +21,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Relatórios & Raio-X | The Net Scouting",
+  title: "Relatórios & Raio-X | Overview Scout",
   description: "Emissão de relatórios executivos em PDF (Raio-X) dos atletas e gestão do portfólio",
 };
 

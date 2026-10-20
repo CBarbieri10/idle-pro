@@ -1,7 +1,7 @@
-# The Net Scouting (TNS) — Product Context
+# Overview Scout (OVS) — Product Context
 
 ## Overview
-**The Net Scouting** is a high-performance Sports Intelligence and Scouting platform tailored for professional football clubs, sports directors, and recruitment analysts. It focuses on identifying, tracking, and evaluating emerging and elite talent in Brazilian football (Brasileirão Série A and youth academy categories).
+**Overview Scout** is a high-performance Sports Intelligence and Scouting platform tailored for professional football clubs, sports directors, and recruitment analysts. It focuses on identifying, tracking, and evaluating emerging and elite talent in Brazilian football (Brasileirão Série A and youth academy categories).
 
 ## Core Users
 - **Head Scouts & Technical Directors:** Require executive summaries, high-level tactical radar charts, bio profiles, and exportable A4 "Raio-X" dossiers for board presentations.

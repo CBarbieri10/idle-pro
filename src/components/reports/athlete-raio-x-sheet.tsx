@@ -142,7 +142,7 @@ export function AthleteRaioXSheet({
     .toUpperCase();
 
   const metrics = athlete.canonicalMetrics;
-  const docRef = `TNS-RX-${athlete.id.slice(0, 6).toUpperCase()}`;
+  const docRef = `OVS-RX-${athlete.id.slice(0, 6).toUpperCase()}`;
 
   return (
     <div
@@ -184,11 +184,11 @@ export function AthleteRaioXSheet({
       <div className="flex items-center justify-between border-b-2 border-zinc-950 pb-2.5 print-avoid-break">
         <div className="flex items-center gap-2.5">
           <div className="h-8 w-8 rounded-lg bg-zinc-950 flex items-center justify-center text-white font-black text-xs shadow-xs print:bg-black print:text-white">
-            TNS
+            OVS
           </div>
           <div>
             <h1 className="text-sm font-black tracking-tight uppercase leading-none text-zinc-950 font-sans">
-              The Net Scouting
+              Overview Scout
             </h1>
             <p className="text-[9px] font-bold tracking-wider text-zinc-500 uppercase mt-0.5">
               Divisão de Inteligência Esportiva &bull; Dossiê Executivo Raio-X
@@ -380,7 +380,7 @@ export function AthleteRaioXSheet({
 
       {/* Document Footer */}
       <div className="pt-2 border-t border-zinc-200 flex items-center justify-between text-[10px] text-zinc-500 print-avoid-break">
-        <p>Relatório oficial gerado pela Divisão de Inteligência The Net Scouting &bull; Uso exclusivo confidencial</p>
+        <p>Relatório oficial gerado pela Divisão de Inteligência Overview Scout &bull; Uso exclusivo confidencial</p>
         <p className="font-mono font-bold text-zinc-950">Página {pageIndex} de {totalPages} &bull; Raio-X Estatístico</p>
       </div>
     </div>

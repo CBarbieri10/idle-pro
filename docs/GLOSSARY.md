@@ -1,4 +1,4 @@
-# Glossário de Domínio — Portal de Inteligência Esportiva (The Net Scouting)
+# Glossário de Domínio — Portal de Inteligência Esportiva (Overview Scout)
 
 ---
 

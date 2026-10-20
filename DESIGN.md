@@ -1,6 +1,6 @@
-# The Net Scouting — Design System & Diretrizes Visuais (Enterprise Edition)
+# Overview Scout — Design System & Diretrizes Visuais (Enterprise Edition)
 
-Este documento estabelece o padrão visual, tokens de design, regras de tipografia e padrões de interface para a plataforma **The Net Scouting (TNS)**. O objetivo é garantir uma experiência visual executiva, moderna e de alto padrão (nível enterprise), eliminando qualquer aspecto de rascunho ou protótipo amador.
+Este documento estabelece o padrão visual, tokens de design, regras de tipografia e padrões de interface para a plataforma **Overview Scout (OVS)**. O objetivo é garantir uma experiência visual executiva, moderna e de alto padrão (nível enterprise), eliminando qualquer aspecto de rascunho ou protótipo amador.
 
 ---
 
@@ -27,12 +27,12 @@ Este documento estabelece o padrão visual, tokens de design, regras de tipograf
 ### 2.2 Cores de Acento & Metodologia Tática
 | Categoria | Token | Cor Hex | Aplicação |
 |---|---|---|---|
-| **Marca / Primário** | `--tns-primary` | `#6366f1` (Indigo 500) | Ações primárias, identidade TNS e logos |
+| **Marca / Primário** | `--ovs-primary` | `#6366f1` (Indigo 500) | Ações primárias, identidade OVS e logos |
 | **Destaque Per-90 (Elite)** | `--metric-highlight` | `#10b981` (Emerald 500) | Números de alto rendimento, percentis > 75% |
 | **Ataque / Produção** | `--cat-attack` | `#f43f5e` (Rose 500) | Gols, xG, finalizações, dribles |
 | **Construção / Passe** | `--cat-possession`| `#3b82f6` (Blue 500) | Passes certos, bolas longas, progressão |
 | **Defesa / Combate** | `--cat-defense` | `#10b981` (Emerald 500) | Desarmes, interceptações, duelos |
-| **Status / Avaliação** | `--tns-amber` | `#f59e0b` (Amber 500) | Notas de atuação, rankings e favoritos |
+| **Status / Avaliação** | `--ovs-amber` | `#f59e0b` (Amber 500) | Notas de atuação, rankings e favoritos |
 
 ---
 

@@ -11,9 +11,9 @@ async function main() {
   const sampleTeam = await prisma.team.findFirst();
 
   const accounts = [
-    { email: "admin@thenetscout.com", name: "Admin TNS", role: "ADMIN" as const, athleteId: null, teamId: null },
-    { email: "analista@thenetscouting.com", name: "Analista de Desempenho", role: "ANALYST" as const, athleteId: null, teamId: null },
-    { email: "clube@thenetscouting.com", name: "Diretoria do Clube", role: "CLUB" as const, athleteId: null, teamId: sampleTeam?.id ?? null },
+    { email: "admin@overviewscout.com", name: "Admin Overview Scout", role: "ADMIN" as const, athleteId: null, teamId: null },
+    { email: "analista@overviewscout.com", name: "Analista de Desempenho", role: "ANALYST" as const, athleteId: null, teamId: null },
+    { email: "clube@overviewscout.com", name: "Diretoria do Clube", role: "CLUB" as const, athleteId: null, teamId: sampleTeam?.id ?? null },
   ];
 
   const passwordHash = await bcrypt.hash("admin123", 12);

@@ -5,7 +5,7 @@ import { Swords, Scale, Shield, Sparkles } from "lucide-react";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Comparador Head-to-Head • Batalha de Atletas | The Net Scouting",
+  title: "Comparador Head-to-Head • Batalha de Atletas | Overview Scout",
   description:
     "Análise comparativa direta de atletas com Radar DNA sobreposto e matriz de métricas térmicas.",
 };
