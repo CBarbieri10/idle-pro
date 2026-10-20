@@ -1,12 +1,12 @@
 import { Suspense } from "react";
-import { getAthletes } from "@/lib/actions/athletes";
+import { getScoutingAthletes } from "@/lib/actions/athletes";
 import { getTeams } from "@/lib/actions/teams";
-import { CreateAthleteButton, EditAthleteButton, DeleteAthleteButton } from "@/components/athletes/athlete-dialogs";
-import { AthleteFilters } from "@/components/athletes/athlete-filters";
-import { Badge } from "@/components/ui/badge";
+import { CreateAthleteButton } from "@/components/athletes/athlete-dialogs";
+import { ScoutingFiltersSidebar } from "@/components/athletes/scouting-filters-sidebar";
+import { ScoutingPlayerCard } from "@/components/athletes/scouting-player-card";
+import { ScoutingPagination } from "@/components/athletes/scouting-pagination";
 import { Card } from "@/components/ui/card";
-import { Users, ChevronRight, Shield, Sparkles, UserPlus } from "lucide-react";
-import { POSITION_LABELS, POSITION_COLORS, FOOT_LABELS, formatFootPreference, formatAge, formatHeight } from "@/lib/domain";
+import { Users, Sparkles, FilterX, Compass } from "lucide-react";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
@@ -14,23 +14,19 @@ import { cn } from "@/lib/utils";
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Atletas | The Net Scouting",
-  description: "Gerencie e monitore os atletas cadastrados na plataforma",
+  title: "Motor de Busca Avançada • Catálogo da Liga | The Net Scouting",
+  description:
+    "Filtros multidimensionais, térmicos e biométricos para recrutamento de atletas na Série A.",
 };
 
 export default async function AthletesPage({
   searchParams,
 }: {
-  searchParams: Promise<{
-    search?: string;
-    position?: string;
-    teamId?: string;
-    scope?: "registered" | "all";
-  }>;
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
 }) {
   const session = await auth();
 
-  // Usuário ATHLETE não pode navegar livremente pelo banco de talentos
+  // Usuário ATHLETE é redirecionado diretamente ao seu próprio perfil
   if (session?.user?.role === "ATHLETE") {
     if (session.user.athleteId) {
       redirect(`/athletes/${session.user.athleteId}`);
@@ -38,257 +34,186 @@ export default async function AthletesPage({
     redirect("/");
   }
 
-  const params = await searchParams;
-  const currentScope = params.scope || "registered";
+  const rawParams = await searchParams;
+  const getString = (val: string | string[] | undefined) =>
+    Array.isArray(val) ? val[0] : val;
 
-  // AÇÃO 3: Atribuição de Clube ao Usuário Analista (Fim dos 537 Atletas no Elenco)
-  // Busca o teamId do usuário autenticado no banco de dados para garantir valor atualizado
-  let userTeamId = (session?.user as { teamId?: string })?.teamId ?? null;
-  if (!userTeamId && session?.user?.email) {
-    const { prisma: dbPrisma } = await import("@/lib/prisma");
-    const dbUser = await dbPrisma.user.findUnique({
-      where: { email: session.user.email },
-      select: { teamId: true },
-    });
-    userTeamId = dbUser?.teamId ?? null;
-  }
+  const currentScope = (getString(rawParams.scope) as "registered" | "all") || "all";
+  const search = getString(rawParams.search) || getString(rawParams.q);
+  const pos = getString(rawParams.pos);
+  const foot = getString(rawParams.foot);
+  const minAge = getString(rawParams.minAge);
+  const maxAge = getString(rawParams.maxAge);
+  const minHeight = getString(rawParams.minHeight);
+  const maxHeight = getString(rawParams.maxHeight);
+  const stable = getString(rawParams.stable);
+  const minZ = getString(rawParams.minZ);
+  const teamId = getString(rawParams.teamId);
+  const page = getString(rawParams.page) ? parseInt(getString(rawParams.page)!, 10) : 1;
 
-  // Se nenhum teamId foi fornecido na query (URL limpa sem filtros), utiliza o userTeamId por padrão
-  const effectiveTeamId =
-    params.teamId !== undefined
-      ? params.teamId === "ALL"
-        ? undefined
-        : params.teamId
-      : (userTeamId ?? undefined);
-
-  const [athletes, teams] = await Promise.all([
-    getAthletes({
-      search: params.search,
-      position: params.position,
-      teamId: effectiveTeamId,
+  const [scoutingResult, teams] = await Promise.all([
+    getScoutingAthletes({
+      search,
+      pos,
+      foot,
+      minAge,
+      maxAge,
+      minHeight,
+      maxHeight,
+      stable,
+      minZ,
+      teamId: teamId === "ALL" ? undefined : teamId,
       scope: currentScope,
+      page,
+      pageSize: 20,
     }),
     getTeams(),
   ]);
 
   const teamList = teams.map((t) => ({ id: t.id, name: t.name }));
-  const activeTeam = teams.find((t) => t.id === effectiveTeamId);
+  const activeTeam = teams.find((t) => t.id === teamId);
+
+  // Verificação de filtros ativos para badge de cabeçalho
+  const hasActiveFilters = Boolean(
+    search ||
+      pos ||
+      foot ||
+      minAge ||
+      maxAge ||
+      minHeight ||
+      maxHeight ||
+      stable ||
+      minZ ||
+      (teamId && teamId !== "ALL")
+  );
 
   return (
     <div className="space-y-6 w-full">
-      {/* ─── Header ──────────────────────────────────────────────────────── */}
+      {/* ─── Header Principal do Motor de Busca ──────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-5">
         <div>
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-md bg-[#00e676]/15 px-2.5 py-0.5 text-[10px] font-bold text-[#00e676] border border-[#00e676]/30 uppercase tracking-wider font-mono">
-              <Users className="h-3 w-3" /> Gestão de Elenco &bull; Atletas
+            <span className="inline-flex items-center gap-1.5 rounded-md bg-emerald-500/15 px-2.5 py-0.5 text-[10px] font-bold text-emerald-400 border border-emerald-500/30 uppercase tracking-wider font-mono">
+              <Compass className="h-3 w-3" /> Motor de Busca Avançada &bull; Catálogo da Liga
             </span>
             <span className="text-xs text-zinc-400 font-mono">
-              {athletes.length} {athletes.length === 1 ? "atleta" : "atletas"}
+              {scoutingResult.totalCount}{" "}
+              {scoutingResult.totalCount === 1 ? "atleta no radar" : "atletas no radar"}
             </span>
           </div>
-          <h1 className="text-2xl font-black tracking-tight text-white mt-1.5">
+
+          <h1 className="text-2xl font-black tracking-tight text-white mt-1.5 flex items-center gap-2">
             {activeTeam
-              ? `Elenco • ${activeTeam.name}`
-              : currentScope === "all"
-              ? "Todos os Atletas da Liga"
-              : "Atletas Cadastrados"}
+              ? `Radar de Scouting • ${activeTeam.name}`
+              : currentScope === "registered"
+              ? "Atletas Monitorados pelo Analista"
+              : "Catálogo Completo da Série A"}
           </h1>
+
           <p className="text-xs text-zinc-400 mt-0.5">
-            {activeTeam
-              ? `Atletas do elenco do ${activeTeam.name} sob monitoramento do analista.`
-              : currentScope === "all"
-              ? "Base completa de jogadores registrados no campeonato."
-              : "Jogadores cadastrados e sob monitoramento ativo pelo analista."}
+            Descubra jogadores subvalorizados utilizando matrizes multidimensionais de Z-Score,
+            estabilidade IDG e biometria posicional.
           </p>
         </div>
 
         <div className="flex flex-wrap items-center gap-2.5">
-          <Link
-            href="/catalog"
-            className="inline-flex items-center gap-1.5 rounded-xl border border-cyan-500/30 bg-cyan-500/10 hover:bg-cyan-500/20 px-3.5 py-2 text-xs font-bold text-cyan-300 transition-all shadow-sm"
-          >
-            <Sparkles className="h-3.5 w-3.5" />
-            <span>Catálogo da Liga (671 Atletas) &rarr;</span>
-          </Link>
           <CreateAthleteButton teams={teamList} />
         </div>
       </div>
 
-      {/* Scope Toggle & Catalog Banner */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-2xl border border-white/[0.08] bg-[#0c1220]/80">
+      {/* ─── Alternador de Escopo (Liga Completa vs Portfólio) ───────────── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-2xl border border-white/[0.08] bg-[#0c1220]/80 backdrop-blur-md">
         <div className="flex items-center gap-2">
           <Link
-            href={`/athletes${params.teamId ? `?teamId=${params.teamId}` : ""}`}
+            href={`/athletes?scope=all${teamId ? `&teamId=${teamId}` : ""}`}
             className={cn(
-              "px-3 py-1.5 rounded-xl text-xs font-bold transition-all",
-              currentScope === "registered"
-                ? "bg-[#00e676]/20 text-[#00e676] border border-[#00e676]/40 shadow-sm"
+              "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5",
+              currentScope === "all"
+                ? "bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 shadow-sm"
                 : "text-zinc-400 hover:text-white"
             )}
           >
-            Cadastrados pelo Analista
+            <Sparkles className="h-3 w-3 text-emerald-400" />
+            <span>Toda a Série A (537 Atletas)</span>
           </Link>
+
           <Link
-            href={`/athletes?scope=all${params.teamId ? `&teamId=${params.teamId}` : ""}`}
+            href={`/athletes?scope=registered${teamId ? `&teamId=${teamId}` : ""}`}
             className={cn(
-              "px-3 py-1.5 rounded-xl text-xs font-bold transition-all",
-              currentScope === "all"
+              "px-3.5 py-1.5 rounded-xl text-xs font-bold transition-all flex items-center gap-1.5",
+              currentScope === "registered"
                 ? "bg-cyan-500/20 text-cyan-300 border border-cyan-500/40 shadow-sm"
                 : "text-zinc-400 hover:text-white"
             )}
           >
-            Todos do Campeonato
+            <Users className="h-3 w-3 text-cyan-400" />
+            <span>Cadastrados pelo Analista</span>
           </Link>
         </div>
 
-        <div className="text-[11px] text-zinc-400 flex items-center gap-1.5">
-          <span className="h-1.5 w-1.5 rounded-full bg-cyan-400" />
-          <span>Para análise estatística Moneyball e filtros multidimensionais, acerte o</span>
-          <Link href="/catalog" className="text-cyan-300 font-bold hover:underline">
-            Catálogo da Liga
-          </Link>
+        <div className="text-[11px] text-zinc-400 flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
+          <span>Filtros sincronizados com a URL para compartilhamento omnichannel</span>
         </div>
       </div>
 
-      {/* ─── Filters ─────────────────────────────────────────────────────── */}
-      <Suspense>
-        <AthleteFilters teams={teamList} defaultTeamId={userTeamId} />
-      </Suspense>
+      {/* ─── Layout Principal: Sidebar Retrátil de Filtros + Grid de Atletas ─── */}
+      <div className="flex flex-col lg:flex-row items-start gap-6">
+        {/* Sidebar Retrátil com Sincronização via Next.js searchParams */}
+        <Suspense fallback={<div className="w-80 h-96 rounded-2xl bg-white/5 animate-pulse" />}>
+          <ScoutingFiltersSidebar
+            teams={teamList}
+            totalCount={scoutingResult.totalCount}
+          />
+        </Suspense>
 
-      {/* ─── Athletes Grid ───────────────────────────────────────────────── */}
-      {athletes.length === 0 ? (
-        <Card className="flex flex-col items-center justify-center py-20 border-dashed border-white/15 bg-[#0d121d]/75 backdrop-blur-md text-center rounded-2xl">
-          <div className="h-12 w-12 rounded-full bg-black/40 border border-white/10 flex items-center justify-center mb-3">
-            <Users className="h-6 w-6 text-zinc-500" />
-          </div>
-          <h3 className="text-sm font-bold text-white">
-            {params.search || params.position || params.teamId
-              ? "Nenhum atleta encontrado com esses filtros"
-              : "Nenhum atleta cadastrado"}
-          </h3>
-          <p className="text-xs text-zinc-400 mt-1 max-w-sm">
-            {params.search || params.position || params.teamId
-              ? "Experimente redefinir os parâmetros de pesquisa."
-              : "Cadastre seu primeiro atleta com dados físicos e foto recortada para iniciar a análise."}
-          </p>
-        </Card>
-      ) : (
-        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5">
-          {athletes.map((athlete) => {
-            const initials = athlete.name
-              .split(" ")
-              .map((n) => n[0])
-              .slice(0, 2)
-              .join("")
-              .toUpperCase();
-
-            return (
-              <div
-                key={athlete.id}
-                className="group relative flex flex-col justify-between rounded-2xl border border-white/10 bg-[#0d121d]/85 backdrop-blur-md p-4.5 transition-all duration-200 hover:shadow-2xl hover:border-[#00e676]/50 hover:bg-[#121927]/95"
-              >
-                <div>
-                  {/* Top Bar: Position & Actions */}
-                  <div className="flex items-center justify-between gap-2">
-                    <Badge
-                      variant="outline"
-                      className={cn("text-[10px] font-bold px-2 py-0.5 border-0", POSITION_COLORS[athlete.position])}
-                    >
-                      {POSITION_LABELS[athlete.position]}
-                    </Badge>
-
-                    {/* Quick action buttons */}
-                    <div className="flex items-center gap-1 opacity-70 group-hover:opacity-100 transition-opacity">
-                      <EditAthleteButton athlete={athlete} teams={teamList} />
-                      <DeleteAthleteButton id={athlete.id} name={athlete.name} />
-                    </div>
-                  </div>
-
-                  {/* Portrait + Name */}
-                  <div className="mt-3.5 flex items-center gap-3">
-                    <div className="relative h-13 w-13 rounded-full border-2 border-[#00e676]/60 p-0.5 bg-black/50 overflow-hidden shrink-0 shadow-[0_0_12px_rgba(0,230,118,0.2)] flex items-center justify-center">
-                      {athlete.photoUrl ? (
-                        <img
-                          src={athlete.photoUrl}
-                          alt={athlete.name}
-                          className={cn(
-                            "h-full w-full object-cover rounded-full",
-                            athlete.photoHasAlpha && "object-contain"
-                          )}
-                        />
-                      ) : (
-                        <span className="text-xs font-black text-[#00e676] font-mono">
-                          {initials}
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="min-w-0 flex-1">
-                      <Link
-                        href={`/athletes/${athlete.id}`}
-                        className="font-black text-sm text-white hover:text-[#00e676] transition-colors block truncate"
-                      >
-                        {athlete.name}
-                      </Link>
-                      <div className="flex items-center gap-1.5 text-xs text-zinc-400 truncate mt-0.5">
-                        {athlete.team?.logoUrl ? (
-                          <img src={athlete.team.logoUrl} alt={athlete.team?.name ?? "Sem Clube"} className="h-4 w-4 object-contain shrink-0" />
-                        ) : (
-                          <Shield className="h-3 w-3 shrink-0 text-indigo-400" />
-                        )}
-                        <span className="truncate font-semibold">{athlete.team?.name ?? "Sem Clube"}</span>
-                        {athlete.nationality && (
-                          <span className="text-[10px] opacity-70">&bull; {athlete.nationality}</span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Physical attributes */}
-                  <div className="mt-3.5 rounded-xl bg-black/40 border border-white/5 p-2 text-center">
-                    <div className="flex items-center justify-around text-xs font-mono">
-                      <div>
-                        <p className="text-[9px] text-zinc-500 uppercase">Idade</p>
-                        <p className="font-bold text-white mt-0.5">
-                          {athlete.birthDate ? formatAge(athlete.birthDate) : "—"}
-                        </p>
-                      </div>
-                      <div className="h-6 w-px bg-white/10" />
-                      <div>
-                        <p className="text-[9px] text-zinc-500 uppercase">Pé</p>
-                        <p className="font-bold text-white mt-0.5">
-                          {formatFootPreference(athlete.footPreference)}
-                        </p>
-                      </div>
-                      <div className="h-6 w-px bg-white/10" />
-                      <div>
-                        <p className="text-[9px] text-zinc-500 uppercase">Altura</p>
-                        <p className="font-bold text-white mt-0.5">
-                          {formatHeight(athlete.height)}
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-
-                {/* Footer link */}
-                <div className="mt-4 flex items-center justify-between border-t border-white/10 pt-3 text-xs">
-                  <span className="text-[10px] text-zinc-500 font-mono">
-                    {athlete.nationality ?? "Brasil"}
-                  </span>
-                  <Link
-                    href={`/athletes/${athlete.id}`}
-                    className="flex items-center gap-1 text-xs font-bold text-[#00e676] hover:underline transition-colors"
-                  >
-                    Ver perfil <ChevronRight className="h-3.5 w-3.5" />
-                  </Link>
-                </div>
+        {/* Coluna da Direita: Grid de Resultados e Paginação */}
+        <div className="flex-1 min-w-0 w-full space-y-4">
+          {scoutingResult.athletes.length === 0 ? (
+            /* Estado Vazio */
+            <Card className="flex flex-col items-center justify-center py-20 border-dashed border-white/15 bg-[#0c101d]/75 backdrop-blur-md text-center rounded-2xl p-6">
+              <div className="h-14 w-14 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center mb-4 text-rose-400">
+                <FilterX className="h-7 w-7" />
               </div>
-            );
-          })}
+
+              <h3 className="text-base font-bold text-white">
+                Nenhum atleta corresponde aos filtros de scouting
+              </h3>
+
+              <p className="text-xs text-zinc-400 mt-1.5 max-w-md">
+                Tente afrouxar os critérios de Z-Score mínimo, ampliar a faixa etária ou desmarcar o
+                filtro de estabilidade térmica restrita.
+              </p>
+
+              {hasActiveFilters && (
+                <Link
+                  href="/athletes"
+                  className="mt-5 inline-flex items-center gap-2 px-4 py-2 rounded-xl text-xs font-bold bg-white/10 hover:bg-white/20 text-white border border-white/15 transition-all"
+                >
+                  <span>Limpar Todos os Filtros</span>
+                </Link>
+              )}
+            </Card>
+          ) : (
+            /* Grid de Cards dos Atletas com Badges Térmicas */
+            <>
+              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 2xl:grid-cols-4 gap-4">
+                {scoutingResult.athletes.map((athlete) => (
+                  <ScoutingPlayerCard key={athlete.id} athlete={athlete} />
+                ))}
+              </div>
+
+              {/* Paginação Dinâmica (20 atletas/página) */}
+              <ScoutingPagination
+                page={scoutingResult.page}
+                totalPages={scoutingResult.totalPages}
+                totalCount={scoutingResult.totalCount}
+                pageSize={scoutingResult.pageSize}
+              />
+            </>
+          )}
         </div>
-      )}
+      </div>
     </div>
   );
 }
