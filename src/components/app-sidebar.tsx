@@ -16,6 +16,7 @@ import {
   Swords,
   Circle,
   UploadCloud,
+  Bookmark,
 } from "lucide-react";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -28,6 +29,7 @@ const menuGroups = [
     items: [
       { label: "Dashboard", href: "/", icon: LayoutDashboard },
       { label: "Atletas", href: "/athletes", icon: Users },
+      { label: "Shadow Board", href: "/market/portfolios", icon: Bookmark },
       { label: "Clubes", href: "/teams", icon: Shield },
       { label: "Partidas", href: "/matches", icon: Circle },
       { label: "Agenda", href: "/agenda", icon: CalendarDays },

@@ -20,9 +20,10 @@ model User {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  athlete    Athlete?          @relation(fields: [athleteId], references: [id], onDelete: SetNull)
-  team       Team?             @relation(fields: [teamId], references: [id], onDelete: SetNull)
-  portfolios AnalystPortfolio[]
+  athlete          Athlete?           @relation(fields: [athleteId], references: [id], onDelete: SetNull)
+  team             Team?              @relation(fields: [teamId], references: [id], onDelete: SetNull)
+  portfolios       AnalystPortfolio[]
+  customPortfolios Portfolio[]        @relation("UserCustomPortfolios")
 
   @@map("users")
 }
@@ -128,9 +129,10 @@ model Athlete {
   team         Team?             @relation("ClubAthletes", fields: [teamId], references: [id], onDelete: SetNull)
   nationalTeam Team?             @relation("NationalAthletes", fields: [nationalTeamId], references: [id])
   rawMetrics   RawMetric[]
-  canonicalMetrics CanonicalMetric[]
+  canonicalMetrics  CanonicalMetric[]
   portfolioAthletes PortfolioAthlete[]
-  videoLinks   VideoLink[]
+  portfolioItems    PortfolioItem[]
+  videoLinks        VideoLink[]
   videoClips   VideoClip[]
   goals        AthleteGoal[]
   agendaEvents AgendaEvent[]
@@ -281,6 +283,39 @@ model PortfolioAthlete {
   @@unique([portfolioId, athleteId])
   @@index([athleteId])
   @@map("portfolio_athletes")
+}
+
+// ─── Shadow Board: Gestão de Portfólios / Shortlists ───────────────────────
+
+model Portfolio {
+  id          String          @id @default(cuid())
+  name        String
+  description String?
+  userId      String
+  createdAt   DateTime        @default(now())
+  updatedAt   DateTime        @updatedAt
+
+  user        User            @relation("UserCustomPortfolios", fields: [userId], references: [id], onDelete: Cascade)
+  items       PortfolioItem[]
+
+  @@index([userId])
+  @@map("portfolios")
+}
+
+model PortfolioItem {
+  id          String    @id @default(cuid())
+  portfolioId String
+  athleteId   String
+  notes       String?
+  addedAt     DateTime  @default(now())
+
+  portfolio   Portfolio @relation(fields: [portfolioId], references: [id], onDelete: Cascade)
+  athlete     Athlete   @relation(fields: [athleteId], references: [id], onDelete: Cascade)
+
+  @@unique([portfolioId, athleteId])
+  @@index([portfolioId])
+  @@index([athleteId])
+  @@map("portfolio_items")
 }
 
 // ─── Fase 4: Análise Tática & Vídeos Externos (Issue #11 - T09) ────────────

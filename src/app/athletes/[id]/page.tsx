@@ -23,6 +23,7 @@ import { AthleteVideoClipsSection } from "@/components/athletes/athlete-video-cl
 import { getGoalsByAthlete } from "@/lib/actions/goals";
 import { AthleteGoals } from "@/components/athletes/athlete-goals";
 import { PortfolioToggleButton } from "@/components/portfolio/portfolio-toggle-button";
+import { AddToPortfolioDialog } from "@/components/portfolio/add-to-portfolio-dialog";
 import { StabilityBadge } from "@/components/athletes/stability-badge";
 import { AthleteTacticalAiSummary } from "@/components/athletes/athlete-tactical-ai-summary";
 import { AthleteTacticalInferenceCard } from "@/components/athletes/athlete-tactical-inference-card";
@@ -325,10 +326,12 @@ export default async function AthleteProfilePage({
             <AthleteRaioXExportButton athleteName={athlete.name} />
 
             {isAnalystOrClub && (
-              <PortfolioToggleButton
+              <AddToPortfolioDialog
                 athleteId={athlete.id}
                 athleteName={athlete.name}
-                initialInPortfolio={inPortfolio}
+                athletePosition={POSITION_LABELS[athlete.position]}
+                athleteClub={athlete.team?.name ?? undefined}
+                variant="button"
               />
             )}
 

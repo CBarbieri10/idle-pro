@@ -15,6 +15,7 @@ import {
 import { type ScoutingAthleteCardData } from "@/lib/actions/athletes";
 import { getClubColors } from "@/lib/club-colors";
 import { Badge } from "@/components/ui/badge";
+import { AddToPortfolioDialog } from "@/components/portfolio/add-to-portfolio-dialog";
 import { cn } from "@/lib/utils";
 
 interface ScoutingPlayerCardProps {
@@ -38,7 +39,7 @@ export function ScoutingPlayerCard({ athlete }: ScoutingPlayerCardProps) {
         "hover:shadow-[0_16px_36px_rgba(0,0,0,0.6),0_0_24px_rgba(16,185,129,0.15)]"
       )}
     >
-      {/* ─── Topo: Posição, Número e Clube Canônico ─────────────────────────── */}
+      {/* ─── Topo: Posição, Número, Clube Canônico e Bookmark ─────────────────── */}
       <div className="flex items-center justify-between gap-2 pb-3 border-b border-white/[0.06]">
         <div className="flex items-center gap-1.5 min-w-0">
           <Badge
@@ -55,35 +56,46 @@ export function ScoutingPlayerCard({ athlete }: ScoutingPlayerCardProps) {
           )}
         </div>
 
-        {/* Clube Canônico com Cores e Escudo */}
-        <div className="flex items-center gap-1.5 shrink-0">
-          {athlete.team?.logoUrl ? (
-            <div className="h-5 w-5 relative overflow-hidden rounded">
-              <img
-                src={athlete.team.logoUrl}
-                alt={athlete.team.name}
-                className="h-full w-full object-contain"
-              />
-            </div>
-          ) : (
-            <div
-              className="h-4 w-4 rounded-full border flex items-center justify-center shrink-0"
+        {/* Lado Direito: Clube Canônico + Ação Rápida de Bookmark */}
+        <div className="flex items-center gap-2 shrink-0">
+          <div className="flex items-center gap-1.5 shrink-0">
+            {athlete.team?.logoUrl ? (
+              <div className="h-5 w-5 relative overflow-hidden rounded">
+                <img
+                  src={athlete.team.logoUrl}
+                  alt={athlete.team.name}
+                  className="h-full w-full object-contain"
+                />
+              </div>
+            ) : (
+              <div
+                className="h-4 w-4 rounded-full border flex items-center justify-center shrink-0"
+                style={{
+                  backgroundColor: clubColors.primaryColor,
+                  borderColor: clubColors.secondaryColor,
+                }}
+              >
+                <Shield className="h-2.5 w-2.5 text-white" />
+              </div>
+            )}
+            <span
+              className="text-[11px] font-bold truncate max-w-[85px]"
               style={{
-                backgroundColor: clubColors.primaryColor,
-                borderColor: clubColors.secondaryColor,
+                color: clubColors.primaryColor === "#ffffff" ? "#ffffff" : clubColors.primaryColor,
               }}
             >
-              <Shield className="h-2.5 w-2.5 text-white" />
-            </div>
-          )}
-          <span
-            className="text-[11px] font-bold truncate max-w-[95px]"
-            style={{
-              color: clubColors.primaryColor === "#ffffff" ? "#ffffff" : clubColors.primaryColor,
-            }}
-          >
-            {athlete.team?.shortName || athlete.team?.name || "Sem Clube"}
-          </span>
+              {athlete.team?.shortName || athlete.team?.name || "Sem Clube"}
+            </span>
+          </div>
+
+          {/* Botão de Ação Rápida: Bookmark / Shadow Board */}
+          <AddToPortfolioDialog
+            athleteId={athlete.id}
+            athleteName={athlete.name}
+            athletePosition={athlete.positionLabel}
+            athleteClub={athlete.team?.name ?? undefined}
+            variant="icon"
+          />
         </div>
       </div>
 
