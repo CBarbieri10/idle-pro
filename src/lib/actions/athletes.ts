@@ -71,7 +71,7 @@ export async function getAthletes(params?: {
 
 // ─── Motor de Busca Avançada & Scouting Multidimensional ─────────────────────
 
-export const POSITION_GROUP_MAP: Record<string, Position[]> = {
+const POSITION_GROUP_MAP: Record<string, Position[]> = {
   Zagueiro: [Position.CENTER_BACK],
   Lateral: [Position.RIGHT_BACK, Position.LEFT_BACK],
   Volante: [Position.DEFENSIVE_MID],
@@ -92,7 +92,7 @@ export const POSITION_GROUP_MAP: Record<string, Position[]> = {
   FORWARD: [Position.FORWARD],
 };
 
-export const FOOT_MAP: Record<string, FootPreference> = {
+const FOOT_MAP: Record<string, FootPreference> = {
   LEFT: FootPreference.LEFT,
   RIGHT: FootPreference.RIGHT,
   BOTH: FootPreference.BOTH,

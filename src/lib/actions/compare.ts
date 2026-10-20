@@ -56,7 +56,7 @@ export interface HeadToHeadComparisonResult {
 }
 
 // Cores Neon de Batalha (Atleta 1: Verde, Atleta 2: Azul, Atleta 3: Roxo)
-export const BATTLE_COLORS = ["#10b981", "#3b82f6", "#a855f7"];
+const BATTLE_COLORS = ["#10b981", "#3b82f6", "#a855f7"];
 
 // Benchmarks de referência por 90 minutos para normalização (0 a 100)
 const RADAR_BENCHMARKS: Record<string, { label: string; max: number; unit: string }> = {
