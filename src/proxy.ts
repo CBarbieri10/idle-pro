@@ -24,7 +24,7 @@ export default auth((req) => {
       if (role === "ATHLETE" && athleteId) {
         return NextResponse.redirect(new URL(`/athletes/${athleteId}`, nextUrl));
       }
-      return NextResponse.redirect(new URL("/", nextUrl));
+      return NextResponse.redirect(new URL("/performance/squad", nextUrl));
     }
     return NextResponse.next();
   }
