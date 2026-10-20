@@ -15,6 +15,7 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { SquadTeamSelector } from "./squad-team-selector";
+import { LockerRoomRoster } from "@/components/teams/locker-room-roster";
 import { POSITION_LABELS } from "@/lib/domain";
 import { STABILITY_CONFIG, type StabilityCategory } from "@/lib/math-engine";
 import { Badge } from "@/components/ui/badge";
@@ -237,11 +238,18 @@ export default async function SquadPage({
           : "HIGH"
         : "MODERATE");
 
+    const rawData = a.rawMetrics?.[0]?.data as Record<string, unknown> | undefined;
+    const rawNum = rawData?.["jersey_number"] ?? rawData?.["№"] ?? rawData?.["no"] ?? null;
+    const jerseyNumber =
+      typeof rawNum === "number" || typeof rawNum === "string" ? rawNum : null;
+
     return {
       id: a.id,
       name: a.name,
       position: a.position,
       positionLabel: POSITION_LABELS[a.position] || a.position,
+      jerseyNumber,
+      tacticalTitle: a.tacticalTitle,
       photoUrl: a.photoUrl,
       idgScore: a.idgScore,
       stabilityCategory: category,
@@ -296,6 +304,9 @@ export default async function SquadPage({
           />
         </div>
       </div>
+
+      {/* ─── Vestiário Interativo (Interactive Locker Room) ────────────────── */}
+      <LockerRoomRoster athletes={processedAthletes} teamName={team.name} />
 
       {/* ─── Squad Health Executive KPIs ─────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">

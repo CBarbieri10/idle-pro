@@ -63,9 +63,12 @@ export default async function TeamsPage() {
                       )}
                     </div>
                     <div className="min-w-0">
-                      <p className="font-black text-sm text-white group-hover:text-[#00e676] transition-colors truncate">
+                      <Link
+                        href={`/teams/${team.id}`}
+                        className="font-black text-sm text-white hover:text-[#00e676] transition-colors truncate block"
+                      >
                         {team.name}
-                      </p>
+                      </Link>
                       <p className="text-xs text-zinc-400 truncate mt-0.5">
                         {team.city ? `${team.city}, ` : ""}{team.country}
                       </p>
@@ -97,10 +100,10 @@ export default async function TeamsPage() {
                   <span className="font-bold text-white">{team._count.athletes}</span> atletas
                 </div>
                 <Link
-                  href={`/athletes?teamId=${team.id}`}
+                  href={`/teams/${team.id}`}
                   className="font-bold text-[#00e676] hover:underline"
                 >
-                  Ver elenco &rarr;
+                  Vestiário &rarr;
                 </Link>
               </div>
             </Card>
