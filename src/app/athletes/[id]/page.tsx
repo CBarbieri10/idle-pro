@@ -22,8 +22,8 @@ import { AthleteVideoLinks } from "@/components/athletes/athlete-video-links";
 import { AthleteVideoClipsSection } from "@/components/athletes/athlete-video-clips-section";
 import { getGoalsByAthlete } from "@/lib/actions/goals";
 import { AthleteGoals } from "@/components/athletes/athlete-goals";
-import { PortfolioToggleButton } from "@/components/portfolio/portfolio-toggle-button";
 import { AddToPortfolioDialog } from "@/components/portfolio/add-to-portfolio-dialog";
+import { CompareButton } from "@/components/compare/compare-button";
 import { StabilityBadge } from "@/components/athletes/stability-badge";
 import { AthleteTacticalAiSummary } from "@/components/athletes/athlete-tactical-ai-summary";
 import { AthleteTacticalInferenceCard } from "@/components/athletes/athlete-tactical-inference-card";
@@ -326,13 +326,26 @@ export default async function AthleteProfilePage({
             <AthleteRaioXExportButton athleteName={athlete.name} />
 
             {isAnalystOrClub && (
-              <AddToPortfolioDialog
-                athleteId={athlete.id}
-                athleteName={athlete.name}
-                athletePosition={POSITION_LABELS[athlete.position]}
-                athleteClub={athlete.team?.name ?? undefined}
-                variant="button"
-              />
+              <>
+                <CompareButton
+                  athlete={{
+                    id: athlete.id,
+                    name: athlete.name,
+                    position: POSITION_LABELS[athlete.position],
+                    photoUrl: athlete.photoUrl,
+                    teamName: athlete.team?.name,
+                  }}
+                  variant="button"
+                />
+
+                <AddToPortfolioDialog
+                  athleteId={athlete.id}
+                  athleteName={athlete.name}
+                  athletePosition={POSITION_LABELS[athlete.position]}
+                  athleteClub={athlete.team?.name ?? undefined}
+                  variant="button"
+                />
+              </>
             )}
 
             <Link

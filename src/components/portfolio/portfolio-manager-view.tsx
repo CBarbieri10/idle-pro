@@ -41,6 +41,7 @@ import {
   DialogTitle,
   DialogDescription,
 } from "@/components/ui/dialog";
+import { CompareButton } from "@/components/compare/compare-button";
 import { cn } from "@/lib/utils";
 
 interface PortfolioManagerViewProps {
@@ -363,6 +364,18 @@ export function PortfolioManagerView({
                       {/* Ações */}
                       <td className="py-3 px-4 text-right">
                         <div className="flex items-center justify-end gap-1.5">
+                          {/* Botão de Comparação (Dock) */}
+                          <CompareButton
+                            athlete={{
+                              id: a.id,
+                              name: a.name,
+                              position: a.positionLabel,
+                              photoUrl: a.photoUrl,
+                              teamName: a.team?.name,
+                            }}
+                            variant="table"
+                          />
+
                           <Link
                             href={`/athletes/${a.id}`}
                             className="h-8 px-2.5 rounded-lg border border-white/10 bg-white/5 hover:bg-emerald-500/20 hover:border-emerald-500/40 text-zinc-300 hover:text-emerald-300 text-xs font-bold inline-flex items-center gap-1 transition-all"

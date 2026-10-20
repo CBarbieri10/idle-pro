@@ -4,6 +4,7 @@ import "./globals.css";
 import { AppSidebar } from "@/components/app-sidebar";
 import { AppHeader } from "@/components/app-header";
 import { Providers } from "@/components/providers";
+import { CompareDock } from "@/components/compare/compare-dock";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -58,6 +59,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 {children}
               </main>
             </div>
+
+            {/* Global Persistent Head-to-Head Compare Dock */}
+            <CompareDock />
           </div>
         </Providers>
       </body>

@@ -16,6 +16,7 @@ import { type ScoutingAthleteCardData } from "@/lib/actions/athletes";
 import { getClubColors } from "@/lib/club-colors";
 import { Badge } from "@/components/ui/badge";
 import { AddToPortfolioDialog } from "@/components/portfolio/add-to-portfolio-dialog";
+import { CompareButton } from "@/components/compare/compare-button";
 import { cn } from "@/lib/utils";
 
 interface ScoutingPlayerCardProps {
@@ -87,6 +88,19 @@ export function ScoutingPlayerCard({ athlete }: ScoutingPlayerCardProps) {
               {athlete.team?.shortName || athlete.team?.name || "Sem Clube"}
             </span>
           </div>
+
+          {/* Botão de Comparação Rápida (Head-to-Head) */}
+          <CompareButton
+            athlete={{
+              id: athlete.id,
+              name: athlete.name,
+              position: athlete.positionLabel,
+              photoUrl: athlete.photoUrl,
+              teamName: athlete.team?.name,
+              jerseyNumber: athlete.jerseyNumber,
+            }}
+            variant="icon"
+          />
 
           {/* Botão de Ação Rápida: Bookmark / Shadow Board */}
           <AddToPortfolioDialog
