@@ -121,6 +121,7 @@ model Athlete {
   tacticalSummary     String?
   tacticalStrengths   String[]           @default([])
   tacticalWeaknesses  String[]           @default([])
+  isRegistered        Boolean            @default(false) // cadastrado manualmente pelo analista (escopo "Cadastrados pelo Analista")
   teamId              String?
   nationalTeamId      String?
   createdAt           DateTime           @default(now())
@@ -138,6 +139,7 @@ model Athlete {
   agendaEvents AgendaEvent[]
   user         User?
 
+  @@index([isRegistered])
   @@map("athletes")
 }
 

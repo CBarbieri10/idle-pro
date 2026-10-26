@@ -12,6 +12,7 @@
     "db:seed": "tsx prisma/seed.ts",
     "db:showroom": "tsx prisma/seed-showroom.ts",
     "db:import-wyscout": "tsx scripts/import-wyscout-data.ts",
+    "db:diego": "tsx scripts/seed-diego-carioca.ts",
     "seed:stats": "npx tsx scripts/auto-seed.ts"
   },
   "prisma": {

@@ -28,34 +28,24 @@ import { StabilityBadge } from "@/components/athletes/stability-badge";
 import { AthleteTacticalAiSummary } from "@/components/athletes/athlete-tactical-ai-summary";
 import { AthleteTacticalInferenceCard } from "@/components/athletes/athlete-tactical-inference-card";
 import { AthleteTabsView } from "@/components/athletes/athlete-tabs-view";
+import {
+  AthleteProfileTabs,
+  type ProfileTabDef,
+} from "@/components/athletes/athlete-profile-tabs";
 import { StatPopoverChart } from "@/components/charts/stat-popover-chart";
 import { prisma } from "@/lib/prisma";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
 import {
   POSITION_LABELS,
   POSITION_COLORS,
-  FOOT_LABELS,
   formatFootPreference,
   formatHeight,
   formatWeight,
   formatAge,
   formatDate,
 } from "@/lib/domain";
-import {
-  ArrowLeft,
-  Shield,
-  Globe,
-  Camera,
-  BarChart3,
-  Fingerprint,
-  Sparkles,
-  ExternalLink,
-  TrendingUp,
-  Clock,
-  Calendar,
-} from "lucide-react";
+import { ArrowLeft, Shield, Globe, Sparkles } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
@@ -77,13 +67,23 @@ export async function generateMetadata({
   };
 }
 
-function StatTile({ label, value }: { label: string; value: string }) {
+function KpiTile({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
-    <div className="rounded-xl border border-white/[0.12] bg-gradient-to-b from-[#131b2a]/95 to-[#080e18]/95 p-3.5 shadow-[0_4px_16px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-[#00e676]/40 transition-all">
-      <p className="text-xs font-extrabold uppercase tracking-wider text-zinc-300">
-        {label}
+    <div className="rounded-xl border border-white/[0.1] bg-gradient-to-b from-[#131b2a]/95 to-[#080e18]/95 px-3 py-2.5 transition-all hover:border-[#00e676]/40">
+      <p className="truncate text-[10px] font-bold uppercase tracking-wider text-zinc-400">{label}</p>
+      <p className="mt-0.5 font-mono text-lg font-black leading-tight text-[#00e676] tabular-nums">
+        {value}
       </p>
-      <p className="text-base font-black text-[#00e676] font-mono mt-1 drop-shadow-sm">{value}</p>
+      {hint && <p className="truncate text-[10px] font-mono text-zinc-500">{hint}</p>}
+    </div>
+  );
+}
+
+function InfoPill({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="rounded-lg border border-white/10 bg-black/35 px-3 py-1.5 backdrop-blur-md">
+      <p className="text-[9px] font-bold uppercase tracking-wider text-white/50">{label}</p>
+      <p className="text-xs font-bold text-white">{value}</p>
     </div>
   );
 }
@@ -162,15 +162,14 @@ export default async function AthleteProfilePage({
 
   const similarAthletes = await getSimilarAthletes(athlete.id, athlete.position, 3);
 
-  // Extract totals for quick indicators
-  const totalGoals = Math.round(
-    (athleteStats?.metrics["goals"]?.per90 ?? 0) *
-      ((athleteStats?.totalMinutes ?? 0) / 90)
-  );
-  const totalAssists = Math.round(
-    (athleteStats?.metrics["assists"]?.per90 ?? 0) *
-      ((athleteStats?.totalMinutes ?? 0) / 90)
-  );
+  const metrics = athleteStats?.metrics ?? {};
+  const totalMatches = athleteStats?.totalMatches ?? 0;
+  const totalMinutes = athleteStats?.totalMinutes ?? 0;
+  const has = (k: string) => metrics[k] !== undefined;
+  const total = (k: string) => metrics[k]?.total ?? 0;
+
+  const totalGoals = total("goals");
+  const totalAssists = total("assists");
   const totalYellowCards = history.reduce((sum, h) => {
     const card = h.canonicalMetrics.find(
       (m) => m.metricName === "yellow_cards" || m.metricName === "cartoes_amarelos"
@@ -183,6 +182,34 @@ export default async function AthleteProfilePage({
     );
     return sum + (card?.absoluteValue ?? 0);
   }, 0);
+
+  const ratio = (num: string, den: string) =>
+    total(den) > 0 ? `${Math.round((total(num) / total(den)) * 100)}%` : null;
+
+  // Faixa de KPIs da temporada (só exibe o que existe nos dados importados)
+  const kpis: Array<{ label: string; value: string; hint?: string }> = [
+    { label: "Jogos", value: String(totalMatches), hint: `${totalMinutes}' jogados` },
+    { label: "Gols", value: String(totalGoals), hint: has("xg") ? `xG ${total("xg").toFixed(2)}` : undefined },
+    { label: "Assistências", value: String(totalAssists), hint: has("xa") ? `xA ${total("xa").toFixed(2)}` : undefined },
+    ...(has("shots")
+      ? [{ label: "Finalizações", value: String(total("shots")), hint: `${total("shots_on_target")} no alvo` }]
+      : []),
+    ...(has("dribbles_attempted")
+      ? [{ label: "Dribles", value: `${total("dribbles_completed")}/${total("dribbles_attempted")}`, hint: ratio("dribbles_completed", "dribbles_attempted") ?? undefined }]
+      : []),
+    ...(has("passes_attempted")
+      ? [{ label: "Precisão de passe", value: ratio("passes", "passes_attempted") ?? "—", hint: `${total("passes")}/${total("passes_attempted")}` }]
+      : []),
+    ...(has("duels")
+      ? [{ label: "Duelos ganhos", value: ratio("duels_won", "duels") ?? "—", hint: `${total("duels_won")}/${total("duels")}` }]
+      : []),
+    ...(has("recoveries")
+      ? [{ label: "Recuperações", value: String(total("recoveries")), hint: has("recoveries_opponent_half") ? `${total("recoveries_opponent_half")} no ataque` : undefined }]
+      : []),
+    ...(totalYellowCards + totalRedCards > 0
+      ? [{ label: "Cartões", value: `${totalYellowCards}A · ${totalRedCards}V` }]
+      : []),
+  ];
 
   const teamList = teams.map((t) => ({ id: t.id, name: t.name }));
   const leagueList = leagues.map((l) => ({ id: l.id, name: l.name }));
@@ -225,9 +252,9 @@ export default async function AthleteProfilePage({
           logoUrl: athlete.team.logoUrl,
         }
       : null,
-    totalMinutes: athleteStats?.totalMinutes ?? 0,
-    totalMatches: athleteStats?.totalMatches ?? 0,
-    canonicalMetrics: athleteStats?.metrics ?? {},
+    totalMinutes,
+    totalMatches,
+    canonicalMetrics: metrics,
     recentMatches: athleteStats?.recentMatches ?? [],
     goals,
     videoLinks,
@@ -241,7 +268,7 @@ export default async function AthleteProfilePage({
     },
   };
 
-  const hasMetrics = athleteStats && Object.keys(athleteStats.metrics).length > 0;
+  const hasMetrics = Object.keys(metrics).length > 0;
 
   const matchLogEntries: AthleteMatchEntry[] = history.map((h) => {
     const rawData = h.data as Record<string, unknown> | null;
@@ -261,8 +288,8 @@ export default async function AthleteProfilePage({
       return 0;
     };
 
-    const goals = getCanonical("goals") || numVal("Gols");
-    const assists = getCanonical("assists") || numVal("Assistências");
+    const matchGoals = getCanonical("goals") || numVal("Gols");
+    const matchAssists = getCanonical("assists") || numVal("Assistências");
     const xg = getCanonical("xg") || numVal("xG (Gols esperados)");
     const shots = getCanonical("shots") || numVal("Chutes");
     const shotsOnTarget = getCanonical("shots_on_target") || numVal("Chutes no alvo");
@@ -285,8 +312,8 @@ export default async function AthleteProfilePage({
       goalsFor: h.match.goalsFor,
       goalsAgainst: h.match.goalsAgainst,
       minutesPlayed: h.minutesPlayed,
-      goals,
-      assists,
+      goals: matchGoals,
+      assists: matchAssists,
       xg: Number(xg.toFixed(2)),
       shots,
       shotsOnTarget,
@@ -299,388 +326,132 @@ export default async function AthleteProfilePage({
     };
   });
 
-  return (
-    <>
-      {/* ─── Web Interactive View (Hidden during Print) ───────────────────── */}
-      <div className="space-y-6 w-full print:hidden">
-        {/* ─── Breadcrumb & Action Toolbar ──────────────────────────────────── */}
-        <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle pb-4">
-          {isAnalystOrClub ? (
-            <Link
-              href="/athletes"
-              className="inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground hover:text-foreground transition-colors"
+  const positionLabel = POSITION_LABELS[athlete.position];
+
+  // ─── Abas ───────────────────────────────────────────────────────────────────
+
+  const overviewTab = (
+    <div className="space-y-4">
+      {kpis.length > 0 && (
+        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-9">
+          {kpis.map((k) => (
+            <KpiTile key={k.label} {...k} />
+          ))}
+        </div>
+      )}
+
+      <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-12">
+        <div className="rounded-2xl border border-white/[0.12] bg-[#0c101d]/75 p-4 backdrop-blur-xl lg:col-span-7">
+          <div className="mb-2 flex items-center justify-between">
+            <h2 className="flex items-center gap-2 text-sm font-black uppercase tracking-wider text-white">
+              <Sparkles className="h-4 w-4 text-emerald-400" />
+              Radar de Performance (Per-90)
+            </h2>
+            <Badge
+              variant="outline"
+              className="border-emerald-500/30 bg-emerald-500/10 font-mono text-[10px] text-emerald-400"
             >
-              <ArrowLeft className="h-3.5 w-3.5 text-indigo-400" />
-              Voltar para lista de atletas
-            </Link>
-          ) : (
-            <div className="inline-flex items-center gap-2 rounded-lg bg-emerald-500/10 border border-emerald-500/30 px-3 py-1 text-xs font-bold text-emerald-400">
-              <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-              Painel do Atleta &bull; Meu Perfil Oficial
-            </div>
-          )}
-
-          {/* Executive Action Toolbar */}
-          <div className="flex flex-wrap items-center gap-2">
-            {/* Ação 1: Botão de Exportação Raio-X PDF Nativo */}
-            <AthleteRaioXExportButton athleteName={athlete.name} />
-
-            {isAnalystOrClub && (
-              <>
-                <CompareButton
-                  athlete={{
-                    id: athlete.id,
-                    name: athlete.name,
-                    position: POSITION_LABELS[athlete.position],
-                    photoUrl: athlete.photoUrl,
-                    teamName: athlete.team?.name,
-                  }}
-                  variant="button"
-                />
-
-                <AddToPortfolioDialog
-                  athleteId={athlete.id}
-                  athleteName={athlete.name}
-                  athletePosition={POSITION_LABELS[athlete.position]}
-                  athleteClub={athlete.team?.name ?? undefined}
-                  variant="button"
-                />
-              </>
-            )}
-
-            <Link
-              href={`/athletes/${athlete.id}/raio-x`}
-              target="_blank"
-              className="inline-flex items-center gap-1.5 rounded-lg border border-border-strong bg-bg-surface-elevated px-3 py-1.5 text-xs font-semibold text-zinc-300 hover:bg-bg-surface-highlight transition-all"
-            >
-              <ExternalLink className="h-3.5 w-3.5 text-indigo-400" />
-              Dossiê A4 (Tela Cheia)
-            </Link>
-
-            <AthleteRaioXModal athlete={raioXData} />
-
-            {isAnalystOrClub && (
-              <AthleteTelemetryModal
-                athleteId={athlete.id}
-                athleteName={athlete.name}
-                athletePosition={POSITION_LABELS[athlete.position]}
-                teamName={athlete.team?.name ?? "Sem Clube"}
-                rawData={rawTelemetryData}
-                teammates={teammateList}
-                triggerVariant="button"
-              />
-            )}
+              {totalMatches} jogos
+            </Badge>
+          </div>
+          <div className="flex justify-center">
+            <RadarChart metrics={metrics} size={340} showCategoryTabs colorVariant="emerald" />
           </div>
         </div>
 
-      {/* ─── Hero Executive Header ────────────────────────────────────────── */}
-      <section className="relative mt-2">
-        {/* Holographic background */}
-        <div className="hero-stage absolute inset-0 overflow-hidden rounded-2xl border border-border-strong shadow-2xl" />
-
-        {/* Monogram watermark */}
-        <div
-          aria-hidden
-          className="pointer-events-none absolute inset-0 overflow-hidden rounded-2xl"
-        >
-          <span className="absolute -bottom-6 right-4 select-none text-[9rem] font-black leading-none tracking-tighter text-white/[0.03]">
-            {initials}
-          </span>
+        <div className="space-y-4 lg:col-span-5">
+          <AthleteTacticalInferenceCard
+            athleteName={athlete.name}
+            position={athlete.position}
+            metrics={hasMetrics ? metrics : null}
+            rawMetrics={rawTelemetryData}
+          />
+          <TacticalPitchHeatmap
+            position={athlete.position}
+            athleteName={athlete.name}
+            totalMatches={totalMatches}
+            totalMinutes={totalMinutes}
+            goals={totalGoals}
+            assists={totalAssists}
+            yellowCards={totalYellowCards}
+            redCards={totalRedCards}
+            showBiometrics={false}
+          />
         </div>
+      </div>
+    </div>
+  );
 
-        <div className="relative z-10 flex min-h-[220px] flex-col items-start gap-6 p-6 sm:flex-row sm:items-end sm:pl-8">
-          {/* Profile photo with alpha float stage */}
-          {athlete.photoUrl && athlete.photoHasAlpha ? (
-            <div className="relative -mt-16 h-[260px] w-[200px] shrink-0 sm:-mb-6 sm:self-end">
-              <Image
-                src={athlete.photoUrl}
-                alt={athlete.name}
-                fill
-                priority
-                className="object-contain object-bottom drop-shadow-[0_20px_30px_rgba(0,0,0,0.6)]"
-                sizes="200px"
-                unoptimized
-              />
-            </div>
-          ) : athlete.photoUrl ? (
-            <div className="relative h-32 w-28 shrink-0 overflow-hidden rounded-2xl ring-2 ring-indigo-500/40 shadow-xl border border-indigo-500/30">
-              <Image
-                src={athlete.photoUrl}
-                alt={athlete.name}
-                fill
-                priority
-                className="object-cover"
-                sizes="112px"
-                unoptimized
-              />
-            </div>
-          ) : (
-            <div className="flex h-28 w-28 shrink-0 items-center justify-center rounded-2xl bg-indigo-500/20 text-3xl font-black text-indigo-400 ring-1 ring-indigo-500/30">
-              {initials}
-            </div>
-          )}
-
-          <div className="min-w-0 flex-1 pb-1">
-            <div className="flex items-start justify-between gap-4">
-              <div className="min-w-0">
-                <div className="flex flex-wrap items-center gap-2 mb-2">
-                  <Badge
-                    className={`text-[10px] font-bold px-2 py-0.5 border-0 ${POSITION_COLORS[athlete.position]}`}
-                  >
-                    {POSITION_LABELS[athlete.position]}
-                  </Badge>
-                  {(athlete.idgScore !== undefined && athlete.idgScore !== null || athlete.stabilityCategory) && (
-                    <StabilityBadge
-                      idgScore={athlete.idgScore}
-                      category={athlete.stabilityCategory}
-                      size="sm"
-                    />
-                  )}
-                </div>
-                <h1 className="truncate text-2xl font-black tracking-tight text-white sm:text-3xl">
-                  {athlete.name}
-                </h1>
-                {athlete.nationality && (
-                  <span className="mt-1 flex items-center gap-1 text-xs text-white/70">
-                    <Globe className="h-3.5 w-3.5 text-indigo-400" />
-                    {athlete.nationality}
-                  </span>
-                )}
-              </div>
-
-              {isAnalystOrClub && (
-                <div className="flex shrink-0 items-center gap-1.5">
-                  <EditAthleteButton athlete={athlete} teams={teamList} />
-                  <DeleteAthleteButton id={athlete.id} name={athlete.name} />
-                </div>
-              )}
-            </div>
-
-            {/* Club & Physical Pills Bar */}
-            <div className="mt-4 flex flex-wrap items-center gap-2">
-              <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-black/35 px-3 py-1.5 backdrop-blur-md">
-                {athlete.team?.logoUrl ? (
-                  <img src={athlete.team.logoUrl} alt={athlete.team.name} className="h-5 w-5 object-contain" />
-                ) : (
-                  <Shield className="h-4 w-4 text-indigo-400" />
-                )}
-                <div>
-                  <p className="text-[9px] uppercase font-bold tracking-wider text-white/50">Clube</p>
-                  <p className="text-xs font-bold text-white">{athlete.team?.name ?? "Sem Clube"}</p>
-                </div>
-              </div>
-
-              <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-black/35 px-3 py-1.5 backdrop-blur-md font-mono text-xs text-zinc-300">
-                <Clock className="h-3.5 w-3.5 text-indigo-400" />
-                <span>
-                  <strong>Amostragem:</strong> {athleteStats?.totalMinutes ?? 0}&apos; ({athleteStats?.totalMatches ?? 0} jogos)
-                </span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ─── Modern Global App UX: Centralized Pills + Highlights + Sliders + Tabs ─ */}
-      <AthleteTabsView
-        athlete={athlete}
-        metrics={athleteStats?.metrics ?? null}
-        rawMetrics={rawTelemetryData}
-        totalMatches={athleteStats?.totalMatches ?? 0}
-        totalMinutes={athleteStats?.totalMinutes ?? 0}
-        totalGoals={totalGoals}
-        totalAssists={totalAssists}
-        totalYellowCards={totalYellowCards}
-        totalRedCards={totalRedCards}
-        athleteAge={athlete.birthDate ? formatAge(athlete.birthDate) : null}
-      />
-
-      {/* Similar Players row (restrito para Analistas e Clubes) */}
-      {isAnalystOrClub && (
-        <SimilarAthletes
-          athletes={similarAthletes}
-          currentPositionName={POSITION_LABELS[athlete.position]}
-        />
-      )}
-
-      {/* ─── Top Destaques Estatísticos ────────────────────────────────────── */}
-      {hasMetrics && (
-        <Card className="rounded-2xl border border-border-strong bg-bg-surface p-6 shadow-xl">
-          <div className="flex items-center justify-between pb-3 mb-4 border-b border-border-subtle">
-            <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded bg-indigo-600 flex items-center justify-center text-white">
-                <BarChart3 className="h-3.5 w-3.5" />
-              </div>
-              <h3 className="text-sm font-black uppercase tracking-wider text-foreground">
-                Destaques de Performance Per-90 Minutos
-              </h3>
-            </div>
-            <span className="text-xs font-mono text-muted-foreground">Normalizado</span>
-          </div>
-
-          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
-            {Object.entries(athleteStats.metrics)
-              .filter(([, m]) => m.per90 > 0)
-              .sort(([, a], [, b]) => b.per90 - a.per90)
-              .slice(0, 6)
-              .map(([k, m]) => {
-                const isHigh = m.per90 >= 2.0 || k === "goals" || k === "xg" || k === "key_passes";
-                return (
-                  <StatPopoverChart
-                    key={k}
-                    label={m.label}
-                    value={m.per90}
-                    unit="/90"
-                    athleteId={athlete.id}
-                    metricKey={k}
-                    colorVariant={isHigh ? "emerald" : "indigo"}
-                    triggerClassName="w-full block"
-                  >
-                    <div className="rounded-xl border border-border-strong bg-bg-surface-elevated p-3 text-center w-full hover:border-emerald-500/50 hover:bg-white/[0.04] transition-all cursor-pointer">
-                      <p className="text-[10px] text-muted-foreground font-bold uppercase truncate">
-                        {m.label}
-                      </p>
-                      <p
-                        className={cn(
-                          "mt-1 font-mono font-black text-lg tabular-nums",
-                          isHigh ? "text-emerald-400" : "text-foreground"
-                        )}
-                      >
-                        {m.per90}
-                      </p>
-                      <span className="text-[9px] text-muted-foreground font-mono">/90 min &bull; 📈</span>
-                    </div>
-                  </StatPopoverChart>
-                );
-              })}
-          </div>
-        </Card>
-      )}
-
-      {/* ─── Inteligência Científica: Eficiência & PAdj (Fase 6 - Issue #18) ─── */}
-      {hasMetrics && (athleteStats.metrics["xg_per_shot"] || athleteStats.metrics["padj_tackles"] || athleteStats.metrics["padj_interceptions"]) && (
-        <Card className="rounded-2xl border border-indigo-500/20 bg-gradient-to-r from-indigo-950/20 via-bg-surface to-bg-surface p-5 shadow-lg">
-          <div className="flex flex-wrap items-center justify-between gap-2 pb-3 mb-3 border-b border-border-subtle">
-            <div className="flex items-center gap-2">
-              <div className="h-6 w-6 rounded bg-indigo-500/20 border border-indigo-500/40 flex items-center justify-center text-indigo-400">
-                <Sparkles className="h-3.5 w-3.5" />
-              </div>
-              <h3 className="text-xs font-black uppercase tracking-wider text-foreground">
-                Inteligência Científica & Ajuste Tático
-              </h3>
-            </div>
-            <span className="text-[10px] font-mono text-indigo-300/80 bg-indigo-500/10 px-2 py-0.5 rounded-full border border-indigo-500/20">
-              PAdj Sigmoide &bull; xG/Shot
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-            {athleteStats.metrics["xg_per_shot"] && (
-              <StatPopoverChart
-                label="Qualidade de Finalização (xG/Shot)"
-                value={athleteStats.metrics["xg_per_shot"].per90.toFixed(2)}
-                unit="xG/Fin"
-                athleteId={athlete.id}
-                metricKey="xg_per_shot"
-                colorVariant="rose"
-                triggerClassName="w-full block"
-              >
-                <div className="rounded-xl border border-border-strong bg-bg-surface-elevated p-3 hover:border-rose-500/40 transition-all cursor-pointer">
-                  <div className="flex items-center justify-between text-[10px] text-muted-foreground font-bold uppercase">
-                    <span>Qualidade de Finalização</span>
-                    <span className="text-rose-400 font-mono">xG/Fin &bull; 📈</span>
-                  </div>
-                  <div className="flex items-baseline gap-2 mt-1">
-                    <span className="font-mono font-black text-xl text-foreground">
-                      {athleteStats.metrics["xg_per_shot"].per90.toFixed(2)}
-                    </span>
-                    <span className="text-[10px] text-zinc-400 font-sans">
-                      {athleteStats.metrics["xg_per_shot"].per90 >= 0.18 ? "🔥 Alta Letalidade" : "Volume Periférico"}
-                    </span>
-                  </div>
-                </div>
-              </StatPopoverChart>
-            )}
-
-            {athleteStats.metrics["padj_tackles"] && (
-              <StatPopoverChart
-                label="Desarmes Ajustados por Posse (PAdj)"
-                value={athleteStats.metrics["padj_tackles"].per90.toFixed(1)}
-                unit="PAdj"
-                athleteId={athlete.id}
-                metricKey="padj_tackles"
-                colorVariant="emerald"
-                triggerClassName="w-full block"
-              >
-                <div className="rounded-xl border border-border-strong bg-bg-surface-elevated p-3 hover:border-emerald-500/40 transition-all cursor-pointer">
-                  <div className="flex items-center justify-between text-[10px] text-muted-foreground font-bold uppercase">
-                    <span>Desarmes Ajustados por Posse</span>
-                    <span className="text-emerald-400 font-mono">PAdj &bull; 📈</span>
-                  </div>
-                  <div className="flex items-baseline gap-2 mt-1">
-                    <span className="font-mono font-black text-xl text-emerald-400">
-                      {athleteStats.metrics["padj_tackles"].per90.toFixed(1)}
-                    </span>
-                    <span className="text-[10px] text-zinc-400 font-mono">
-                      /90 (bruto: {athleteStats.metrics["tackles"]?.per90.toFixed(1) ?? "—"})
-                    </span>
-                  </div>
-                </div>
-              </StatPopoverChart>
-            )}
-
-            {athleteStats.metrics["padj_interceptions"] && (
-              <StatPopoverChart
-                label="Interceptações Ajustadas (PAdj)"
-                value={athleteStats.metrics["padj_interceptions"].per90.toFixed(1)}
-                unit="PAdj"
-                athleteId={athlete.id}
-                metricKey="padj_interceptions"
-                colorVariant="emerald"
-                triggerClassName="w-full block"
-              >
-                <div className="rounded-xl border border-border-strong bg-bg-surface-elevated p-3 hover:border-emerald-500/40 transition-all cursor-pointer">
-                  <div className="flex items-center justify-between text-[10px] text-muted-foreground font-bold uppercase">
-                    <span>Interceptações Ajustadas</span>
-                    <span className="text-emerald-400 font-mono">PAdj &bull; 📈</span>
-                  </div>
-                  <div className="flex items-baseline gap-2 mt-1">
-                    <span className="font-mono font-black text-xl text-emerald-400">
-                      {athleteStats.metrics["padj_interceptions"].per90.toFixed(1)}
-                    </span>
-                    <span className="text-[10px] text-zinc-400 font-mono">
-                      /90 (bruto: {athleteStats.metrics["interceptions"]?.per90.toFixed(1) ?? "—"})
-                    </span>
-                  </div>
-                </div>
-              </StatPopoverChart>
-            )}
-          </div>
-        </Card>
-      )}
-
-      {/* ─── Telemetria Completa dos 75 Indicadores Wyscout (Fase 6 - Etapa 2) ── */}
-      {isAnalystOrClub && (
-        <AthleteTelemetryModal
-          athleteId={athlete.id}
-          athleteName={athlete.name}
-          athletePosition={POSITION_LABELS[athlete.position]}
-          teamName={athlete.team?.name ?? "Sem Clube"}
-          rawData={rawTelemetryData}
-          teammates={teammateList}
-          triggerVariant="banner"
-        />
-      )}
-
-      {/* ─── Leitura Tática (Analista IA) — Motor de Inferência Cérebro ──── */}
-      <AthleteTacticalInferenceCard
+  const gamesTab = (
+    <div className="space-y-4">
+      <AthleteMatchLog
+        athleteId={athlete.id}
         athleteName={athlete.name}
-        position={athlete.position}
-        metrics={athleteStats?.metrics ?? null}
-        rawMetrics={rawTelemetryData}
+        athletePosition={positionLabel}
+        teamName={athlete.team?.name ?? "Sem Clube"}
+        history={matchLogEntries}
       />
 
-      {/* ─── Parecer Tático com IA (Fase 6 - Issue #20) ──────────────────── */}
+      {isAnalystOrClub && (
+        <details className="group rounded-2xl border border-white/10 bg-[#0c101d]/75 p-4" id="athlete-metrics">
+          <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs font-black uppercase tracking-wider text-zinc-300">
+            <span>Gerenciar lançamentos de scout</span>
+            <span className="font-mono text-[10px] text-zinc-500 group-open:hidden">expandir</span>
+            <span className="hidden font-mono text-[10px] text-zinc-500 group-open:inline">recolher</span>
+          </summary>
+          <div className="mt-4 space-y-4">
+            <AddMetricButton {...metricProps} usedMatchIds={history.map((h) => h.matchId)} />
+            <AthleteMatchHistory history={history} {...metricProps} />
+          </div>
+        </details>
+      )}
+    </div>
+  );
+
+  const scientific = [
+    { key: "xg_per_shot", label: "Qualidade de Finalização", unit: "xG/Fin", digits: 2, color: "rose" as const, raw: null as string | null },
+    { key: "padj_tackles", label: "Desarmes PAdj", unit: "PAdj", digits: 1, color: "emerald" as const, raw: "tackles" },
+    { key: "padj_interceptions", label: "Interceptações PAdj", unit: "PAdj", digits: 1, color: "emerald" as const, raw: "interceptions" },
+  ].filter((s) => metrics[s.key]);
+
+  const analysisTab = (
+    <div className="space-y-4">
+      {hasMetrics && <AthleteTabsView athlete={{ position: athlete.position }} metrics={metrics} rawMetrics={rawTelemetryData} />}
+
+      {scientific.length > 0 && (
+        <Card className="rounded-2xl border border-indigo-500/20 bg-bg-surface p-4">
+          <h3 className="mb-3 text-xs font-black uppercase tracking-wider text-foreground">
+            Eficiência &amp; Ajuste por Posse
+          </h3>
+          <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
+            {scientific.map((s) => (
+              <StatPopoverChart
+                key={s.key}
+                label={s.label}
+                value={metrics[s.key].per90.toFixed(s.digits)}
+                unit={s.unit}
+                athleteId={athlete.id}
+                metricKey={s.key}
+                colorVariant={s.color}
+                triggerClassName="w-full block"
+              >
+                <div className="cursor-pointer rounded-xl border border-border-strong bg-bg-surface-elevated p-3 transition-all hover:border-emerald-500/40">
+                  <p className="text-[10px] font-bold uppercase text-muted-foreground">{s.label}</p>
+                  <p className="mt-1 font-mono text-xl font-black text-emerald-400">
+                    {metrics[s.key].per90.toFixed(s.digits)}
+                    {s.raw && metrics[s.raw] && (
+                      <span className="ml-2 text-[10px] font-normal text-zinc-400">
+                        bruto {metrics[s.raw].per90.toFixed(1)}/90
+                      </span>
+                    )}
+                  </p>
+                </div>
+              </StatPopoverChart>
+            ))}
+          </div>
+        </Card>
+      )}
+
       <AthleteTacticalAiSummary
         athleteId={athlete.id}
         athleteName={athlete.name}
@@ -690,20 +461,17 @@ export default async function AthleteProfilePage({
         initialWeaknesses={athlete.tacticalWeaknesses}
       />
 
-      {/* ─── Metas de Desenvolvimento & KPIs (Fase 4 - Issue #12) ─────────── */}
-      <AthleteGoals
-        athleteId={athlete.id}
-        athleteName={athlete.name}
-        goals={goals}
-      />
+      <AthleteGoals athleteId={athlete.id} athleteName={athlete.name} goals={goals} />
 
-      {/* ─── Central de Vídeos Táticos & Decupagem (Sprint Central de Vídeos) ── */}
-      <AthleteVideoClipsSection
-        athlete={athlete}
-        clips={videoClips}
-      />
+      {isAnalystOrClub && (
+        <SimilarAthletes athletes={similarAthletes} currentPositionName={positionLabel} />
+      )}
+    </div>
+  );
 
-      {/* ─── Videoteca Tática & Decupagens (Fase 4 - Issue #11) ───────────── */}
+  const videosTab = (
+    <div className="space-y-4">
+      <AthleteVideoClipsSection athlete={athlete} clips={videoClips} />
       <AthleteVideoLinks
         athleteId={athlete.id}
         athleteName={athlete.name}
@@ -713,90 +481,213 @@ export default async function AthleteProfilePage({
           label: `${m.competition} • vs ${m.opponentName} (${new Date(m.date).toLocaleDateString("pt-BR")})`,
         }))}
       />
+    </div>
+  );
 
-      {/* ─── Biographical Data Grid ───────────────────────────────────────── */}
-      <Card className="rounded-2xl border border-border-strong bg-bg-surface p-6 shadow-md">
-        <h2 className="text-sm font-bold uppercase tracking-wider text-foreground mb-4 flex items-center gap-2">
-          <Calendar className="h-4 w-4 text-indigo-400" />
-          Ficha Biográfica & Biometria
-        </h2>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-          <StatTile
-            label="Nascimento"
-            value={formatDate(athlete.birthDate)}
-          />
-          <StatTile label="Idade" value={athlete.birthDate ? `${formatAge(athlete.birthDate)}` : "—"} />
-          <StatTile label="Pé Dominante" value={formatFootPreference(athlete.footPreference)} />
-          <StatTile label="Altura" value={formatHeight(athlete.height)} />
-          <StatTile label="Peso" value={formatWeight(athlete.weight)} />
-          <StatTile label="Nacionalidade" value={athlete.nationality ?? "—"} />
-        </div>
-
-        {athlete.notes && (
-          <>
-            <Separator className="my-5 border-border-subtle" />
-            <div>
-              <p className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mb-1.5">
-                Anotações do Scout
-              </p>
-              <p className="text-xs text-muted-foreground leading-relaxed whitespace-pre-wrap bg-bg-surface-elevated p-3 rounded-xl border border-border-subtle">
-                {athlete.notes}
-              </p>
-            </div>
-          </>
-        )}
-      </Card>
-
-      {/* ─── Manage Photos ────────────────────────────────────────────────── */}
-      {isAnalystOrClub && (
-        <Card className="rounded-2xl border border-border-strong bg-bg-surface p-6 shadow-md">
-          <div className="flex items-center gap-2 mb-5">
-            <Camera className="h-4 w-4 text-indigo-400" />
-            <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
-              Fotos do Atleta & Transparência
-            </h2>
-          </div>
-
-          <AthletePhotoUpload
-            athleteId={athlete.id}
-            photoUrl={athlete.photoUrl ?? null}
-            photoHasAlpha={athlete.photoHasAlpha}
-            actionPhotoUrl={athlete.actionPhotoUrl ?? null}
-            actionPhotoHasAlpha={athlete.actionPhotoHasAlpha}
-          />
+  const adminTab = (
+    <div className="space-y-4">
+      {athlete.notes && (
+        <Card className="rounded-2xl border border-border-strong bg-bg-surface p-4">
+          <p className="mb-1.5 text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+            Anotações do Scout
+          </p>
+          <p className="whitespace-pre-wrap text-xs leading-relaxed text-muted-foreground">
+            {athlete.notes}
+          </p>
         </Card>
       )}
-
-      {/* ─── Histórico Jogo a Jogo com Amostragem Dinâmica (Fase 6 - Issue #24) ─── */}
-      <AthleteMatchLog
-        athleteId={athlete.id}
-        athleteName={athlete.name}
-        athletePosition={POSITION_LABELS[athlete.position]}
-        teamName={athlete.team?.name ?? "Sem Clube"}
-        history={matchLogEntries}
-      />
-
-      {/* ─── Matches History (T04 - Manual Entry & Raw Cards) ─────────────── */}
-      <Card className="rounded-2xl border border-border-strong bg-bg-surface p-6 shadow-md" id="athlete-metrics">
-        <div className="mb-5 flex items-center justify-between gap-3">
-          <div className="flex items-center gap-2">
-            <BarChart3 className="h-4 w-4 text-indigo-400" />
-            <h2 className="text-sm font-bold uppercase tracking-wider text-foreground">
-              Lançamento Manual & Cartões de Scout
-            </h2>
-          </div>
-          {isAnalystOrClub && (
-            <AddMetricButton {...metricProps} usedMatchIds={history.map((h) => h.matchId)} />
-          )}
-        </div>
-        <AthleteMatchHistory history={history} {...metricProps} />
+      <Card className="rounded-2xl border border-border-strong bg-bg-surface p-4">
+        <h2 className="mb-4 text-sm font-bold uppercase tracking-wider text-foreground">
+          Fotos do Atleta &amp; Transparência
+        </h2>
+        <AthletePhotoUpload
+          athleteId={athlete.id}
+          photoUrl={athlete.photoUrl ?? null}
+          photoHasAlpha={athlete.photoHasAlpha}
+          actionPhotoUrl={athlete.actionPhotoUrl ?? null}
+          actionPhotoHasAlpha={athlete.actionPhotoHasAlpha}
+        />
       </Card>
     </div>
+  );
 
-    {/* ─── A4 Executive One-Pager Dossier Container (Visible strictly on Print) ─── */}
-    <div className="hidden print:block print:w-[210mm] print:h-[297mm] print:max-h-[297mm] print:overflow-hidden print:bg-white print:text-black print:mx-auto print:p-0">
-      <AthleteRaioXPrintSheet athlete={raioXData} />
-    </div>
-  </>
+  const tabs: ProfileTabDef[] = [
+    { id: "overview", label: "Visão Geral", icon: "overview", content: overviewTab },
+    { id: "games", label: `Jogo a Jogo (${history.length})`, icon: "games", content: gamesTab },
+    { id: "analysis", label: "Análise Tática", icon: "analysis", content: analysisTab },
+    { id: "videos", label: "Vídeos", icon: "videos", content: videosTab },
+    ...(isAnalystOrClub
+      ? [{ id: "admin", label: "Cadastro", icon: "admin" as const, content: adminTab }]
+      : []),
+  ];
+
+  return (
+    <>
+      {/* ─── Web Interactive View (Hidden during Print) ───────────────────── */}
+      <div className="w-full space-y-4 print:hidden">
+        {/* ─── Breadcrumb & Action Toolbar ──────────────────────────────────── */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          {isAnalystOrClub ? (
+            <Link
+              href="/athletes"
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-muted-foreground transition-colors hover:text-foreground"
+            >
+              <ArrowLeft className="h-3.5 w-3.5 text-indigo-400" />
+              Voltar para lista de atletas
+            </Link>
+          ) : (
+            <div className="inline-flex items-center gap-2 rounded-lg border border-emerald-500/30 bg-emerald-500/10 px-3 py-1 text-xs font-bold text-emerald-400">
+              <span className="h-2 w-2 animate-pulse rounded-full bg-emerald-400" />
+              Painel do Atleta &bull; Meu Perfil Oficial
+            </div>
+          )}
+
+          <div className="flex flex-wrap items-center gap-2">
+            <AthleteRaioXExportButton athleteName={athlete.name} />
+            <AthleteRaioXModal athlete={raioXData} />
+
+            {isAnalystOrClub && (
+              <>
+                <CompareButton
+                  athlete={{
+                    id: athlete.id,
+                    name: athlete.name,
+                    position: positionLabel,
+                    photoUrl: athlete.photoUrl,
+                    teamName: athlete.team?.name,
+                  }}
+                  variant="button"
+                />
+                <AddToPortfolioDialog
+                  athleteId={athlete.id}
+                  athleteName={athlete.name}
+                  athletePosition={positionLabel}
+                  athleteClub={athlete.team?.name ?? undefined}
+                  variant="button"
+                />
+                <AthleteTelemetryModal
+                  athleteId={athlete.id}
+                  athleteName={athlete.name}
+                  athletePosition={positionLabel}
+                  teamName={athlete.team?.name ?? "Sem Clube"}
+                  rawData={rawTelemetryData}
+                  teammates={teammateList}
+                  triggerVariant="button"
+                />
+              </>
+            )}
+          </div>
+        </div>
+
+        {/* ─── Hero compacto com ficha biográfica integrada ─────────────────── */}
+        <section className="relative">
+          <div className="hero-stage absolute inset-0 overflow-hidden rounded-2xl border border-border-strong shadow-2xl" />
+
+          <div className="relative z-10 flex flex-col items-start gap-5 p-5 sm:flex-row sm:items-center">
+            {athlete.photoUrl && athlete.photoHasAlpha ? (
+              <div className="relative h-[150px] w-[120px] shrink-0">
+                <Image
+                  src={athlete.photoUrl}
+                  alt={athlete.name}
+                  fill
+                  priority
+                  className="object-contain object-bottom drop-shadow-[0_20px_30px_rgba(0,0,0,0.6)]"
+                  sizes="120px"
+                  unoptimized
+                />
+              </div>
+            ) : athlete.photoUrl ? (
+              <div className="relative h-28 w-24 shrink-0 overflow-hidden rounded-2xl border border-indigo-500/30 shadow-xl ring-2 ring-indigo-500/40">
+                <Image
+                  src={athlete.photoUrl}
+                  alt={athlete.name}
+                  fill
+                  priority
+                  className="object-cover"
+                  sizes="96px"
+                  unoptimized
+                />
+              </div>
+            ) : (
+              <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-indigo-500/20 text-2xl font-black text-indigo-400 ring-1 ring-indigo-500/30">
+                {initials}
+              </div>
+            )}
+
+            <div className="min-w-0 flex-1">
+              <div className="flex items-start justify-between gap-4">
+                <div className="min-w-0">
+                  <div className="mb-1.5 flex flex-wrap items-center gap-2">
+                    <Badge
+                      className={`border-0 px-2 py-0.5 text-[10px] font-bold ${POSITION_COLORS[athlete.position]}`}
+                    >
+                      {positionLabel}
+                    </Badge>
+                    {((athlete.idgScore !== undefined && athlete.idgScore !== null) ||
+                      athlete.stabilityCategory) && (
+                      <StabilityBadge
+                        idgScore={athlete.idgScore}
+                        category={athlete.stabilityCategory}
+                        size="sm"
+                      />
+                    )}
+                  </div>
+                  <h1 className="truncate text-2xl font-black tracking-tight text-white">
+                    {athlete.name}
+                  </h1>
+                </div>
+
+                {isAnalystOrClub && (
+                  <div className="flex shrink-0 items-center gap-1.5">
+                    <EditAthleteButton athlete={athlete} teams={teamList} />
+                    <DeleteAthleteButton id={athlete.id} name={athlete.name} />
+                  </div>
+                )}
+              </div>
+
+              <div className="mt-3 flex flex-wrap items-center gap-2">
+                <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-black/35 px-3 py-1.5 backdrop-blur-md">
+                  {athlete.team?.logoUrl ? (
+                    // eslint-disable-next-line @next/next/no-img-element
+                    <img src={athlete.team.logoUrl} alt={athlete.team.name} className="h-5 w-5 object-contain" />
+                  ) : (
+                    <Shield className="h-4 w-4 text-indigo-400" />
+                  )}
+                  <div>
+                    <p className="text-[9px] font-bold uppercase tracking-wider text-white/50">Clube</p>
+                    <p className="text-xs font-bold text-white">{athlete.team?.name ?? "Sem Clube"}</p>
+                  </div>
+                </div>
+                {athlete.nationality && (
+                  <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-black/35 px-3 py-1.5 backdrop-blur-md">
+                    <Globe className="h-4 w-4 text-indigo-400" />
+                    <div>
+                      <p className="text-[9px] font-bold uppercase tracking-wider text-white/50">Nacionalidade</p>
+                      <p className="text-xs font-bold text-white">{athlete.nationality}</p>
+                    </div>
+                  </div>
+                )}
+                {athlete.birthDate && (
+                  <InfoPill
+                    label="Idade"
+                    value={`${formatAge(athlete.birthDate)} • ${formatDate(athlete.birthDate)}`}
+                  />
+                )}
+                <InfoPill label="Altura" value={formatHeight(athlete.height)} />
+                {athlete.weight ? <InfoPill label="Peso" value={formatWeight(athlete.weight)} /> : null}
+                <InfoPill label="Pé" value={formatFootPreference(athlete.footPreference)} />
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <AthleteProfileTabs tabs={tabs} />
+      </div>
+
+      {/* ─── A4 Executive One-Pager Dossier Container (Visible strictly on Print) ─── */}
+      <div className="hidden print:block print:h-[297mm] print:max-h-[297mm] print:w-[210mm] print:overflow-hidden print:bg-white print:p-0 print:text-black print:mx-auto">
+        <AthleteRaioXPrintSheet athlete={raioXData} />
+      </div>
+    </>
   );
 }

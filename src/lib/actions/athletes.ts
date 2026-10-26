@@ -35,16 +35,8 @@ export async function getAthletes(params?: {
   teamId?: string;
   scope?: "registered" | "all";
 }) {
-  const scopeFilter =
-    params?.scope === "all"
-      ? {}
-      : {
-          OR: [
-            { notes: null },
-            { NOT: { notes: { startsWith: "Atleta oficial da Série A 2026" } } },
-            { portfolioAthletes: { some: {} } },
-          ],
-        };
+  const scopeFilter: Prisma.AthleteWhereInput =
+    params?.scope === "all" ? {} : { isRegistered: true };
 
   return prisma.athlete.findMany({
     where: {
@@ -235,16 +227,8 @@ export async function getScoutingAthletes(
   }
 
   // 5. Escopo (por padrão busca toda a base da Série A; ou apenas cadastrados se explicitamente pedido)
-  const scopeFilter =
-    params.scope === "registered"
-      ? {
-          OR: [
-            { notes: null },
-            { NOT: { notes: { startsWith: "Atleta oficial da Série A 2026" } } },
-            { portfolioAthletes: { some: {} } },
-          ],
-        }
-      : {};
+  const scopeFilter: Prisma.AthleteWhereInput =
+    params.scope === "registered" ? { isRegistered: true } : {};
 
   // 6. Montagem da Cláusula WHERE Dinâmica
   const whereConditions: Prisma.AthleteWhereInput[] = [
@@ -457,6 +441,7 @@ export async function createAthlete(formData: FormData) {
   const athlete = await prisma.athlete.create({
     data: {
       ...data,
+      isRegistered: true,
       birthDate: data.birthDate ? new Date(data.birthDate) : null,
       nationalTeamId: data.nationalTeamId || null,
     },
