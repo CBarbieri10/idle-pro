@@ -386,9 +386,9 @@ export function AthleteTelemetryModal({
         />
 
         {/* 3D Holographic Poster Container */}
-        <div className="relative w-full max-w-6xl bg-[#080d18] border border-cyan-500/30 rounded-3xl shadow-[0_0_50px_rgba(6,182,212,0.15)] overflow-hidden flex flex-col max-h-[92vh] z-10 animate-in zoom-in-95 duration-200">
+        <div className="relative w-full max-w-6xl bg-card border border-cyan-500/30 rounded-3xl shadow-[0_0_50px_rgba(6,182,212,0.15)] overflow-hidden flex flex-col max-h-[92vh] z-10 animate-in zoom-in-95 duration-200">
           {/* Top Holographic Navigation Bar */}
-          <div className="border-b border-white/[0.08] px-5 py-4 bg-[#0a1122]/90 flex items-center justify-between gap-4">
+          <div className="border-b border-white/[0.08] px-5 py-4 bg-card/90 flex items-center justify-between gap-4">
             <div className="flex items-center gap-3">
               <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-cyan-500/20 to-teal-500/10 border border-cyan-500/40 flex items-center justify-center text-cyan-400 shadow-[0_0_15px_rgba(6,182,212,0.3)]">
                 <Sparkles className="h-4 w-4" />
@@ -420,11 +420,11 @@ export function AthleteTelemetryModal({
           </div>
 
           {/* Modal Main Body (2 Columns: 3D Poster Card on left, Metrics Explorer on right) */}
-          <div className="flex-1 overflow-y-auto grid grid-cols-1 lg:grid-cols-12 min-h-0 bg-[#060a14]">
+          <div className="flex-1 overflow-y-auto grid grid-cols-1 lg:grid-cols-12 min-h-0 bg-card">
             {/* ─── LEFT: Cartaz 3D do Atleta (Holographic Executive Poster) ───── */}
-            <div className="lg:col-span-4 p-5 sm:p-6 bg-gradient-to-b from-[#0c1426] via-[#090f1d] to-[#070b16] border-b lg:border-b-0 lg:border-r border-white/[0.08] flex flex-col justify-between gap-5">
+            <div className="lg:col-span-4 p-5 sm:p-6 bg-gradient-to-b from-card via-card to-card border-b lg:border-b-0 lg:border-r border-white/[0.08] flex flex-col justify-between gap-5">
               {/* 3D Card Shell */}
-              <div className="relative rounded-2xl border border-cyan-500/30 bg-gradient-to-b from-[#111c34]/90 to-[#0c1324]/90 p-5 shadow-2xl backdrop-blur-xl overflow-hidden group">
+              <div className="relative rounded-2xl border border-cyan-500/30 bg-gradient-to-b from-card/90 to-card/90 p-5 shadow-2xl backdrop-blur-xl overflow-hidden group">
                 {/* Holographic light effect */}
                 <div className="pointer-events-none absolute -right-12 -top-12 h-36 w-36 rounded-full bg-cyan-500/15 blur-2xl" />
                 <div className="pointer-events-none absolute -left-12 -bottom-12 h-36 w-36 rounded-full bg-indigo-500/15 blur-2xl" />
@@ -432,7 +432,7 @@ export function AthleteTelemetryModal({
                 {/* Avatar / Monogram Header */}
                 <div className="relative z-10 flex flex-col items-center text-center">
                   <div className="relative mb-3">
-                    <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-cyan-500/25 via-[#13203c] to-indigo-500/25 border-2 border-cyan-400/50 flex items-center justify-center text-cyan-200 text-2xl font-black font-mono shadow-[0_0_25px_rgba(6,182,212,0.35)]">
+                    <div className="h-20 w-20 rounded-2xl bg-gradient-to-br from-cyan-500/25 via-card to-indigo-500/25 border-2 border-cyan-400/50 flex items-center justify-center text-cyan-200 text-2xl font-black font-mono shadow-[0_0_25px_rgba(6,182,212,0.35)]">
                       {initials}
                     </div>
                     {currentAthlete.position && (
@@ -538,7 +538,7 @@ export function AthleteTelemetryModal({
             {/* ─── RIGHT: Painel de Indicadores & Busca Rápida ─────────────────── */}
             <div className="lg:col-span-8 flex flex-col min-h-0">
               {/* Search Bar */}
-              <div className="p-4 sm:px-6 bg-[#090f1d] border-b border-white/[0.06] flex items-center gap-3">
+              <div className="p-4 sm:px-6 bg-card border-b border-white/[0.06] flex items-center gap-3">
                 <div className="relative flex-1">
                   <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-400" />
                   <input
@@ -546,7 +546,7 @@ export function AthleteTelemetryModal({
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                     placeholder="Filtrar por métrica (ex: 'Passes', 'Duelos', 'Recuperações', 'xG')..."
-                    className="w-full bg-[#11192e] border border-white/10 rounded-xl pl-10 pr-10 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-500/60 shadow-inner"
+                    className="w-full bg-card border border-white/10 rounded-xl pl-10 pr-10 py-2.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-500/60 shadow-inner"
                   />
                   {search && (
                     <button
@@ -563,7 +563,7 @@ export function AthleteTelemetryModal({
               </div>
 
               {/* Category Filter Pills */}
-              <div className="px-4 sm:px-6 py-2.5 bg-[#080d1a] border-b border-white/[0.06] flex items-center gap-1.5 overflow-x-auto scrollbar-none">
+              <div className="px-4 sm:px-6 py-2.5 bg-card border-b border-white/[0.06] flex items-center gap-1.5 overflow-x-auto scrollbar-none">
                 {CATEGORIES.map((cat) => {
                   const count = categoryCounts[cat.key];
                   const isActive = activeCategory === cat.key;
@@ -589,7 +589,7 @@ export function AthleteTelemetryModal({
               </div>
 
               {/* Metric Grid */}
-              <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-[#060a14]">
+              <div className="flex-1 overflow-y-auto p-4 sm:p-6 bg-card">
                 {filteredItems.length === 0 ? (
                   <div className="py-16 text-center space-y-3">
                     <div className="mx-auto w-10 h-10 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-zinc-400">
@@ -611,7 +611,7 @@ export function AthleteTelemetryModal({
                       return (
                         <div
                           key={item.key}
-                          className="group flex items-center justify-between p-3 rounded-xl border border-white/[0.07] bg-gradient-to-b from-[#111726]/90 to-[#0b0f19]/90 hover:border-cyan-500/40 hover:bg-[#131b2c] transition-all shadow-sm"
+                          className="group flex items-center justify-between p-3 rounded-xl border border-white/[0.07] bg-gradient-to-b from-card/90 to-card/90 hover:border-cyan-500/40 hover:bg-card transition-all shadow-sm"
                         >
                           <div className="min-w-0 pr-2">
                             <p
@@ -652,7 +652,7 @@ export function AthleteTelemetryModal({
 
           {/* ─── Passo 4: Carrossel Horizontal de Troca Rápida de Atleta ────── */}
           {teammates && teammates.length > 0 && (
-            <div className="border-t border-white/[0.08] bg-[#070b16]/95 px-4 py-3 sm:px-6 backdrop-blur-md">
+            <div className="border-t border-white/[0.08] bg-card/95 px-4 py-3 sm:px-6 backdrop-blur-md">
               <div className="flex items-center justify-between gap-2 mb-2">
                 <div className="flex items-center gap-2">
                   <Users className="h-3.5 w-3.5 text-cyan-400" />
@@ -685,10 +685,10 @@ export function AthleteTelemetryModal({
                         "flex items-center gap-2.5 px-3 py-1.5 rounded-xl border transition-all shrink-0 text-left cursor-pointer group",
                         isCurrent
                           ? "bg-cyan-500/20 border-cyan-400 text-white shadow-[0_0_15px_rgba(6,182,212,0.3)] ring-1 ring-cyan-400/50"
-                          : "bg-[#0d1424] border-white/[0.08] text-zinc-400 hover:text-white hover:border-cyan-500/40 hover:bg-[#121c32]"
+                          : "bg-card border-white/[0.08] text-zinc-400 hover:text-white hover:border-cyan-500/40 hover:bg-card"
                       )}
                     >
-                      <div className="relative h-7 w-7 rounded-lg overflow-hidden bg-[#162035] border border-white/10 flex items-center justify-center shrink-0">
+                      <div className="relative h-7 w-7 rounded-lg overflow-hidden bg-card border border-white/10 flex items-center justify-center shrink-0">
                         {teammate.photoUrl ? (
                           <img
                             src={teammate.photoUrl}
@@ -739,7 +739,7 @@ export function AthleteTelemetryModal({
     <>
       {/* ─── Executive Trigger Variants ────────────────────────────────────── */}
       {triggerVariant === "banner" ? (
-        <div className="relative overflow-hidden rounded-2xl border border-cyan-500/30 bg-gradient-to-r from-cyan-950/40 via-[#0d1322] to-indigo-950/30 p-5 shadow-2xl backdrop-blur-xl group">
+        <div className="relative overflow-hidden rounded-2xl border border-cyan-500/30 bg-gradient-to-r from-cyan-950/40 via-card to-indigo-950/30 p-5 shadow-2xl backdrop-blur-xl group">
           <div className="absolute -right-8 -top-8 h-32 w-32 rounded-full bg-cyan-500/10 blur-2xl pointer-events-none" />
           <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
             <div className="flex items-center gap-4">

@@ -33,7 +33,7 @@ export function AthleteVideoClipsSection({ athlete, clips }: AthleteVideoClipsSe
   }
 
   return (
-    <Card className="rounded-2xl border border-emerald-500/20 bg-gradient-to-b from-[#0d1422]/90 via-[#0a0e17]/95 to-[#070a10]/95 p-6 shadow-2xl backdrop-blur-xl space-y-5" id="athlete-video-clips">
+    <Card className="rounded-2xl border border-emerald-500/20 bg-gradient-to-b from-card/90 via-card/95 to-card/95 p-6 shadow-2xl backdrop-blur-xl space-y-5" id="athlete-video-clips">
       {/* ─── Header da Seção ──────────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-white/[0.08]">
         <div className="flex items-center gap-3">

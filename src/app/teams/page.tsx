@@ -21,7 +21,7 @@ export default async function TeamsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/10 pb-5">
         <div>
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-md bg-[#00e676]/15 px-2.5 py-0.5 text-[10px] font-bold text-[#00e676] border border-[#00e676]/30 uppercase tracking-wider font-mono">
+            <span className="inline-flex items-center gap-1.5 rounded-md bg-brand/15 px-2.5 py-0.5 text-[10px] font-bold text-data-1 border border-brand/30 uppercase tracking-wider font-mono">
               <Shield className="h-3 w-3" /> Gestão de Clubes &bull; Equipes
             </span>
             <span className="text-xs text-zinc-400 font-mono">
@@ -38,7 +38,7 @@ export default async function TeamsPage() {
 
       {/* Teams grid */}
       {teams.length === 0 ? (
-        <Card className="flex flex-col items-center justify-center py-20 border-dashed border-white/15 bg-[#0d121d]/75 backdrop-blur-md text-center rounded-2xl">
+        <Card className="flex flex-col items-center justify-center py-20 border-dashed border-white/15 bg-card/75 backdrop-blur-md text-center rounded-2xl">
           <Shield className="h-10 w-10 text-zinc-600 mb-3" />
           <p className="text-sm font-bold text-white">Nenhum clube cadastrado</p>
           <p className="text-xs text-zinc-400 mt-1">
@@ -50,7 +50,7 @@ export default async function TeamsPage() {
           {teams.map((team) => (
             <Card
               key={team.id}
-              className="p-5 rounded-2xl border border-white/10 bg-[#0d121d]/85 backdrop-blur-md hover:border-[#00e676]/50 hover:bg-[#121927]/95 transition-all shadow-xl group flex flex-col justify-between"
+              className="p-5 rounded-2xl border border-white/10 bg-card/85 backdrop-blur-md hover:border-brand/50 hover:bg-card/95 transition-all shadow-xl group flex flex-col justify-between"
             >
               <div>
                 <div className="flex items-start justify-between">
@@ -59,13 +59,13 @@ export default async function TeamsPage() {
                       {team.logoUrl ? (
                         <img src={team.logoUrl} alt={team.name} className="h-full w-full object-contain" />
                       ) : (
-                        <Shield className="h-5 w-5 text-[#00e676]" />
+                        <Shield className="h-5 w-5 text-data-1" />
                       )}
                     </div>
                     <div className="min-w-0">
                       <Link
                         href={`/teams/${team.id}`}
-                        className="font-black text-sm text-white hover:text-[#00e676] transition-colors truncate block"
+                        className="font-black text-sm text-white hover:text-data-1 transition-colors truncate block"
                       >
                         {team.name}
                       </Link>
@@ -87,7 +87,7 @@ export default async function TeamsPage() {
                     </Badge>
                   )}
                   {team.league && (
-                    <Badge variant="outline" className="text-[10px] text-[#00e676] border-[#00e676]/30 bg-[#00e676]/10 font-bold">
+                    <Badge variant="outline" className="text-[10px] text-data-1 border-brand/30 bg-brand/10 font-bold">
                       {team.league.name}
                     </Badge>
                   )}
@@ -101,7 +101,7 @@ export default async function TeamsPage() {
                 </div>
                 <Link
                   href={`/teams/${team.id}`}
-                  className="font-bold text-[#00e676] hover:underline"
+                  className="font-bold text-data-1 hover:underline"
                 >
                   Vestiário &rarr;
                 </Link>

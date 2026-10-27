@@ -127,7 +127,7 @@ export function MatchH2HStats({
 
       {/* ─── TAB 1: HEAD-TO-HEAD (EA FC / TV BROADCAST STYLE) ────────────────── */}
       {activeTab === "h2h" && (
-        <div className="rounded-3xl border border-white/10 bg-[#090e1a]/95 backdrop-blur-xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
+        <div className="rounded-3xl border border-white/10 bg-card/95 backdrop-blur-xl p-6 sm:p-8 shadow-2xl relative overflow-hidden">
           {/* Top header with team identities */}
           <div className="flex items-center justify-between border-b border-white/[0.08] pb-4 mb-6">
             <div className="flex items-center gap-2 text-left">
@@ -180,7 +180,7 @@ export function MatchH2HStats({
               return (
                 <div
                   key={metric.key}
-                  className="group relative rounded-2xl border border-white/[0.06] bg-[#0d1424]/70 p-3 sm:p-4 hover:border-white/15 hover:bg-[#111a2f]/80 transition-all shadow-sm"
+                  className="group relative rounded-2xl border border-white/[0.06] bg-card/70 p-3 sm:p-4 hover:border-white/15 hover:bg-card/80 transition-all shadow-sm"
                 >
                   {/* Values & Label row */}
                   <div className="flex items-center justify-between text-xs sm:text-sm font-black mb-2">
@@ -269,7 +269,7 @@ export function MatchH2HStats({
       {activeTab === "athletes" && (
         <div className="space-y-4">
           {/* Filter Bar */}
-          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-[#0a0f1b]/90 border border-white/10 rounded-2xl p-3 sm:p-4 backdrop-blur-md">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 bg-card/90 border border-white/10 rounded-2xl p-3 sm:p-4 backdrop-blur-md">
             {/* Team Filter Pills */}
             <div className="flex items-center gap-1.5 overflow-x-auto scrollbar-none">
               <button
@@ -317,14 +317,14 @@ export function MatchH2HStats({
                 value={athleteSearch}
                 onChange={(e) => setAthleteSearch(e.target.value)}
                 placeholder="Buscar jogador ou posição..."
-                className="w-full bg-[#111728] border border-white/10 rounded-xl pl-9 pr-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-500/50"
+                className="w-full bg-card border border-white/10 rounded-xl pl-9 pr-3 py-1.5 text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-cyan-500/50"
               />
             </div>
           </div>
 
           {/* Athletes List */}
           {filteredAthletes.length === 0 ? (
-            <div className="rounded-3xl border border-dashed border-white/10 bg-[#090d16]/80 p-12 text-center space-y-3">
+            <div className="rounded-3xl border border-dashed border-white/10 bg-card/80 p-12 text-center space-y-3">
               <Users className="mx-auto h-8 w-8 text-zinc-500" />
               <p className="text-sm font-bold text-zinc-300">
                 Nenhum jogador encontrado para os filtros atuais
@@ -347,8 +347,8 @@ export function MatchH2HStats({
                     className={cn(
                       "group relative flex flex-col md:flex-row md:items-center justify-between gap-4 rounded-2xl border p-4 sm:p-5 transition-all shadow-lg backdrop-blur-xl",
                       isManOfTheMatch
-                        ? "border-amber-400/40 bg-gradient-to-r from-amber-950/20 via-[#101726]/90 to-[#0b101c]/90 shadow-[0_0_20px_rgba(251,191,36,0.15)]"
-                        : "border-white/[0.08] bg-[#0c1220]/80 hover:border-cyan-500/30 hover:bg-[#10172a]/90"
+                        ? "border-amber-400/40 bg-gradient-to-r from-amber-950/20 via-card/90 to-card/90 shadow-[0_0_20px_rgba(251,191,36,0.15)]"
+                        : "border-white/[0.08] bg-card/80 hover:border-cyan-500/30 hover:bg-card/90"
                     )}
                   >
                     {/* Left: Player Identity & Ranking */}

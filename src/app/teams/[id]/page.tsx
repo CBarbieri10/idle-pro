@@ -160,7 +160,7 @@ export default async function TeamDetailPage({
       <LockerRoomRoster athletes={processedAthletes} teamName={team.name} />
 
       {/* ─── Tabela Rápida do Elenco ────────────────────────────────────────── */}
-      <div className="rounded-2xl border border-white/10 bg-[#0c101d]/75 p-6 backdrop-blur-md space-y-4">
+      <div className="rounded-2xl border border-white/10 bg-card/75 p-6 backdrop-blur-md space-y-4">
         <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
           <h2 className="text-sm font-bold uppercase tracking-wider text-white flex items-center gap-2">
             <Users className="h-4 w-4 text-emerald-400" />

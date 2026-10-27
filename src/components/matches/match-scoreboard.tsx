@@ -62,7 +62,7 @@ export function MatchScoreboard({
   const awayPoss = Number(awayTeam.possession.toFixed(1));
 
   return (
-    <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-[#111827]/95 via-[#0c1220]/95 to-[#080d18]/95 p-6 sm:p-8 shadow-2xl backdrop-blur-xl group">
+    <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-b from-card/95 via-card/95 to-card/95 p-6 sm:p-8 shadow-2xl backdrop-blur-xl group">
       {/* Background ambient decorative glows */}
       <div className="pointer-events-none absolute -left-16 -top-16 h-56 w-56 rounded-full bg-emerald-500/10 blur-3xl" />
       <div className="pointer-events-none absolute -right-16 -bottom-16 h-56 w-56 rounded-full bg-indigo-500/10 blur-3xl" />
@@ -169,7 +169,7 @@ export function MatchScoreboard({
 
         {/* Visitante (Away Team) */}
         <div className="md:col-span-3 flex flex-row items-center justify-start gap-4 text-left">
-          <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl bg-gradient-to-br from-indigo-500/20 via-[#161a2f] to-purple-500/20 border-2 border-indigo-500/40 flex items-center justify-center text-indigo-300 shadow-[0_0_25px_rgba(99,102,241,0.25)] shrink-0 font-black text-lg sm:text-xl font-mono tracking-wider">
+          <div className="h-14 w-14 sm:h-16 sm:w-16 rounded-2xl bg-gradient-to-br from-indigo-500/20 via-card to-purple-500/20 border-2 border-indigo-500/40 flex items-center justify-center text-indigo-300 shadow-[0_0_25px_rgba(99,102,241,0.25)] shrink-0 font-black text-lg sm:text-xl font-mono tracking-wider">
             {awayInitials}
           </div>
 

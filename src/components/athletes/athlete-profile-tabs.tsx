@@ -30,7 +30,7 @@ export function AthleteProfileTabs({ tabs }: { tabs: ProfileTabDef[] }) {
     <div className="space-y-4">
       <div
         role="tablist"
-        className="flex w-full gap-1 overflow-x-auto rounded-2xl border border-white/10 bg-[#0c101d]/85 p-1.5 backdrop-blur-xl"
+        className="flex w-full gap-5 overflow-x-auto border-b border-border"
       >
         {tabs.map((tab) => {
           const Icon = ICONS[tab.icon];
@@ -43,10 +43,10 @@ export function AthleteProfileTabs({ tabs }: { tabs: ProfileTabDef[] }) {
               type="button"
               aria-selected={isActive}
               onClick={() => setActive(tab.id)}
-              className={`inline-flex shrink-0 items-center gap-2 rounded-xl px-4 py-2 text-xs font-black transition-all ${
+              className={`-mb-px inline-flex shrink-0 items-center gap-2 border-b-2 px-1 py-2.5 text-sm font-medium transition-colors ${
                 isActive
-                  ? "bg-emerald-500/15 text-emerald-300 ring-1 ring-emerald-500/40"
-                  : "text-zinc-400 hover:bg-white/[0.04] hover:text-white"
+                  ? "border-primary text-foreground"
+                  : "border-transparent text-muted-foreground hover:text-foreground"
               }`}
             >
               <Icon className="h-3.5 w-3.5" />

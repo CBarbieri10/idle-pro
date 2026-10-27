@@ -29,7 +29,7 @@ export function CompareDock() {
 
   return (
     <div className="fixed bottom-0 sm:bottom-3 left-1/2 -translate-x-1/2 z-50 w-[96%] max-w-2xl animate-in fade-in slide-in-from-bottom-5 duration-300 pb-2 sm:pb-0">
-      <div className="rounded-2xl border border-emerald-500/40 bg-[#0c101d]/95 backdrop-blur-2xl p-2.5 sm:p-3 shadow-[0_20px_50px_rgba(0,0,0,0.85),0_0_24px_rgba(16,185,129,0.2)] flex flex-col sm:flex-row items-center justify-between gap-3">
+      <div className="rounded-2xl border border-emerald-500/40 bg-card/95 backdrop-blur-2xl p-2.5 sm:p-3 shadow-[0_20px_50px_rgba(0,0,0,0.85),0_0_24px_rgba(16,185,129,0.2)] flex flex-col sm:flex-row items-center justify-between gap-3">
         {/* ─── Lado Esquerdo: Badge & Slots de Atletas ────────────────────── */}
         <div className="flex items-center gap-2.5 w-full sm:w-auto overflow-x-auto custom-scrollbar pb-1 sm:pb-0">
           <div className="hidden md:flex flex-col items-center justify-center pl-1 pr-2 border-r border-white/10 shrink-0">

@@ -135,7 +135,7 @@ export default async function DashboardPage() {
             <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white">
               Dashboard do Analista
             </h1>
-            <Badge className="bg-[#00e676]/15 text-[#00e676] border-[#00e676]/30 text-xs font-bold font-mono">
+            <Badge className="bg-brand/15 text-data-1 border-brand/30 text-xs font-bold font-mono">
               Pro v2.0
             </Badge>
           </div>
@@ -146,7 +146,7 @@ export default async function DashboardPage() {
 
         <div className="flex items-center gap-2">
           <Link href="/league">
-            <Button size="sm" className="gap-2 text-xs font-bold bg-[#00e676] text-black hover:bg-[#00e676]/90 shadow-lg shadow-[#00e676]/20">
+            <Button size="sm" className="gap-2 text-xs font-bold bg-brand text-black hover:bg-brand/90 shadow-lg shadow-brand/20">
               <Trophy className="h-4 w-4" />
               Explorar Catálogo da Liga
             </Button>
@@ -159,7 +159,7 @@ export default async function DashboardPage() {
         {stats.map((stat) => (
           <Link key={stat.label} href={stat.href}>
             <Card
-              className="p-5.5 rounded-2xl border border-white/[0.14] bg-gradient-to-br from-[#0e1524]/95 via-[#0a0f1a]/95 to-[#060a12]/98 backdrop-blur-2xl shadow-[0_10px_30px_rgba(0,0,0,0.6),inset_0_1px_1px_rgba(255,255,255,0.08)] transition-all duration-300 hover:border-[#00e676]/60 hover:shadow-[0_15px_35px_rgba(0,0,0,0.8),0_0_25px_rgba(0,230,118,0.18)] hover:-translate-y-0.5 cursor-pointer group"
+              className="p-5.5 rounded-2xl border border-white/[0.14] bg-gradient-to-br from-card/95 via-card/95 to-card/98 backdrop-blur-2xl shadow-[0_10px_30px_rgba(0,0,0,0.6),inset_0_1px_1px_rgba(255,255,255,0.08)] transition-all duration-300 hover:border-brand/60 hover:shadow-[0_15px_35px_rgba(0,0,0,0.8),0_0_25px_rgba(0,230,118,0.18)] hover:-translate-y-0.5 cursor-pointer group"
             >
               <div className="flex items-start justify-between">
                 <div>
@@ -173,7 +173,7 @@ export default async function DashboardPage() {
                     {stat.subtext}
                   </p>
                 </div>
-                <div className="rounded-2xl p-3.5 bg-gradient-to-br from-white/[0.08] to-white/[0.02] border border-white/[0.12] shadow-inner group-hover:border-[#00e676]/50 group-hover:bg-[#00e676]/10 transition-all duration-300">
+                <div className="rounded-2xl p-3.5 bg-gradient-to-br from-white/[0.08] to-white/[0.02] border border-white/[0.12] shadow-inner group-hover:border-brand/50 group-hover:bg-brand/10 transition-all duration-300">
                   <stat.icon className={`h-5 w-5 ${stat.color}`} />
                 </div>
               </div>
@@ -192,7 +192,7 @@ export default async function DashboardPage() {
         
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4">
           {/* Classificação Top 5 */}
-          <Card className="p-4.5 rounded-2xl border border-white/10 bg-[#0d121d]/80 backdrop-blur-md shadow-xl flex flex-col lg:col-span-1">
+          <Card className="p-4.5 rounded-2xl border border-white/10 bg-card/80 backdrop-blur-md shadow-xl flex flex-col lg:col-span-1">
             <h3 className="text-xs font-black text-zinc-300 uppercase tracking-wider mb-3 flex items-center gap-2 border-b border-white/10 pb-2">
               <Trophy className="h-4 w-4 text-amber-400" />
               Classificação Completa
@@ -219,7 +219,7 @@ export default async function DashboardPage() {
                         <span className="font-bold text-sm text-white truncate max-w-[100px]">{entry.team.shortName}</span>
                       </div>
                       <div className="flex items-center gap-3 font-mono text-xs">
-                        <span className="font-black text-[#00e676] w-5 text-center">{entry.points}</span>
+                        <span className="font-black text-data-1 w-5 text-center">{entry.points}</span>
                         <span className="text-zinc-400 w-5 text-center">{entry.playedGames}</span>
                         <span className="text-zinc-400 w-5 text-center">{entry.won}</span>
                         <span className="text-zinc-400 w-5 text-center">{entry.draw}</span>
@@ -236,7 +236,7 @@ export default async function DashboardPage() {
           </Card>
 
           {/* Últimos Resultados */}
-          <Card className="p-4.5 rounded-2xl border border-white/10 bg-[#0d121d]/80 backdrop-blur-md shadow-xl flex flex-col">
+          <Card className="p-4.5 rounded-2xl border border-white/10 bg-card/80 backdrop-blur-md shadow-xl flex flex-col">
             <h3 className="text-xs font-black text-zinc-300 uppercase tracking-wider mb-3 flex items-center gap-2 border-b border-white/10 pb-2">
               <Clock className="h-4 w-4 text-indigo-400" />
               Últimos Resultados
@@ -264,7 +264,7 @@ export default async function DashboardPage() {
           </Card>
 
           {/* Próximos Jogos */}
-          <Card className="p-4.5 rounded-2xl border border-white/10 bg-[#0d121d]/80 backdrop-blur-md shadow-xl flex flex-col">
+          <Card className="p-4.5 rounded-2xl border border-white/10 bg-card/80 backdrop-blur-md shadow-xl flex flex-col">
             <h3 className="text-xs font-black text-zinc-300 uppercase tracking-wider mb-3 flex items-center gap-2 border-b border-white/10 pb-2">
               <CalendarDays className="h-4 w-4 text-sky-400" />
               Próximos Jogos
@@ -293,7 +293,7 @@ export default async function DashboardPage() {
           </Card>
 
           {/* Artilheiros */}
-          <Card className="p-4.5 rounded-2xl border border-white/10 bg-[#0d121d]/80 backdrop-blur-md shadow-xl flex flex-col">
+          <Card className="p-4.5 rounded-2xl border border-white/10 bg-card/80 backdrop-blur-md shadow-xl flex flex-col">
             <h3 className="text-xs font-black text-zinc-300 uppercase tracking-wider mb-3 flex items-center gap-2 border-b border-white/10 pb-2">
               <Target className="h-4 w-4 text-rose-400" />
               Artilheiros
@@ -346,7 +346,7 @@ export default async function DashboardPage() {
 
           <Link
             href="/league"
-            className="text-xs font-bold text-[#00e676] hover:underline inline-flex items-center gap-1"
+            className="text-xs font-bold text-data-1 hover:underline inline-flex items-center gap-1"
           >
             Adicionar mais atletas
             <ChevronRight className="h-3.5 w-3.5" />
@@ -354,7 +354,7 @@ export default async function DashboardPage() {
         </div>
 
         {portfolioAthletes.length === 0 ? (
-          <Card className="flex flex-col items-center justify-center p-12 text-center rounded-2xl border-dashed border-white/15 bg-[#0d121d]/70 backdrop-blur-md">
+          <Card className="flex flex-col items-center justify-center p-12 text-center rounded-2xl border-dashed border-white/15 bg-card/70 backdrop-blur-md">
             <Bookmark className="h-10 w-10 text-zinc-600 mb-3" />
             <h3 className="text-sm font-bold text-white">
               Seu portfólio de observação está vazio
@@ -363,8 +363,8 @@ export default async function DashboardPage() {
               Marque atletas no Catálogo da Liga ou no perfil individual para fixá-los aqui e gerar seus relatórios Raio-X com 1 clique.
             </p>
             <Link href="/league" className="mt-4">
-              <Button variant="outline" size="sm" className="text-xs gap-1.5 border-white/20 hover:border-[#00e676]/50">
-                <Trophy className="h-3.5 w-3.5 text-[#00e676]" />
+              <Button variant="outline" size="sm" className="text-xs gap-1.5 border-white/20 hover:border-brand/50">
+                <Trophy className="h-3.5 w-3.5 text-data-1" />
                 Explorar Catálogo de Jogadores
               </Button>
             </Link>
@@ -404,7 +404,7 @@ export default async function DashboardPage() {
               return (
                 <Card
                   key={item.portfolioAthleteId}
-                  className="flex flex-col justify-between p-4.5 rounded-2xl border border-white/10 bg-[#0d121d]/85 backdrop-blur-md shadow-xl transition-all hover:border-[#00e676]/50 hover:bg-[#121927]/95"
+                  className="flex flex-col justify-between p-4.5 rounded-2xl border border-white/10 bg-card/85 backdrop-blur-md shadow-xl transition-all hover:border-brand/50 hover:bg-card/95"
                 >
                   <div>
                     {/* Header: Position & Pin */}
@@ -426,7 +426,7 @@ export default async function DashboardPage() {
 
                     {/* Athlete Info */}
                     <div className="mt-3.5 flex items-center gap-3">
-                      <div className="relative h-12 w-12 rounded-full border-2 border-[#00e676]/60 p-0.5 bg-black/50 overflow-hidden shrink-0 shadow-[0_0_10px_rgba(0,230,118,0.2)] flex items-center justify-center">
+                      <div className="relative h-12 w-12 rounded-full border-2 border-brand/60 p-0.5 bg-black/50 overflow-hidden shrink-0 shadow-[0_0_10px_rgba(0,230,118,0.2)] flex items-center justify-center">
                         {a.photoUrl ? (
                           <img
                             src={a.photoUrl}
@@ -434,7 +434,7 @@ export default async function DashboardPage() {
                             className="h-full w-full rounded-full object-cover"
                           />
                         ) : (
-                          <span className="text-xs font-black text-[#00e676] font-mono">
+                          <span className="text-xs font-black text-data-1 font-mono">
                             {initials}
                           </span>
                         )}
@@ -443,7 +443,7 @@ export default async function DashboardPage() {
                       <div className="min-w-0 flex-1">
                         <Link
                           href={`/athletes/${a.id}`}
-                          className="font-black text-sm text-white hover:text-[#00e676] transition-colors block truncate"
+                          className="font-black text-sm text-white hover:text-data-1 transition-colors block truncate"
                         >
                           {a.name}
                         </Link>
@@ -464,7 +464,7 @@ export default async function DashboardPage() {
                         topMetrics.map(([k, m]) => (
                           <div
                             key={k}
-                            className="rounded-xl bg-gradient-to-b from-[#131b2a]/95 to-[#080e18]/95 border border-white/[0.12] px-2 py-2 text-center shadow-[0_4px_12px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-[#00e676]/40 transition-all"
+                            className="rounded-xl bg-gradient-to-b from-card/95 to-card/95 border border-white/[0.12] px-2 py-2 text-center shadow-[0_4px_12px_rgba(0,0,0,0.5),inset_0_1px_0_rgba(255,255,255,0.06)] hover:border-brand/40 transition-all"
                           >
                             <p
                               className="text-[11px] uppercase tracking-wider text-zinc-300 font-extrabold truncate block"
@@ -472,7 +472,7 @@ export default async function DashboardPage() {
                             >
                               {m.label.length > 9 ? m.label.slice(0, 8) + ".." : m.label}
                             </p>
-                            <p className="text-[15px] font-mono font-black text-[#00e676] mt-1 leading-none drop-shadow-sm">
+                            <p className="text-[15px] font-mono font-black text-data-1 mt-1 leading-none drop-shadow-sm">
                               {m.per90}
                             </p>
                           </div>
@@ -501,7 +501,7 @@ export default async function DashboardPage() {
                           <Button
                             variant="outline"
                             size="sm"
-                            className="h-7 text-[11px] font-bold gap-1 px-2.5 border-[#00e676]/40 text-[#00e676] bg-[#00e676]/10 hover:bg-[#00e676]/20"
+                            className="h-7 text-[11px] font-bold gap-1 px-2.5 border-brand/40 text-data-1 bg-brand/10 hover:bg-brand/20"
                           >
                             <FileText className="h-3 w-3" />
                             Raio-X
@@ -528,7 +528,7 @@ export default async function DashboardPage() {
         <div className="flex items-center justify-between">
           <div>
             <div className="flex items-center gap-2">
-              <Sparkles className="h-5 w-5 text-[#00e676]" />
+              <Sparkles className="h-5 w-5 text-data-1" />
               <h2 className="text-lg font-black text-white">
                 Destaques da Liga (Líderes Per-90)
               </h2>
@@ -541,7 +541,7 @@ export default async function DashboardPage() {
 
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {/* Gols / 90 */}
-          <Card className="p-4.5 rounded-2xl border border-white/10 bg-[#0d121d]/85 backdrop-blur-md shadow-xl">
+          <Card className="p-4.5 rounded-2xl border border-white/10 bg-card/85 backdrop-blur-md shadow-xl">
             <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/10">
               <Target className="h-4 w-4 text-emerald-400" />
               <p className="text-xs font-black text-white uppercase tracking-wider">
@@ -561,7 +561,7 @@ export default async function DashboardPage() {
                         #{idx + 1}
                       </span>
                       <div className="min-w-0">
-                        <p className="font-bold text-white truncate group-hover:text-[#00e676] transition-colors">
+                        <p className="font-bold text-white truncate group-hover:text-data-1 transition-colors">
                           {item.athleteName}
                         </p>
                         <p className="text-[10px] text-zinc-400 truncate flex items-center gap-1">
@@ -584,7 +584,7 @@ export default async function DashboardPage() {
           </Card>
 
           {/* Assistências / 90 */}
-          <Card className="p-4.5 rounded-2xl border border-white/10 bg-[#0d121d]/85 backdrop-blur-md shadow-xl">
+          <Card className="p-4.5 rounded-2xl border border-white/10 bg-card/85 backdrop-blur-md shadow-xl">
             <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/10">
               <Award className="h-4 w-4 text-sky-400" />
               <p className="text-xs font-black text-white uppercase tracking-wider">
@@ -627,9 +627,9 @@ export default async function DashboardPage() {
           </Card>
 
           {/* Passes / 90 */}
-          <Card className="p-4.5 rounded-2xl border border-white/10 bg-[#0d121d]/85 backdrop-blur-md shadow-xl">
+          <Card className="p-4.5 rounded-2xl border border-white/10 bg-card/85 backdrop-blur-md shadow-xl">
             <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/10">
-              <Flame className="h-4 w-4 text-[#00e676]" />
+              <Flame className="h-4 w-4 text-data-1" />
               <p className="text-xs font-black text-white uppercase tracking-wider">
                 Passes (/90)
               </p>
@@ -647,7 +647,7 @@ export default async function DashboardPage() {
                         #{idx + 1}
                       </span>
                       <div className="min-w-0">
-                        <p className="font-bold text-white truncate group-hover:text-[#00e676] transition-colors">
+                        <p className="font-bold text-white truncate group-hover:text-data-1 transition-colors">
                           {item.athleteName}
                         </p>
                         <p className="text-[10px] text-zinc-400 truncate flex items-center gap-1">
@@ -656,7 +656,7 @@ export default async function DashboardPage() {
                         </p>
                       </div>
                     </div>
-                    <span className="font-mono font-black text-[#00e676] shrink-0">
+                    <span className="font-mono font-black text-data-1 shrink-0">
                       {item.value}
                     </span>
                   </Link>
@@ -670,7 +670,7 @@ export default async function DashboardPage() {
           </Card>
 
           {/* Desarmes / 90 */}
-          <Card className="p-4.5 rounded-2xl border border-white/10 bg-[#0d121d]/85 backdrop-blur-md shadow-xl">
+          <Card className="p-4.5 rounded-2xl border border-white/10 bg-card/85 backdrop-blur-md shadow-xl">
             <div className="flex items-center gap-2 mb-3 pb-2 border-b border-white/10">
               <Shield className="h-4 w-4 text-indigo-400" />
               <p className="text-xs font-black text-white uppercase tracking-wider">
@@ -717,7 +717,7 @@ export default async function DashboardPage() {
       {/* ─── Ações Rápidas da Operação ────────────────────────────────────── */}
       <section className="space-y-4">
         <h2 className="text-base font-black text-white flex items-center gap-2">
-          <Activity className="h-4 w-4 text-[#00e676]" />
+          <Activity className="h-4 w-4 text-data-1" />
           Ações Operacionais de Scouting
         </h2>
 
@@ -726,20 +726,20 @@ export default async function DashboardPage() {
             <Link
               key={link.label}
               href={link.href}
-              className="flex flex-col justify-between p-4.5 rounded-2xl border border-white/10 bg-[#0d121d]/80 backdrop-blur-md hover:border-[#00e676]/40 hover:bg-[#121927]/90 transition-all group shadow-xl"
+              className="flex flex-col justify-between p-4.5 rounded-2xl border border-white/10 bg-card/80 backdrop-blur-md hover:border-brand/40 hover:bg-card/90 transition-all group shadow-xl"
             >
               <div>
-                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-[#00e676] border border-white/10 mb-3 group-hover:bg-[#00e676] group-hover:text-black transition-colors">
+                <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-white/5 text-data-1 border border-white/10 mb-3 group-hover:bg-brand group-hover:text-black transition-colors">
                   <link.icon className="h-5 w-5" />
                 </div>
-                <p className="text-sm font-black text-white group-hover:text-[#00e676] transition-colors">
+                <p className="text-sm font-black text-white group-hover:text-data-1 transition-colors">
                   {link.label}
                 </p>
                 <p className="text-xs text-zinc-400 mt-1 leading-relaxed">
                   {link.description}
                 </p>
               </div>
-              <div className="flex items-center gap-1 mt-4 text-xs font-bold text-[#00e676]">
+              <div className="flex items-center gap-1 mt-4 text-xs font-bold text-data-1">
                 <span>Acessar</span>
                 <ArrowUpRight className="h-3.5 w-3.5" />
               </div>

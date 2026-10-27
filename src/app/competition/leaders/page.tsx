@@ -80,7 +80,7 @@ export default async function CompetitionLeadersPage() {
       </div>
 
       {/* ─── Hero Executive Header ────────────────────────────────────────── */}
-      <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-r from-[#0c1426] via-[#090f1d] to-[#0d162b] p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
+      <section className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-r from-card via-card to-card p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
         <div className="pointer-events-none absolute -right-16 -top-16 h-64 w-64 rounded-full bg-cyan-500/10 blur-3xl" />
         <div className="pointer-events-none absolute -left-16 -bottom-16 h-64 w-64 rounded-full bg-indigo-500/10 blur-3xl" />
 

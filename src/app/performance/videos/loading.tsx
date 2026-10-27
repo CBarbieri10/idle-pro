@@ -4,14 +4,14 @@ export default function VideosLoading() {
   return (
     <div className="p-4 sm:p-8 max-w-7xl mx-auto space-y-8 animate-pulse">
       {/* Hero Header Skeleton */}
-      <div className="rounded-3xl border border-white/10 bg-[#0c1424]/60 p-6 sm:p-8 space-y-4">
+      <div className="rounded-3xl border border-white/10 bg-card/60 p-6 sm:p-8 space-y-4">
         <div className="h-6 w-36 bg-emerald-500/20 rounded-full" />
         <div className="h-10 w-80 bg-white/10 rounded-xl" />
         <div className="h-4 w-full max-w-xl bg-white/5 rounded-md" />
       </div>
 
       {/* Filter Bar Skeleton */}
-      <div className="rounded-2xl border border-white/10 bg-[#0c1018]/60 p-4 sm:p-5 space-y-4">
+      <div className="rounded-2xl border border-white/10 bg-card/60 p-4 sm:p-5 space-y-4">
         <div className="flex flex-col sm:flex-row gap-3">
           <div className="h-10 flex-1 bg-white/5 rounded-xl" />
           <div className="h-10 w-52 bg-white/5 rounded-xl" />
@@ -29,7 +29,7 @@ export default function VideosLoading() {
         {Array.from({ length: 8 }).map((_, i) => (
           <div
             key={i}
-            className="rounded-2xl border border-white/5 bg-[#0c1018]/50 overflow-hidden flex flex-col justify-between"
+            className="rounded-2xl border border-white/5 bg-card/50 overflow-hidden flex flex-col justify-between"
           >
             <div className="aspect-video w-full bg-white/5 relative flex items-center justify-center">
               <Film className="h-8 w-8 text-white/10" />

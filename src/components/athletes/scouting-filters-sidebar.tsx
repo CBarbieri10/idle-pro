@@ -212,7 +212,7 @@ export function ScoutingFiltersSidebar({
 
       {/* ─── Conteúdo Compacto Quando Recolhido ─────────────────────────────── */}
       {isCollapsed ? (
-        <div className="rounded-2xl border border-white/10 bg-[#0c101d]/90 p-2 flex flex-col items-center gap-3 py-4 shadow-xl">
+        <div className="rounded-2xl border border-white/10 bg-card/90 p-2 flex flex-col items-center gap-3 py-4 shadow-xl">
           <Button
             variant="ghost"
             size="icon"
@@ -245,7 +245,7 @@ export function ScoutingFiltersSidebar({
         </div>
       ) : (
         /* ─── Painel Completo de Filtros ────────────────────────────────────── */
-        <div className="rounded-2xl border border-white/10 bg-[#0c101d]/85 backdrop-blur-xl p-4 shadow-2xl space-y-5 text-white">
+        <div className="rounded-2xl border border-white/10 bg-card/85 backdrop-blur-xl p-4 shadow-2xl space-y-5 text-white">
           {/* Header com Reset */}
           <div className="flex items-center justify-between pb-3 border-b border-white/[0.08]">
             <div className="text-[11px] text-zinc-400 font-mono">

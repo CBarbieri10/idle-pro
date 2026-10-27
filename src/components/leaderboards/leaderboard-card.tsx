@@ -29,7 +29,7 @@ const ACCENT_STYLES = {
     glow: "shadow-[0_0_30px_rgba(244,63,94,0.12)]",
     badge: "bg-rose-500/15 text-rose-300 border-rose-500/30",
     iconBg: "bg-rose-500/15 border-rose-500/30 text-rose-400",
-    rankOneBorder: "border-rose-500/40 bg-gradient-to-r from-rose-950/25 via-[#101422] to-[#0c0f1a]",
+    rankOneBorder: "border-rose-500/40 bg-gradient-to-r from-rose-950/25 via-card to-card",
     rankOneVal: "text-rose-400",
     barFill: "from-rose-500 to-amber-500",
     icon: Flame,
@@ -39,7 +39,7 @@ const ACCENT_STYLES = {
     glow: "shadow-[0_0_30px_rgba(99,102,241,0.12)]",
     badge: "bg-indigo-500/15 text-indigo-300 border-indigo-500/30",
     iconBg: "bg-indigo-500/15 border-indigo-500/30 text-indigo-400",
-    rankOneBorder: "border-indigo-500/40 bg-gradient-to-r from-indigo-950/25 via-[#101422] to-[#0c0f1a]",
+    rankOneBorder: "border-indigo-500/40 bg-gradient-to-r from-indigo-950/25 via-card to-card",
     rankOneVal: "text-indigo-400",
     barFill: "from-indigo-500 to-purple-500",
     icon: Target,
@@ -49,7 +49,7 @@ const ACCENT_STYLES = {
     glow: "shadow-[0_0_30px_rgba(6,182,212,0.12)]",
     badge: "bg-cyan-500/15 text-cyan-300 border-cyan-500/30",
     iconBg: "bg-cyan-500/15 border-cyan-500/30 text-cyan-400",
-    rankOneBorder: "border-cyan-500/40 bg-gradient-to-r from-cyan-950/25 via-[#101422] to-[#0c0f1a]",
+    rankOneBorder: "border-cyan-500/40 bg-gradient-to-r from-cyan-950/25 via-card to-card",
     rankOneVal: "text-cyan-300",
     barFill: "from-cyan-500 to-blue-500",
     icon: Shield,
@@ -59,7 +59,7 @@ const ACCENT_STYLES = {
     glow: "shadow-[0_0_30px_rgba(16,185,129,0.12)]",
     badge: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
     iconBg: "bg-emerald-500/15 border-emerald-500/30 text-emerald-400",
-    rankOneBorder: "border-emerald-500/40 bg-gradient-to-r from-emerald-950/25 via-[#101422] to-[#0c0f1a]",
+    rankOneBorder: "border-emerald-500/40 bg-gradient-to-r from-emerald-950/25 via-card to-card",
     rankOneVal: "text-emerald-400",
     barFill: "from-emerald-500 to-teal-500",
     icon: Compass,
@@ -69,7 +69,7 @@ const ACCENT_STYLES = {
     glow: "shadow-[0_0_30px_rgba(245,158,11,0.12)]",
     badge: "bg-amber-500/15 text-amber-300 border-amber-500/30",
     iconBg: "bg-amber-500/15 border-amber-500/30 text-amber-400",
-    rankOneBorder: "border-amber-500/40 bg-gradient-to-r from-amber-950/25 via-[#101422] to-[#0c0f1a]",
+    rankOneBorder: "border-amber-500/40 bg-gradient-to-r from-amber-950/25 via-card to-card",
     rankOneVal: "text-amber-400",
     barFill: "from-amber-500 to-yellow-500",
     icon: Zap,
@@ -89,7 +89,7 @@ export function LeaderboardCard({ card }: LeaderboardCardProps) {
   return (
     <div
       className={cn(
-        "flex flex-col justify-between rounded-3xl border bg-[#090d18]/90 backdrop-blur-2xl p-5 sm:p-6 transition-all duration-300",
+        "flex flex-col justify-between rounded-3xl border bg-card/90 backdrop-blur-2xl p-5 sm:p-6 transition-all duration-300",
         style.border,
         style.glow
       )}
@@ -156,7 +156,7 @@ export function LeaderboardCard({ card }: LeaderboardCardProps) {
                   <div className="flex items-center gap-3 min-w-0">
                     {/* Rank Badge with Crown */}
                     <div className="relative shrink-0">
-                      <div className="h-10 w-10 rounded-xl overflow-hidden bg-[#141b2d] border border-amber-400/40 flex items-center justify-center shadow-[0_0_15px_rgba(251,191,36,0.2)]">
+                      <div className="h-10 w-10 rounded-xl overflow-hidden bg-card border border-amber-400/40 flex items-center justify-center shadow-[0_0_15px_rgba(251,191,36,0.2)]">
                         {leader.photoUrl ? (
                           <img
                             src={leader.photoUrl}
@@ -250,7 +250,7 @@ export function LeaderboardCard({ card }: LeaderboardCardProps) {
                         #{player.rank}
                       </span>
 
-                      <div className="h-6 w-6 rounded-lg bg-[#141b2d] border border-white/10 overflow-hidden flex items-center justify-center shrink-0">
+                      <div className="h-6 w-6 rounded-lg bg-card border border-white/10 overflow-hidden flex items-center justify-center shrink-0">
                         {player.photoUrl ? (
                           <img
                             src={player.photoUrl}

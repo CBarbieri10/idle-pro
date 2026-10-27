@@ -419,7 +419,7 @@ export function AthleteContextualHighlights({
         return (
           <div
             key={c.id}
-            className={`rounded-2xl border ${colors.border} bg-[#0c101d]/80 backdrop-blur-xl p-4 shadow-[0_8px_24px_rgba(0,0,0,0.4)] relative overflow-hidden group hover:scale-[1.02] transition-all duration-300 flex flex-col justify-between`}
+            className={`rounded-2xl border ${colors.border} bg-card/80 backdrop-blur-xl p-4 shadow-[0_8px_24px_rgba(0,0,0,0.4)] relative overflow-hidden group hover:scale-[1.02] transition-all duration-300 flex flex-col justify-between`}
           >
             {/* Ambient subtle glow */}
             <div

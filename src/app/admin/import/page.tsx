@@ -44,7 +44,7 @@ export default async function AdminImportPage() {
 
       {/* ─── Methodological Architecture Cards ────────────────────────────── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-        <div className="rounded-2xl border border-white/[0.08] bg-[#0c101d]/60 backdrop-blur-md p-4 flex items-start gap-3">
+        <div className="rounded-2xl border border-white/[0.08] bg-card/60 backdrop-blur-md p-4 flex items-start gap-3">
           <div className="h-9 w-9 rounded-xl bg-emerald-500/15 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
             <Cpu className="h-4 w-4" />
           </div>
@@ -58,7 +58,7 @@ export default async function AdminImportPage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-white/[0.08] bg-[#0c101d]/60 backdrop-blur-md p-4 flex items-start gap-3">
+        <div className="rounded-2xl border border-white/[0.08] bg-card/60 backdrop-blur-md p-4 flex items-start gap-3">
           <div className="h-9 w-9 rounded-xl bg-cyan-500/15 border border-cyan-500/30 flex items-center justify-center text-cyan-400 shrink-0">
             <Database className="h-4 w-4" />
           </div>
@@ -72,7 +72,7 @@ export default async function AdminImportPage() {
           </div>
         </div>
 
-        <div className="rounded-2xl border border-white/[0.08] bg-[#0c101d]/60 backdrop-blur-md p-4 flex items-start gap-3">
+        <div className="rounded-2xl border border-white/[0.08] bg-card/60 backdrop-blur-md p-4 flex items-start gap-3">
           <div className="h-9 w-9 rounded-xl bg-indigo-500/15 border border-indigo-500/30 flex items-center justify-center text-indigo-400 shrink-0">
             <Sparkles className="h-4 w-4" />
           </div>

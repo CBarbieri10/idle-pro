@@ -63,7 +63,7 @@ export function AthleteTabsView({ athlete, metrics = {}, rawMetrics = {} }: Athl
 
   return (
     <div className="space-y-4 w-full">
-      <div className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-[#0c101d]/85 p-1">
+      <div className="inline-flex items-center gap-1 rounded-full border border-white/10 bg-card/85 p-1">
         {PHASES.map((p) => {
           const Icon = p.icon;
           const isActive = p.id === phaseId;
@@ -86,7 +86,7 @@ export function AthleteTabsView({ athlete, metrics = {}, rawMetrics = {} }: Athl
       </div>
 
       <div key={phase.id} className="grid grid-cols-1 items-start gap-4 lg:grid-cols-2 animate-in fade-in duration-300">
-        <div className={`rounded-2xl border ${phase.ring} bg-[#0c101d]/75 p-4 backdrop-blur-xl`}>
+        <div className={`rounded-2xl border ${phase.ring} bg-card/75 p-4 backdrop-blur-xl`}>
           <div className="flex justify-center">
             <RadarChart
               metrics={metrics || {}}

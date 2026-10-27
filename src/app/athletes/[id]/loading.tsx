@@ -4,7 +4,7 @@ export default function AthleteLoading() {
   return (
     <div className="p-4 sm:p-8 max-w-7xl mx-auto space-y-6 animate-pulse">
       {/* Hero Header Skeleton */}
-      <div className="rounded-3xl border border-white/10 bg-gradient-to-r from-[#101726]/80 via-[#0a0e18]/80 to-[#0e1622]/80 p-6 sm:p-8">
+      <div className="rounded-3xl border border-white/10 bg-gradient-to-r from-card/80 via-card/80 to-card/80 p-6 sm:p-8">
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="flex items-center gap-5">
             <div className="h-20 w-20 sm:h-24 sm:w-24 rounded-2xl bg-white/10 flex items-center justify-center shrink-0">
@@ -46,7 +46,7 @@ export default function AthleteLoading() {
 
       {/* Main Charts & Analytics Grid Skeleton */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="rounded-2xl border border-white/10 bg-[#0c1018]/60 p-6 h-80 flex flex-col justify-between">
+        <div className="rounded-2xl border border-white/10 bg-card/60 p-6 h-80 flex flex-col justify-between">
           <div className="h-5 w-40 bg-white/10 rounded" />
           <div className="h-44 w-44 mx-auto rounded-full border-4 border-white/5 flex items-center justify-center">
             <Sparkles className="h-8 w-8 text-white/10" />
@@ -54,14 +54,14 @@ export default function AthleteLoading() {
           <div className="h-3 w-28 mx-auto bg-white/5 rounded" />
         </div>
 
-        <div className="rounded-2xl border border-white/10 bg-[#0c1018]/60 p-6 h-80 flex flex-col justify-between">
+        <div className="rounded-2xl border border-white/10 bg-card/60 p-6 h-80 flex flex-col justify-between">
           <div className="h-5 w-48 bg-white/10 rounded" />
           <div className="h-48 w-full bg-emerald-950/20 rounded-xl border border-emerald-500/10" />
         </div>
       </div>
 
       {/* Video Clips Section Skeleton */}
-      <div className="rounded-2xl border border-emerald-500/10 bg-[#0c1018]/60 p-6 space-y-4">
+      <div className="rounded-2xl border border-emerald-500/10 bg-card/60 p-6 space-y-4">
         <div className="h-5 w-52 bg-white/10 rounded" />
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {Array.from({ length: 3 }).map((_, i) => (

@@ -205,7 +205,7 @@ export function AthleteVideoLinks({
 
       {/* Add Dialog */}
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-        <DialogContent className="sm:max-w-[540px] bg-[#0d1017] border border-white/15 text-foreground shadow-2xl rounded-2xl">
+        <DialogContent className="sm:max-w-[540px] bg-card border border-white/15 text-foreground shadow-2xl rounded-2xl">
             <DialogHeader>
               <DialogTitle className="text-base font-black flex items-center gap-2 font-serif">
                 <Video className="h-4 w-4 text-indigo-400" />
@@ -269,7 +269,7 @@ export function AthleteVideoLinks({
                     <SelectTrigger className="bg-black/30 border-white/10 text-xs w-full">
                       <SelectValue placeholder="Selecione categoria" />
                     </SelectTrigger>
-                    <SelectContent className="bg-[#12151e] border-white/15 text-foreground">
+                    <SelectContent className="bg-card border-white/15 text-foreground">
                       {TACTICAL_VIDEO_CATEGORIES.map((cat) => (
                         <SelectItem key={cat} value={cat} className="text-xs">
                           {cat}
@@ -287,7 +287,7 @@ export function AthleteVideoLinks({
                     <SelectTrigger className="bg-black/30 border-white/10 text-xs w-full">
                       <SelectValue placeholder="Sem vínculo" />
                     </SelectTrigger>
-                    <SelectContent className="bg-[#12151e] border-white/15 text-foreground max-h-56">
+                    <SelectContent className="bg-card border-white/15 text-foreground max-h-56">
                       <SelectItem value="none" className="text-xs">
                         Sem vínculo específico
                       </SelectItem>
@@ -413,7 +413,7 @@ export function AthleteVideoLinks({
             return (
               <div
                 key={video.id}
-                className="group relative rounded-xl border border-white/[0.09] bg-gradient-to-b from-[#121622]/90 to-[#0b0e17]/90 p-4 shadow-sm hover:border-indigo-500/40 hover:shadow-lg transition-all flex flex-col justify-between"
+                className="group relative rounded-xl border border-white/[0.09] bg-gradient-to-b from-card/90 to-card/90 p-4 shadow-sm hover:border-indigo-500/40 hover:shadow-lg transition-all flex flex-col justify-between"
               >
                 <div>
                   {/* Top Bar: Category & Host Badge */}

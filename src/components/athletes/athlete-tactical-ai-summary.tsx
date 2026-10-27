@@ -66,7 +66,7 @@ export function AthleteTacticalAiSummary({
   };
 
   return (
-    <Card className="rounded-2xl border border-white/[0.12] bg-gradient-to-b from-[#131b2a]/95 to-[#080e18]/95 p-6 shadow-xl relative overflow-hidden">
+    <Card className="rounded-2xl border border-white/[0.12] bg-gradient-to-b from-card/95 to-card/95 p-6 shadow-xl relative overflow-hidden">
       {/* Ambient background glow */}
       <div className="absolute top-0 right-0 -mr-16 -mt-16 w-64 h-64 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
 
@@ -150,7 +150,7 @@ export function AthleteTacticalAiSummary({
           </div>
 
           {/* Tactical Summary Paragraph */}
-          <div className="rounded-xl bg-[#0b101c] p-4 border border-white/[0.08] shadow-inner">
+          <div className="rounded-xl bg-card p-4 border border-white/[0.08] shadow-inner">
             <p className="text-xs text-zinc-300 leading-relaxed whitespace-pre-wrap">
               {summary}
             </p>

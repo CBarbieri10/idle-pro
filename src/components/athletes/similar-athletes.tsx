@@ -33,10 +33,10 @@ export function SimilarAthletes({ athletes, currentPositionName }: SimilarAthlet
   if (athletes.length === 0) return null;
 
   return (
-    <div className="rounded-2xl border border-[#1e2638] bg-[#0c0f17] p-4 text-white shadow-xl">
-      <div className="flex items-center justify-between pb-2 mb-3 border-b border-[#1e2638]">
+    <div className="rounded-2xl border border-border bg-card p-4 text-white shadow-xl">
+      <div className="flex items-center justify-between pb-2 mb-3 border-b border-border">
         <div className="flex items-center gap-2">
-          <div className="h-6 w-6 rounded bg-[#00e676]/20 border border-[#00e676]/40 flex items-center justify-center text-[#00e676]">
+          <div className="h-6 w-6 rounded bg-brand/20 border border-brand/40 flex items-center justify-center text-data-1">
             <Sparkles className="h-3.5 w-3.5" />
           </div>
           <span className="text-xs font-black uppercase tracking-wider text-white">
@@ -61,11 +61,11 @@ export function SimilarAthletes({ athletes, currentPositionName }: SimilarAthlet
             <Link
               key={ath.id}
               href={`/athletes/${ath.id}`}
-              className="group flex flex-col items-center rounded-xl border border-[#1e2638] bg-[#121622] p-3 transition-all hover:border-[#00e676]/60 hover:bg-[#161c2c] hover:shadow-lg text-center"
+              className="group flex flex-col items-center rounded-xl border border-border bg-card p-3 transition-all hover:border-brand/60 hover:bg-card hover:shadow-lg text-center"
             >
               {/* Circular Avatar with Glowing Border */}
               <div className="relative mb-2">
-                <div className="h-16 w-16 rounded-full border-2 border-[#00e676]/70 p-0.5 bg-black/40 overflow-hidden shadow-[0_0_12px_rgba(0,230,118,0.25)] flex items-center justify-center">
+                <div className="h-16 w-16 rounded-full border-2 border-brand/70 p-0.5 bg-black/40 overflow-hidden shadow-[0_0_12px_rgba(0,230,118,0.25)] flex items-center justify-center">
                   {ath.photoUrl ? (
                     <img
                       src={ath.photoUrl}
@@ -76,7 +76,7 @@ export function SimilarAthletes({ athletes, currentPositionName }: SimilarAthlet
                       )}
                     />
                   ) : (
-                    <span className="text-sm font-black text-[#00e676] font-mono">
+                    <span className="text-sm font-black text-data-1 font-mono">
                       {initials}
                     </span>
                   )}
@@ -84,12 +84,12 @@ export function SimilarAthletes({ athletes, currentPositionName }: SimilarAthlet
               </div>
 
               {/* Similarity Percentage Pill (BeSoccer Pro Model) */}
-              <span className="mb-2 inline-flex items-center rounded-full bg-[#00e676] px-2.5 py-0.5 text-[11px] font-black font-mono text-black shadow-xs">
+              <span className="mb-2 inline-flex items-center rounded-full bg-brand px-2.5 py-0.5 text-[11px] font-black font-mono text-black shadow-xs">
                 {ath.similarityScore}%
               </span>
 
               {/* Name & Club */}
-              <h4 className="font-black text-xs text-white group-hover:text-[#00e676] transition-colors truncate max-w-full">
+              <h4 className="font-black text-xs text-white group-hover:text-data-1 transition-colors truncate max-w-full">
                 {ath.name}
               </h4>
               <p className="text-[10px] text-zinc-400 truncate max-w-full mt-0.5 flex items-center justify-center gap-1.5">
@@ -102,7 +102,7 @@ export function SimilarAthletes({ athletes, currentPositionName }: SimilarAthlet
               </p>
 
               {/* Physical details */}
-              <div className="mt-2 flex items-center justify-center gap-2 border-t border-[#1e2638] pt-1.5 text-[10px] font-mono text-zinc-400 w-full">
+              <div className="mt-2 flex items-center justify-center gap-2 border-t border-border pt-1.5 text-[10px] font-mono text-zinc-400 w-full">
                 <span>{ath.birthDate ? formatAge(new Date(ath.birthDate)) : "—"}</span>
                 <span>&bull;</span>
                 <span>{formatHeight(ath.height)}</span>

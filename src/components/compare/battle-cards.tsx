@@ -34,7 +34,7 @@ export function BattleCards({ athletes }: BattleCardsProps) {
         return (
           <div
             key={a.id}
-            className="group relative flex flex-col justify-between rounded-2xl border bg-[#0c101d]/90 backdrop-blur-xl p-4.5 shadow-2xl transition-all duration-300"
+            className="group relative flex flex-col justify-between rounded-2xl border bg-card/90 backdrop-blur-xl p-4.5 shadow-2xl transition-all duration-300"
             style={{
               borderColor: `${a.color}50`,
               boxShadow: `0 16px 36px rgba(0,0,0,0.6), 0 0 20px ${a.color}15`,

@@ -97,7 +97,7 @@ export default function MatchesPage() {
   };
 
   return (
-    <div className="w-full h-[calc(100vh-6rem)] flex flex-col font-sans overflow-hidden bg-[#0a0e17]">
+    <div className="w-full h-[calc(100vh-6rem)] flex flex-col font-sans overflow-hidden bg-card">
       
       {/* Top Navigation Bar - Keeping it translucent */}
       <div className="flex items-center justify-between p-4 border-b border-white/5 bg-black/20 backdrop-blur-md shrink-0">

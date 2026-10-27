@@ -174,7 +174,7 @@ export function RadarChart({
 
   const isEmerald = colorVariant === "emerald";
   const isCyan = colorVariant === "cyan";
-  const strokeColor = isCyan ? "#06b6d4" : isEmerald ? "#00e676" : "#6366f1";
+  const strokeColor = isCyan ? "var(--data-1)" : isEmerald ? "var(--data-3)" : "var(--data-3)";
   const fillColor = isCyan
     ? "url(#radarFillCyan)"
     : isEmerald
@@ -185,7 +185,7 @@ export function RadarChart({
     <div className={cn("flex flex-col items-center", className)}>
       {/* Category Tabs */}
       {showCategoryTabs && (
-        <div className="flex flex-wrap items-center justify-center gap-1 mb-2 bg-[#0d111a] p-1 rounded-xl border border-[#1e2638]">
+        <div className="flex flex-wrap items-center justify-center gap-1 mb-2 bg-card p-1 rounded-xl border border-border">
           {(["GERAL", "ATAQUE", "PASSE", "DEFESA"] as RadarCategory[]).map((cat) => (
             <button
               key={cat}
@@ -197,7 +197,7 @@ export function RadarChart({
                   ? isCyan
                     ? "bg-cyan-500 text-black shadow-xs font-black"
                     : isEmerald
-                    ? "bg-[#00e676] text-black shadow-xs font-black"
+                    ? "bg-brand text-black shadow-xs font-black"
                     : "bg-indigo-600 text-white shadow-xs"
                   : "text-zinc-400 hover:text-white"
               )}
@@ -218,19 +218,19 @@ export function RadarChart({
         >
           <defs>
             <radialGradient id="radarFillEmerald" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#00e676" stopOpacity="0.45" />
-              <stop offset="60%" stopColor="#00e676" stopOpacity="0.30" />
-              <stop offset="100%" stopColor="#00b0ff" stopOpacity="0.12" />
+              <stop offset="0%" stopColor="var(--data-3)" stopOpacity="0.45" />
+              <stop offset="60%" stopColor="var(--data-3)" stopOpacity="0.30" />
+              <stop offset="100%" stopColor="var(--data-1)" stopOpacity="0.12" />
             </radialGradient>
             <radialGradient id="radarFillCyan" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.55" />
-              <stop offset="60%" stopColor="#06b6d4" stopOpacity="0.35" />
+              <stop offset="0%" stopColor="var(--data-1)" stopOpacity="0.55" />
+              <stop offset="60%" stopColor="var(--data-1)" stopOpacity="0.35" />
               <stop offset="100%" stopColor="#3b82f6" stopOpacity="0.15" />
             </radialGradient>
             <radialGradient id="radarFillIndigo" cx="50%" cy="50%" r="50%">
-              <stop offset="0%" stopColor="#6366f1" stopOpacity="0.65" />
-              <stop offset="60%" stopColor="#6366f1" stopOpacity="0.45" />
-              <stop offset="100%" stopColor="#4f46e5" stopOpacity="0.25" />
+              <stop offset="0%" stopColor="var(--data-3)" stopOpacity="0.65" />
+              <stop offset="60%" stopColor="var(--data-3)" stopOpacity="0.45" />
+              <stop offset="100%" stopColor="var(--data-3)" stopOpacity="0.25" />
             </radialGradient>
           </defs>
 
@@ -320,7 +320,7 @@ export function RadarChart({
                   textAnchor="middle"
                   className={cn(
                     "text-[9px] font-black font-mono select-none drop-shadow-sm",
-                    isEmerald ? "fill-[#00e676]" : "fill-indigo-400"
+                    isEmerald ? "fill-data-3" : "fill-indigo-400"
                   )}
                   style={{
                     fontSize: "9px",
@@ -360,9 +360,9 @@ export function RadarChart({
 
         {/* Floating Tooltip if vertex hovered */}
         {hoveredPoint && (
-          <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-zinc-950/95 border border-[#00e676]/60 rounded-lg px-2.5 py-1 text-xs shadow-xl backdrop-blur-xs text-center pointer-events-none z-10">
+          <div className="absolute top-2 left-1/2 -translate-x-1/2 bg-zinc-950/95 border border-brand/60 rounded-lg px-2.5 py-1 text-xs shadow-xl backdrop-blur-xs text-center pointer-events-none z-10">
             <p className="font-bold text-white text-[11px]">{hoveredPoint.label}</p>
-            <p className="text-[#00e676] font-mono text-[11px]">
+            <p className="text-data-3 font-mono text-[11px]">
               {hoveredPoint.value.toLocaleString("pt-BR", { minimumFractionDigits: 1, maximumFractionDigits: 2 })}{" "}
               {hoveredPoint.unit}
               <span className="text-zinc-400 text-[10px] ml-1">

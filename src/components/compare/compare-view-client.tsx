@@ -41,7 +41,7 @@ export function CompareViewClient({
   // Se nenhum atleta foi encontrado ou fornecido, renderiza Empty State Elegante
   if (!initialData || initialData.athletes.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-white/15 bg-[#0c101d]/60 backdrop-blur-xl p-12 text-center max-w-2xl mx-auto space-y-6 my-10 shadow-2xl">
+      <div className="rounded-2xl border border-dashed border-white/15 bg-card/60 backdrop-blur-xl p-12 text-center max-w-2xl mx-auto space-y-6 my-10 shadow-2xl">
         <div className="relative mx-auto w-20 h-20 rounded-3xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shadow-[0_0_24px_rgba(16,185,129,0.15)]">
           <Swords className="h-10 w-10 animate-pulse" />
         </div>

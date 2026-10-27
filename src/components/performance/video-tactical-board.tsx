@@ -34,7 +34,7 @@ export function VideoTacticalBoard({
 
   return (
     <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-      <div className="lg:col-span-2 rounded-xl overflow-hidden border border-white/10 bg-[#070a10]/50 backdrop-blur-md aspect-video relative flex items-center justify-center shadow-lg">
+      <div className="lg:col-span-2 rounded-xl overflow-hidden border border-white/10 bg-card/50 backdrop-blur-md aspect-video relative flex items-center justify-center shadow-lg">
         {/* Mock Video Cover */}
         <div className="absolute inset-0 bg-gradient-to-br from-blue-900/20 to-black/80" />
         <div className="relative z-10 text-center space-y-3">
@@ -50,7 +50,7 @@ export function VideoTacticalBoard({
         </div>
       </div>
       
-      <div className="bg-[#0b101a]/80 backdrop-blur-xl border border-white/10 rounded-xl flex flex-col h-[400px] lg:h-auto shadow-lg">
+      <div className="bg-card/80 backdrop-blur-xl border border-white/10 rounded-xl flex flex-col h-[400px] lg:h-auto shadow-lg">
         <div className="p-4 border-b border-white/10 flex items-center gap-2">
           <div className="p-1.5 rounded-md bg-blue-500/20 text-blue-400">
             <Clock className="w-4 h-4" />

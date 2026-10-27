@@ -86,7 +86,7 @@ export function LeaderboardDashboardView({
     <div className="space-y-6 w-full">
       {/* ─── Passo 2: Toggle Frosted Glass (Atletas vs Clubes) ─────────────── */}
       <div className="flex flex-col items-center justify-center gap-3 pt-2">
-        <div className="inline-flex p-1.5 rounded-2xl bg-[#090d18]/90 border border-white/10 backdrop-blur-2xl shadow-[0_8px_30px_rgba(0,0,0,0.5)]">
+        <div className="inline-flex p-1.5 rounded-2xl bg-card/90 border border-white/10 backdrop-blur-2xl shadow-[0_8px_30px_rgba(0,0,0,0.5)]">
           <button
             type="button"
             onClick={() => setScope("athletes")}
@@ -128,7 +128,7 @@ export function LeaderboardDashboardView({
         <div className="space-y-6 animate-in fade-in duration-300">
           {/* Menu de Navegação em Pills */}
           <div className="flex flex-col items-center justify-center gap-2 py-1">
-            <div className="inline-flex items-center gap-1.5 p-1.5 rounded-full bg-[#0c101d]/90 border border-white/10 backdrop-blur-2xl shadow-lg">
+            <div className="inline-flex items-center gap-1.5 p-1.5 rounded-full bg-card/90 border border-white/10 backdrop-blur-2xl shadow-lg">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
                 const isActive = activeTab === tab.id;
@@ -168,7 +168,7 @@ export function LeaderboardDashboardView({
       {scope === "teams" && (
         <div className="space-y-6 animate-in fade-in duration-300">
           {/* Systemic Banner (Aula 3 - Roberto Torrecilhas) */}
-          <div className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-r from-amber-950/20 via-[#0d1322] to-indigo-950/20 p-5 sm:p-6 shadow-xl backdrop-blur-xl">
+          <div className="relative overflow-hidden rounded-3xl border border-amber-500/30 bg-gradient-to-r from-amber-950/20 via-card to-indigo-950/20 p-5 sm:p-6 shadow-xl backdrop-blur-xl">
             <div className="pointer-events-none absolute -right-12 -top-12 h-44 w-44 rounded-full bg-amber-500/10 blur-2xl" />
             <div className="relative z-10 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
               <div className="flex items-center gap-4">

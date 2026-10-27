@@ -110,7 +110,7 @@ export function LeagueLabView({ athletes }: LeagueLabViewProps) {
               <ArrowLeft className="h-3.5 w-3.5 text-indigo-400" />
               Voltar ao Catálogo
             </Link>
-            <span className="inline-flex items-center gap-1.5 rounded-md bg-[#00e676]/15 px-2.5 py-0.5 text-[10px] font-bold text-[#00e676] border border-[#00e676]/30 uppercase tracking-wider font-mono">
+            <span className="inline-flex items-center gap-1.5 rounded-md bg-brand/15 px-2.5 py-0.5 text-[10px] font-bold text-data-1 border border-brand/30 uppercase tracking-wider font-mono">
               <Sparkles className="h-3 w-3" /> Laboratório Analítico 2D
             </span>
           </div>

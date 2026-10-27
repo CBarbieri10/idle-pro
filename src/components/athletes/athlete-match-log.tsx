@@ -155,7 +155,7 @@ export function AthleteMatchLog({
 
   if (history.length === 0) {
     return (
-      <div className="rounded-2xl border border-dashed border-white/10 bg-[#090d16]/80 p-8 text-center text-zinc-400">
+      <div className="rounded-2xl border border-dashed border-white/10 bg-card/80 p-8 text-center text-zinc-400">
         <CalendarDays className="h-8 w-8 mx-auto text-zinc-600 mb-2" />
         <p className="text-sm font-bold text-zinc-300">Nenhuma partida registrada para este atleta</p>
         <p className="text-xs text-zinc-500 mt-0.5">As estatísticas jogo a jogo serão exibidas assim que vinculadas.</p>
@@ -164,7 +164,7 @@ export function AthleteMatchLog({
   }
 
   return (
-    <div className="space-y-5 rounded-3xl border border-white/10 bg-[#090e1a]/95 backdrop-blur-xl p-5 sm:p-7 shadow-2xl">
+    <div className="space-y-5 rounded-3xl border border-white/10 bg-card/95 backdrop-blur-xl p-5 sm:p-7 shadow-2xl">
       {/* ─── Header & Controls ───────────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-white/[0.08] pb-4">
         <div>
@@ -225,7 +225,7 @@ export function AthleteMatchLog({
       </div>
 
       {/* ─── Live KPI Summary Aggregator ────────────────────────────────────── */}
-      <div className="rounded-2xl border border-cyan-500/20 bg-gradient-to-r from-cyan-950/30 via-[#0d1424] to-indigo-950/20 p-4 sm:p-5 shadow-xl relative overflow-hidden">
+      <div className="rounded-2xl border border-cyan-500/20 bg-gradient-to-r from-cyan-950/30 via-card to-indigo-950/20 p-4 sm:p-5 shadow-xl relative overflow-hidden">
         <div className="flex items-center justify-between mb-3 text-xs font-mono">
           <span className="flex items-center gap-1.5 text-cyan-300 font-black uppercase tracking-wider">
             <BarChart3 className="h-4 w-4" />
@@ -298,7 +298,7 @@ export function AthleteMatchLog({
               className={cn(
                 "group flex flex-col md:flex-row md:items-center justify-between gap-3 p-3.5 rounded-2xl border transition-all cursor-pointer shadow-sm select-none",
                 isSelected
-                  ? "border-cyan-500/30 bg-[#0f172a]/90 hover:bg-[#131d35]"
+                  ? "border-cyan-500/30 bg-card/90 hover:bg-card"
                   : "border-white/[0.05] bg-black/30 opacity-60 hover:opacity-90"
               )}
             >

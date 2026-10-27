@@ -108,7 +108,7 @@ export function ScatterPlotMatrix({
     <div
       ref={containerRef}
       className={cn(
-        "relative rounded-2xl border border-white/10 bg-[#0c101a] p-4 sm:p-6 shadow-2xl overflow-hidden backdrop-blur-xl select-none",
+        "relative rounded-2xl border border-white/10 bg-card p-4 sm:p-6 shadow-2xl overflow-hidden backdrop-blur-xl select-none",
         className
       )}
     >
@@ -152,8 +152,8 @@ export function ScatterPlotMatrix({
           <defs>
             {/* Gradiente sutil para o quadrante de Elite */}
             <radialGradient id="eliteGlow" cx="100%" cy="0%" r="100%">
-              <stop offset="0%" stopColor="#10b981" stopOpacity="0.12" />
-              <stop offset="100%" stopColor="#10b981" stopOpacity="0.01" />
+              <stop offset="0%" stopColor="var(--data-1)" stopOpacity="0.12" />
+              <stop offset="100%" stopColor="var(--data-1)" stopOpacity="0.01" />
             </radialGradient>
             <radialGradient id="lowGlow" cx="0%" cy="100%" r="100%">
               <stop offset="0%" stopColor="#ef4444" stopOpacity="0.04" />
@@ -242,7 +242,7 @@ export function ScatterPlotMatrix({
             y1={padding.top}
             x2={medianXPos}
             y2={height - padding.bottom}
-            stroke="#10b981"
+            stroke="var(--data-1)"
             strokeWidth="1.5"
             strokeDasharray="4 4"
             opacity="0.65"
@@ -253,7 +253,7 @@ export function ScatterPlotMatrix({
             y1={medianYPos}
             x2={width - padding.right}
             y2={medianYPos}
-            stroke="#10b981"
+            stroke="var(--data-1)"
             strokeWidth="1.5"
             strokeDasharray="4 4"
             opacity="0.65"
@@ -329,7 +329,7 @@ export function ScatterPlotMatrix({
             // Cor semântica por quadrante
             let fillColor = "#71717a"; // Low
             if (isElite) {
-              fillColor = "#00e676";
+              fillColor = "var(--data-1)";
             } else if (d.y >= yMedian) {
               fillColor = "#818cf8";
             } else if (d.x >= xMedian) {

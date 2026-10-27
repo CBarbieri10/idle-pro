@@ -34,7 +34,7 @@ interface QuadrantScatterChartProps {
 
 const QUADRANT_COLORS = {
   DOMINANCE: {
-    fill: "#10b981", // Emerald
+    fill: "var(--data-1)", // Emerald
     stroke: "#34d399",
     bg: "rgba(16, 185, 129, 0.12)",
     label: "Dominância (Elite)",
@@ -42,7 +42,7 @@ const QUADRANT_COLORS = {
     badge: "bg-emerald-500/20 text-emerald-300 border-emerald-500/30",
   },
   DEFENSIVE_RESILIENCE: {
-    fill: "#06b6d4", // Cyan
+    fill: "var(--data-1)", // Cyan
     stroke: "#22d3ee",
     bg: "rgba(6, 182, 212, 0.10)",
     label: "Resiliência Defensiva",
@@ -58,7 +58,7 @@ const QUADRANT_COLORS = {
     badge: "bg-amber-500/20 text-amber-300 border-amber-500/30",
   },
   VULNERABILITY: {
-    fill: "#f43f5e", // Rose
+    fill: "var(--data-2)", // Rose
     stroke: "#fb7185",
     bg: "rgba(244, 63, 94, 0.14)",
     label: "Vulnerabilidade (Risco)",
@@ -94,7 +94,7 @@ export function QuadrantScatterChart({ data, className }: QuadrantScatterChartPr
   return (
     <Card
       className={cn(
-        "rounded-3xl border border-white/10 bg-[#0c101d]/90 p-6 backdrop-blur-2xl shadow-2xl relative overflow-hidden",
+        "rounded-3xl border border-white/10 bg-card/90 p-6 backdrop-blur-2xl shadow-2xl relative overflow-hidden",
         className
       )}
     >
@@ -223,7 +223,7 @@ export function QuadrantScatterChart({ data, className }: QuadrantScatterChartPr
       </div>
 
       {/* ─── Área do Gráfico Cartesiano com Paleta Térmica de Fundo (Restrições Rígidas) ─── */}
-      <div className="relative w-full h-[60vh] max-h-[600px] min-h-[400px] mt-4 rounded-2xl border border-white/10 bg-[#080d1a] overflow-hidden">
+      <div className="relative w-full h-[60vh] max-h-[600px] min-h-[400px] mt-4 rounded-2xl border border-white/10 bg-card overflow-hidden">
         {/* Camadas Térmicas nos 4 Quadrantes */}
         <div className="absolute inset-0 pointer-events-none grid grid-cols-2 grid-rows-2">
           {/* Q2: Top-Left (Resiliência Defensiva - Ciano) */}
@@ -320,7 +320,7 @@ export function QuadrantScatterChart({ data, className }: QuadrantScatterChartPr
                   const config = QUADRANT_COLORS[pt.quadrant];
 
                   return (
-                    <div className="rounded-2xl border border-white/15 bg-[#0a0f1d]/95 p-4 shadow-2xl backdrop-blur-2xl text-white min-w-[240px]">
+                    <div className="rounded-2xl border border-white/15 bg-card/95 p-4 shadow-2xl backdrop-blur-2xl text-white min-w-[240px]">
                       <div className="flex items-center gap-3 pb-2.5 mb-2.5 border-b border-white/10">
                         {pt.logoUrl ? (
                           <img

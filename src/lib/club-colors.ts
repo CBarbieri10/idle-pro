@@ -144,6 +144,12 @@ export const CANONICAL_CLUB_COLORS: Record<string, ClubColors> = {
     textColor: "#ffffff",
     accentColor: "#ffffff",
   },
+  "Al-Kahraba Club": {
+    primaryColor: "#f08a24", // Laranja do escudo
+    secondaryColor: "#1c1a2b", // Azul-grafite escuro
+    textColor: "#ffffff",
+    accentColor: "#f08a24",
+  },
 };
 
 /**
@@ -196,6 +202,8 @@ const ALIAS_MAP: Record<string, string> = {
   vitoria: "Vitória",
   fluminense: "Fluminense",
   flu: "Fluminense",
+  kahraba: "Al-Kahraba Club",
+  kahrabaa: "Al-Kahraba Club",
 };
 
 /**

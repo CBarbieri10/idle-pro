@@ -190,9 +190,9 @@ export function ScoutingCopilotDrawer() {
 
           {/* Drawer container */}
           <div className="fixed inset-y-0 right-0 flex max-w-full pl-10">
-            <div className="w-screen max-w-xl md:max-w-2xl bg-[#090d16] border-l border-white/10 shadow-2xl flex flex-col justify-between animate-in slide-in-from-right duration-300">
+            <div className="w-screen max-w-xl md:max-w-2xl bg-card border-l border-white/10 shadow-2xl flex flex-col justify-between animate-in slide-in-from-right duration-300">
               {/* Header */}
-              <div className="flex items-center justify-between border-b border-white/[0.08] p-4 sm:px-6 bg-[#0c121e]/80 backdrop-blur-md">
+              <div className="flex items-center justify-between border-b border-white/[0.08] p-4 sm:px-6 bg-card/80 backdrop-blur-md">
                 <div className="flex items-center gap-3">
                   <div className="h-9 w-9 rounded-xl bg-gradient-to-br from-emerald-500/20 to-teal-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shadow-[0_0_12px_rgba(0,230,118,0.2)]">
                     <Brain className="h-5 w-5" />
@@ -298,7 +298,7 @@ export function ScoutingCopilotDrawer() {
                         "max-w-[85%] rounded-2xl px-4 py-3 text-xs leading-relaxed space-y-2 shadow-md",
                         m.role === "user"
                           ? "bg-gradient-to-r from-emerald-600 to-teal-600 text-white rounded-br-xs"
-                          : "bg-[#111726]/90 border border-white/[0.08] text-zinc-200 rounded-bl-xs"
+                          : "bg-card/90 border border-white/[0.08] text-zinc-200 rounded-bl-xs"
                       )}
                     >
                       <div className="prose prose-invert prose-xs max-w-none whitespace-pre-wrap">
@@ -380,7 +380,7 @@ export function ScoutingCopilotDrawer() {
                     <div className="h-7 w-7 rounded-lg bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shrink-0">
                       <Bot className="h-4 w-4 animate-spin" />
                     </div>
-                    <div className="bg-[#111726]/90 border border-white/[0.08] px-4 py-2.5 rounded-2xl rounded-bl-xs text-xs text-zinc-400 flex items-center gap-2">
+                    <div className="bg-card/90 border border-white/[0.08] px-4 py-2.5 rounded-2xl rounded-bl-xs text-xs text-zinc-400 flex items-center gap-2">
                       <span className="animate-pulse">
                         Cruzando dados canônicos, IDG e métricas avançadas...
                       </span>
@@ -392,13 +392,13 @@ export function ScoutingCopilotDrawer() {
               </div>
 
               {/* Input Area */}
-              <div className="border-t border-white/[0.08] p-4 bg-[#0c121e]/90 backdrop-blur-md">
+              <div className="border-t border-white/[0.08] p-4 bg-card/90 backdrop-blur-md">
                 <form
                   onSubmit={(e) => {
                     e.preventDefault();
                     handleSend();
                   }}
-                  className="flex items-end gap-2 bg-[#131b2c] border border-white/10 rounded-2xl p-2 focus-within:border-emerald-500/50 transition-all shadow-inner"
+                  className="flex items-end gap-2 bg-card border border-white/10 rounded-2xl p-2 focus-within:border-emerald-500/50 transition-all shadow-inner"
                 >
                   <textarea
                     ref={inputRef}

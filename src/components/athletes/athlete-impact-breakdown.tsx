@@ -196,7 +196,7 @@ export function AthleteImpactBreakdown({
   ];
 
   return (
-    <Card className="rounded-3xl border border-white/[0.12] bg-[#0c101d]/75 backdrop-blur-xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.5)] relative overflow-hidden">
+    <Card className="rounded-3xl border border-white/[0.12] bg-card/75 backdrop-blur-xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.5)] relative overflow-hidden">
       {/* Glow Effects */}
       <div className="absolute -top-24 -left-24 w-72 h-72 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-24 -right-24 w-72 h-72 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />

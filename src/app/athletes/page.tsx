@@ -122,7 +122,7 @@ export default async function AthletesPage({
       </div>
 
       {/* ─── Alternador de Escopo (Liga Completa vs Portfólio) ───────────── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-2xl border border-white/[0.08] bg-[#0c1220]/80 backdrop-blur-md">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-2xl border border-white/[0.08] bg-card/80 backdrop-blur-md">
         <div className="flex items-center gap-2">
           <Link
             href={`/athletes?scope=all${teamId ? `&teamId=${teamId}` : ""}`}
@@ -171,7 +171,7 @@ export default async function AthletesPage({
         <div className="flex-1 min-w-0 w-full space-y-4">
           {scoutingResult.athletes.length === 0 ? (
             /* Estado Vazio */
-            <Card className="flex flex-col items-center justify-center py-20 border-dashed border-white/15 bg-[#0c101d]/75 backdrop-blur-md text-center rounded-2xl p-6">
+            <Card className="flex flex-col items-center justify-center py-20 border-dashed border-white/15 bg-card/75 backdrop-blur-md text-center rounded-2xl p-6">
               <div className="h-14 w-14 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center mb-4 text-rose-400">
                 <FilterX className="h-7 w-7" />
               </div>

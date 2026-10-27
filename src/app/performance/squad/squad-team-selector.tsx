@@ -22,7 +22,7 @@ export function SquadTeamSelector({ teams }: { teams: {id: string, name: string}
         <SelectTrigger className="w-full bg-black/40 border-white/10 text-white font-semibold">
           <SelectValue placeholder="Escolha um clube da base..." />
         </SelectTrigger>
-        <SelectContent className="bg-[#0b101a] border-white/10 text-white max-h-60">
+        <SelectContent className="bg-card border-white/10 text-white max-h-60">
           {teams.map(t => (
             <SelectItem key={t.id} value={t.id} className="focus:bg-white/10">{t.name}</SelectItem>
           ))}

@@ -52,14 +52,14 @@ function RadarChartGraphic() {
       >
         <defs>
           <radialGradient id="radarRadial" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#10b981" stopOpacity="0.32" />
-            <stop offset="70%" stopColor="#06b6d4" stopOpacity="0.12" />
-            <stop offset="100%" stopColor="#06b6d4" stopOpacity="0" />
+            <stop offset="0%" stopColor="var(--data-1)" stopOpacity="0.32" />
+            <stop offset="70%" stopColor="var(--data-1)" stopOpacity="0.12" />
+            <stop offset="100%" stopColor="var(--data-1)" stopOpacity="0" />
           </radialGradient>
           <linearGradient id="polyStroke" x1="0%" y1="0%" x2="100%" y2="100%">
             <stop offset="0%" stopColor="#34d399" />
-            <stop offset="50%" stopColor="#10b981" />
-            <stop offset="100%" stopColor="#06b6d4" />
+            <stop offset="50%" stopColor="var(--data-1)" />
+            <stop offset="100%" stopColor="var(--data-1)" />
           </linearGradient>
         </defs>
 
@@ -137,7 +137,7 @@ function RadarChartGraphic() {
               cy={pt.y}
               r="7"
               fill="none"
-              stroke="#10b981"
+              stroke="var(--data-1)"
               strokeWidth="1"
               opacity="0.6"
             />
@@ -145,7 +145,7 @@ function RadarChartGraphic() {
         ))}
 
         {/* Center Target Indicator */}
-        <circle cx="150" cy="150" r="3" fill="#10b981" />
+        <circle cx="150" cy="150" r="3" fill="var(--data-1)" />
       </svg>
 
       {/* Floating Axis Labels */}
@@ -431,11 +431,11 @@ function ExecutiveLoginForm() {
 // ─── Main Page with Split-Screen Layout ───────────────────────────────────────
 export default function LoginPage() {
   return (
-    <main className="min-h-screen w-full flex flex-col lg:flex-row bg-[#06080F] overflow-x-hidden">
+    <main className="min-h-screen w-full flex flex-col lg:flex-row bg-card overflow-x-hidden">
       {/* ────────────────────────────────────────────────────────────────────────
           LADO ESQUERDO: BRANDING & IMPACTO (Painel Escuro / Cibernético)
           ──────────────────────────────────────────────────────────────────────── */}
-      <div className="relative w-full lg:w-[54%] xl:w-[58%] min-h-[520px] lg:min-h-screen bg-[#06080F] flex flex-col justify-between p-6 sm:p-10 lg:p-14 overflow-hidden border-b lg:border-b-0 lg:border-r border-white/[0.08]">
+      <div className="relative w-full lg:w-[54%] xl:w-[58%] min-h-[520px] lg:min-h-screen bg-card flex flex-col justify-between p-6 sm:p-10 lg:p-14 overflow-hidden border-b lg:border-b-0 lg:border-r border-white/[0.08]">
         {/* Tactical Ambient Glows */}
         <div className="pointer-events-none absolute -top-24 -left-24 h-96 w-96 rounded-full bg-emerald-500/15 blur-[120px]" />
         <div className="pointer-events-none absolute top-1/2 -right-24 h-96 w-96 rounded-full bg-cyan-500/10 blur-[140px]" />

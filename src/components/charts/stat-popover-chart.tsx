@@ -43,25 +43,25 @@ export interface StatPopoverChartProps {
 
 const COLOR_MAP = {
   emerald: {
-    stroke: "#10b981",
+    stroke: "var(--data-1)",
     fill: "rgba(16, 185, 129, 0.15)",
     text: "text-emerald-400",
     badge: "bg-emerald-500/10 border-emerald-500/30 text-emerald-300",
   },
   cyan: {
-    stroke: "#06b6d4",
+    stroke: "var(--data-1)",
     fill: "rgba(6, 182, 212, 0.15)",
     text: "text-cyan-400",
     badge: "bg-cyan-500/10 border-cyan-500/30 text-cyan-300",
   },
   indigo: {
-    stroke: "#6366f1",
+    stroke: "var(--data-3)",
     fill: "rgba(99, 102, 241, 0.15)",
     text: "text-indigo-400",
     badge: "bg-indigo-500/10 border-indigo-500/30 text-indigo-300",
   },
   rose: {
-    stroke: "#f43f5e",
+    stroke: "var(--data-2)",
     fill: "rgba(244, 63, 94, 0.15)",
     text: "text-rose-400",
     badge: "bg-rose-500/10 border-rose-500/30 text-rose-300",
@@ -194,7 +194,7 @@ export function StatPopoverChart({
       <PopoverContent
         align="center"
         side="top"
-        className="w-80 p-4 border border-white/10 bg-[#0c101d]/95 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)]"
+        className="w-80 p-4 border border-white/10 bg-card/95 backdrop-blur-2xl shadow-[0_20px_50px_rgba(0,0,0,0.8)]"
       >
         {/* Cabeçalho do Popover */}
         <div className="flex items-center justify-between pb-2 mb-3 border-b border-white/10">
@@ -252,7 +252,7 @@ export function StatPopoverChart({
                   if (active && payload && payload.length) {
                     const data = payload[0].payload as { round: string; value: number; opponent?: string };
                     return (
-                      <div className="rounded-lg border border-white/10 bg-[#080c16]/95 px-2.5 py-1.5 shadow-lg backdrop-blur-md">
+                      <div className="rounded-lg border border-white/10 bg-card/95 px-2.5 py-1.5 shadow-lg backdrop-blur-md">
                         <p className="text-[9px] font-bold text-zinc-400">
                           {data.round} {data.opponent ? `vs ${data.opponent}` : ""}
                         </p>

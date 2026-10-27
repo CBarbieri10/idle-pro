@@ -103,7 +103,7 @@ export function AthletePerformanceChart({
 
   if (matchPoints.length === 0) {
     return (
-      <div className="rounded-2xl border border-white/10 bg-[#0c101d]/60 backdrop-blur-md p-8 text-center space-y-3">
+      <div className="rounded-2xl border border-white/10 bg-card/60 backdrop-blur-md p-8 text-center space-y-3">
         <Activity className="h-8 w-8 text-zinc-500 mx-auto" />
         <h3 className="text-base font-bold text-white">
           Amostragem em Processamento
@@ -118,7 +118,7 @@ export function AthletePerformanceChart({
   return (
     <div className="space-y-6">
       {/* Metric Toggles & Stability Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl border border-white/[0.08] bg-[#0c101d]/80 backdrop-blur-md">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-2xl border border-white/[0.08] bg-card/80 backdrop-blur-md">
         <div className="flex items-center gap-2 flex-wrap">
           <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider mr-2">
             Métrica:
@@ -253,7 +253,7 @@ export function AthletePerformanceChart({
                     type="monotone"
                     dataKey="rollingRating"
                     name="Média Móvel (3J)"
-                    stroke="#10b981"
+                    stroke="var(--data-1)"
                     strokeWidth={2}
                     strokeDasharray="4 4"
                     dot={false}
@@ -268,12 +268,12 @@ export function AthletePerformanceChart({
                     type="monotone"
                     dataKey="goals"
                     name="Gols Marcados"
-                    stroke="#f43f5e"
+                    stroke="var(--data-2)"
                     strokeWidth={3}
                     dot={{
                       r: 4,
                       fill: "#0b101a",
-                      stroke: "#f43f5e",
+                      stroke: "var(--data-2)",
                       strokeWidth: 2,
                     }}
                   />
@@ -294,7 +294,7 @@ export function AthletePerformanceChart({
                     type="monotone"
                     dataKey="rollingXg"
                     name="xG Médio Móvel"
-                    stroke="#10b981"
+                    stroke="var(--data-1)"
                     strokeWidth={2}
                     strokeDasharray="4 4"
                     dot={false}
@@ -309,12 +309,12 @@ export function AthletePerformanceChart({
                     type="monotone"
                     dataKey="passes"
                     name="Passes Certos"
-                    stroke="#6366f1"
+                    stroke="var(--data-3)"
                     strokeWidth={3}
                     dot={{
                       r: 4,
                       fill: "#0b101a",
-                      stroke: "#6366f1",
+                      stroke: "var(--data-3)",
                       strokeWidth: 2,
                     }}
                   />
@@ -322,12 +322,12 @@ export function AthletePerformanceChart({
                     type="monotone"
                     dataKey="progressivePasses"
                     name="Passes Progressivos"
-                    stroke="#06b6d4"
+                    stroke="var(--data-1)"
                     strokeWidth={2}
                     dot={{
                       r: 3,
                       fill: "#0b101a",
-                      stroke: "#06b6d4",
+                      stroke: "var(--data-1)",
                       strokeWidth: 1.5,
                     }}
                   />
@@ -335,7 +335,7 @@ export function AthletePerformanceChart({
                     type="monotone"
                     dataKey="rollingPasses"
                     name="Média Móvel Passes"
-                    stroke="#10b981"
+                    stroke="var(--data-1)"
                     strokeWidth={2}
                     strokeDasharray="4 4"
                     dot={false}
@@ -350,12 +350,12 @@ export function AthletePerformanceChart({
                     type="monotone"
                     dataKey="tackles"
                     name="Desarmes"
-                    stroke="#10b981"
+                    stroke="var(--data-1)"
                     strokeWidth={3}
                     dot={{
                       r: 4,
                       fill: "#0b101a",
-                      stroke: "#10b981",
+                      stroke: "var(--data-1)",
                       strokeWidth: 2,
                     }}
                   />
@@ -404,7 +404,7 @@ export function AthletePerformanceChart({
                     type="monotone"
                     dataKey="rollingMinutes"
                     name="Minutos Médios Móveis"
-                    stroke="#10b981"
+                    stroke="var(--data-1)"
                     strokeWidth={2}
                     strokeDasharray="4 4"
                     dot={false}

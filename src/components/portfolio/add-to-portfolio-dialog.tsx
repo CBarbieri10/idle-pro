@@ -197,7 +197,7 @@ export function AddToPortfolioDialog({
 
       {/* ─── Modal / Dialog de Seleção e Criação de Portfólio ───────────────── */}
       <Dialog open={open} onOpenChange={setOpen}>
-        <DialogContent className="max-w-md bg-[#0c101d] border border-white/10 text-white rounded-2xl p-5 shadow-2xl">
+        <DialogContent className="max-w-md bg-card border border-white/10 text-white rounded-2xl p-5 shadow-2xl">
           <DialogHeader className="pb-3 border-b border-white/[0.08]">
             <div className="flex items-center gap-2">
               <div className="h-8 w-8 rounded-xl bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">

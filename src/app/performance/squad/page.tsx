@@ -310,7 +310,7 @@ export default async function SquadPage({
 
       {/* ─── Squad Health Executive KPIs ─────────────────────────────────── */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4 rounded-2xl border border-white/[0.08] bg-[#0c101d]/75 backdrop-blur-md">
+        <div className="p-4 rounded-2xl border border-white/[0.08] bg-card/75 backdrop-blur-md">
           <div className="flex items-center justify-between">
             <span className="text-xs font-bold text-zinc-400 uppercase tracking-wider">
               Elenco Monitorado
@@ -372,7 +372,7 @@ export default async function SquadPage({
       </div>
 
       {/* ─── Real Squad Roster Data Table ─────────────────────────────────── */}
-      <div className="rounded-2xl border border-white/10 bg-[#0b101a]/90 backdrop-blur-xl overflow-hidden shadow-2xl">
+      <div className="rounded-2xl border border-white/10 bg-card/90 backdrop-blur-xl overflow-hidden shadow-2xl">
         <div className="p-4 border-b border-white/10 flex items-center justify-between">
           <div>
             <h3 className="text-sm font-bold text-white uppercase tracking-wider">

@@ -334,7 +334,7 @@ export function AgendaView({ initialEvents }: AgendaViewProps) {
       {/* Edit Modal */}
       {editingTask && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-md p-4">
-          <Card className="w-full max-w-md bg-[#0c121d] border border-emerald-500/30 p-6 shadow-2xl relative">
+          <Card className="w-full max-w-md bg-card border border-emerald-500/30 p-6 shadow-2xl relative">
             <Button
               variant="ghost"
               size="icon"
@@ -536,7 +536,7 @@ export function AgendaView({ initialEvents }: AgendaViewProps) {
 
         <div className="flex flex-wrap items-center gap-3">
           {/* View Toggles */}
-          <div className="flex bg-[#0c101d] border border-white/10 rounded-xl p-1 gap-1">
+          <div className="flex bg-card border border-white/10 rounded-xl p-1 gap-1">
             {(["Dia", "Semana", "Mês"] as const).map((v) => (
               <button
                 key={v}
@@ -553,7 +553,7 @@ export function AgendaView({ initialEvents }: AgendaViewProps) {
           </div>
 
           {/* Date Controls */}
-          <div className="flex items-center gap-1 bg-[#0c101d] border border-white/10 rounded-xl p-1">
+          <div className="flex items-center gap-1 bg-card border border-white/10 rounded-xl p-1">
             <Button
               variant="ghost"
               size="icon"
@@ -609,7 +609,7 @@ export function AgendaView({ initialEvents }: AgendaViewProps) {
                 key={col.id}
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => handleDrop(e, col.id)}
-                className="flex flex-col rounded-2xl border border-white/[0.08] bg-[#0c101d]/60 backdrop-blur-md p-3 min-h-[300px]"
+                className="flex flex-col rounded-2xl border border-white/[0.08] bg-card/60 backdrop-blur-md p-3 min-h-[300px]"
               >
                 <div className="flex items-center justify-between pb-3 border-b border-white/[0.06] mb-3">
                   <h4 className="text-xs font-black uppercase tracking-wider text-white">
@@ -629,7 +629,7 @@ export function AgendaView({ initialEvents }: AgendaViewProps) {
                       key={task.id}
                       draggable
                       onDragStart={(e) => handleDragStart(e, task.id)}
-                      className="p-3 bg-[#111726]/90 border border-white/10 hover:border-emerald-500/40 transition-all cursor-move group relative shadow-md"
+                      className="p-3 bg-card/90 border border-white/10 hover:border-emerald-500/40 transition-all cursor-move group relative shadow-md"
                     >
                       <div className="flex items-start justify-between gap-2">
                         <div className="min-w-0 flex-1">
@@ -699,7 +699,7 @@ export function AgendaView({ initialEvents }: AgendaViewProps) {
                 key={cell.id}
                 onDragOver={(e) => e.preventDefault()}
                 onDrop={(e) => handleDrop(e, cell.id)}
-                className="bg-[#0c101d]/60 border border-white/[0.08] rounded-2xl p-2 flex flex-col hover:border-emerald-500/30 transition-all min-h-[90px] group"
+                className="bg-card/60 border border-white/[0.08] rounded-2xl p-2 flex flex-col hover:border-emerald-500/30 transition-all min-h-[90px] group"
               >
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-xs font-black text-zinc-300">

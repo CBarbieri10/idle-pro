@@ -151,7 +151,7 @@ export function PortfolioManagerView({
       </div>
 
       {/* ─── Banner Executivo do Portfólio Ativo ────────────────────────────── */}
-      <div className="rounded-2xl border border-white/10 bg-[#0c101d]/85 backdrop-blur-xl p-5 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="rounded-2xl border border-white/10 bg-card/85 backdrop-blur-xl p-5 shadow-xl flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <div className="flex items-center gap-2">
             <span className="text-[10px] font-mono font-bold uppercase tracking-wider text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded">
@@ -196,7 +196,7 @@ export function PortfolioManagerView({
 
       {/* ─── Tabela Executiva do Shadow Board ───────────────────────────────── */}
       {items.length === 0 ? (
-        <div className="rounded-2xl border border-dashed border-white/15 bg-[#0c101d]/50 p-12 text-center space-y-4">
+        <div className="rounded-2xl border border-dashed border-white/15 bg-card/50 p-12 text-center space-y-4">
           <div className="h-14 w-14 rounded-2xl bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto text-amber-400">
             <Bookmark className="h-7 w-7" />
           </div>
@@ -218,7 +218,7 @@ export function PortfolioManagerView({
           </Link>
         </div>
       ) : (
-        <div className="rounded-2xl border border-white/10 bg-[#0c101d]/85 backdrop-blur-xl overflow-hidden shadow-2xl">
+        <div className="rounded-2xl border border-white/10 bg-card/85 backdrop-blur-xl overflow-hidden shadow-2xl">
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
@@ -407,7 +407,7 @@ export function PortfolioManagerView({
 
       {/* ─── Modal para Criar Novo Portfólio ─────────────────────────────────── */}
       <Dialog open={createModalOpen} onOpenChange={setCreateModalOpen}>
-        <DialogContent className="max-w-md bg-[#0c101d] border border-white/10 text-white rounded-2xl p-5 shadow-2xl">
+        <DialogContent className="max-w-md bg-card border border-white/10 text-white rounded-2xl p-5 shadow-2xl">
           <DialogHeader className="pb-3 border-b border-white/[0.08]">
             <DialogTitle className="text-sm font-black text-white flex items-center gap-2">
               <FolderPlus className="h-4 w-4 text-amber-400" />
@@ -475,7 +475,7 @@ export function PortfolioManagerView({
 
       {/* ─── Modal de Confirmação para Excluir Portfólio ─────────────────────── */}
       <Dialog open={deleteConfirmOpen} onOpenChange={setDeleteConfirmOpen}>
-        <DialogContent className="max-w-sm bg-[#0c101d] border border-rose-500/30 text-white rounded-2xl p-5 shadow-2xl">
+        <DialogContent className="max-w-sm bg-card border border-rose-500/30 text-white rounded-2xl p-5 shadow-2xl">
           <DialogHeader>
             <DialogTitle className="text-sm font-black text-white flex items-center gap-2">
               <AlertTriangle className="h-4 w-4 text-rose-400" />

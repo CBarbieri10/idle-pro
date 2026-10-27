@@ -261,7 +261,7 @@ export function LeagueCatalog({
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-white/10 pb-5">
         <div>
           <div className="flex items-center gap-2">
-            <span className="inline-flex items-center gap-1.5 rounded-md bg-[#00e676]/15 px-2.5 py-0.5 text-[10px] font-bold text-[#00e676] border border-[#00e676]/30 uppercase tracking-wider font-mono">
+            <span className="inline-flex items-center gap-1.5 rounded-md bg-brand/15 px-2.5 py-0.5 text-[10px] font-bold text-data-1 border border-brand/30 uppercase tracking-wider font-mono">
               <Compass className="h-3 w-3" /> Scouting Pro &bull; Série A
             </span>
             <span className="text-xs text-muted-foreground font-mono">
@@ -548,9 +548,9 @@ export function LeagueCatalog({
               <div
                 key={athlete.id}
                 className={cn(
-                  "group relative flex flex-col justify-between rounded-2xl border p-4.5 transition-all duration-200 bg-[#0d121d]/85 backdrop-blur-md hover:shadow-2xl hover:border-[#00e676]/50 hover:bg-[#121927]/95",
+                  "group relative flex flex-col justify-between rounded-2xl border p-4.5 transition-all duration-200 bg-card/85 backdrop-blur-md hover:shadow-2xl hover:border-brand/50 hover:bg-card/95",
                   isSelected
-                    ? "border-[#00e676] bg-[#00e676]/10 ring-1 ring-[#00e676]/60"
+                    ? "border-brand bg-brand/10 ring-1 ring-brand/60"
                     : "border-white/10"
                 )}
               >
@@ -563,13 +563,13 @@ export function LeagueCatalog({
                       className={cn(
                         "flex items-center gap-1.5 text-xs rounded-lg px-2 py-1 transition-colors",
                         isSelected
-                          ? "bg-[#00e676]/20 text-[#00e676] font-bold"
+                          ? "bg-brand/20 text-data-1 font-bold"
                           : "text-zinc-400 hover:text-white"
                       )}
                       title={isSelected ? "Desmarcar para comparação" : "Selecionar para comparar"}
                     >
                       {isSelected ? (
-                        <CheckSquare className="h-4 w-4 text-[#00e676]" />
+                        <CheckSquare className="h-4 w-4 text-data-1" />
                       ) : (
                         <Square className="h-4 w-4 opacity-50 group-hover:opacity-100" />
                       )}
@@ -595,7 +595,7 @@ export function LeagueCatalog({
                   {/* Athlete Portrait & Info */}
                   <div className="mt-3.5 flex items-center gap-3">
                     {/* Photo Stage Avatar */}
-                    <div className="relative h-13 w-13 rounded-full border-2 border-[#00e676]/60 p-0.5 bg-black/50 overflow-hidden shrink-0 shadow-[0_0_12px_rgba(0,230,118,0.2)] flex items-center justify-center">
+                    <div className="relative h-13 w-13 rounded-full border-2 border-brand/60 p-0.5 bg-black/50 overflow-hidden shrink-0 shadow-[0_0_12px_rgba(0,230,118,0.2)] flex items-center justify-center">
                       {athlete.photoUrl ? (
                         <img
                           src={athlete.photoUrl}
@@ -606,7 +606,7 @@ export function LeagueCatalog({
                           )}
                         />
                       ) : (
-                        <span className="text-xs font-black text-[#00e676] font-mono">
+                        <span className="text-xs font-black text-data-1 font-mono">
                           {initials}
                         </span>
                       )}
@@ -615,7 +615,7 @@ export function LeagueCatalog({
                     <div className="min-w-0 flex-1">
                       <Link
                         href={`/athletes/${athlete.id}`}
-                        className="font-black text-sm text-white hover:text-[#00e676] transition-colors block truncate"
+                        className="font-black text-sm text-white hover:text-data-1 transition-colors block truncate"
                       >
                         {athlete.name}
                       </Link>
@@ -663,7 +663,7 @@ export function LeagueCatalog({
                                 "rounded-xl p-2 text-center border shadow-[0_4px_12px_rgba(0,0,0,0.45),inset_0_1px_0_rgba(255,255,255,0.06)] transition-all",
                                 isElite
                                   ? "border-emerald-500/60 bg-gradient-to-b from-emerald-950/60 to-emerald-950/30"
-                                  : "border-white/[0.12] bg-gradient-to-b from-[#131b2a]/95 to-[#080e18]/95"
+                                  : "border-white/[0.12] bg-gradient-to-b from-card/95 to-card/95"
                               )}
                             >
                               <p
@@ -675,7 +675,7 @@ export function LeagueCatalog({
                               <p
                                 className={cn(
                                   "font-black font-mono tabular-nums text-sm sm:text-[15px] mt-1 leading-none drop-shadow-sm",
-                                  isElite ? "text-[#00e676]" : "text-white"
+                                  isElite ? "text-data-1" : "text-white"
                                 )}
                               >
                                 {m.per90}
@@ -702,7 +702,7 @@ export function LeagueCatalog({
                       triggerButton={
                         <button
                           type="button"
-                          className="inline-flex items-center gap-1 text-[11px] font-bold text-[#00e676] hover:underline cursor-pointer"
+                          className="inline-flex items-center gap-1 text-[11px] font-bold text-data-1 hover:underline cursor-pointer"
                         >
                           <FileText className="h-3 w-3" />
                           Raio-X

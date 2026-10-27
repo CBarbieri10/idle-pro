@@ -35,8 +35,8 @@ export function ScoutingPlayerCard({ athlete }: ScoutingPlayerCardProps) {
     <Link
       href={`/athletes/${athlete.id}`}
       className={cn(
-        "group relative flex flex-col justify-between rounded-2xl border border-white/10 bg-[#0c101d]/85 backdrop-blur-xl p-4.5 shadow-xl transition-all duration-300",
-        "hover:-translate-y-1 hover:border-emerald-500/50 hover:bg-[#111728]/95",
+        "group relative flex flex-col justify-between rounded-2xl border border-white/10 bg-card/85 backdrop-blur-xl p-4.5 shadow-xl transition-all duration-300",
+        "hover:-translate-y-1 hover:border-emerald-500/50 hover:bg-card/95",
         "hover:shadow-[0_16px_36px_rgba(0,0,0,0.6),0_0_24px_rgba(16,185,129,0.15)]"
       )}
     >

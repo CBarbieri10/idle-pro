@@ -107,7 +107,7 @@ export function VideoGalleryClient({ initialClips }: VideoGalleryClientProps) {
   return (
     <div className="space-y-6">
       {/* ─── Barra de Filtros Inteligentes (Frosted Glass) ─────────────────────────── */}
-      <div className="rounded-2xl border border-white/[0.1] bg-[#0c1018]/70 backdrop-blur-xl p-4 sm:p-5 shadow-2xl space-y-4">
+      <div className="rounded-2xl border border-white/[0.1] bg-card/70 backdrop-blur-xl p-4 sm:p-5 shadow-2xl space-y-4">
         <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3">
           {/* Input de Busca Textual */}
           <div className="relative flex-1">
@@ -231,7 +231,7 @@ export function VideoGalleryClient({ initialClips }: VideoGalleryClientProps) {
 
         {/* Empty State */}
         {filteredClips.length === 0 && (
-          <div className="col-span-full py-20 px-4 text-center rounded-2xl border border-white/10 bg-[#0c1018]/60 backdrop-blur-xl">
+          <div className="col-span-full py-20 px-4 text-center rounded-2xl border border-white/10 bg-card/60 backdrop-blur-xl">
             <div className="mx-auto h-16 w-16 rounded-2xl bg-white/[0.03] border border-white/10 flex items-center justify-center text-zinc-500 mb-4 shadow-inner">
               <Film className="h-8 w-8 opacity-60 text-emerald-400" />
             </div>

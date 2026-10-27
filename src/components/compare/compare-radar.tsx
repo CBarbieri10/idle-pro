@@ -20,7 +20,7 @@ export interface CompareRadarProps {
 
 export function CompareRadar({ radarData, athletes }: CompareRadarProps) {
   return (
-    <div className="rounded-2xl border border-white/10 bg-[#0c101d]/90 backdrop-blur-xl p-5 shadow-2xl space-y-4">
+    <div className="rounded-2xl border border-white/10 bg-card/90 backdrop-blur-xl p-5 shadow-2xl space-y-4">
       {/* ─── Header do Gráfico ─────────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/[0.08]">
         <div>
@@ -117,7 +117,7 @@ export function CompareRadar({ radarData, athletes }: CompareRadarProps) {
                 const point = payload[0].payload as RadarDataPoint;
 
                 return (
-                  <div className="rounded-xl border border-white/15 bg-[#0a0e1a]/95 backdrop-blur-xl p-3 shadow-2xl text-xs space-y-1.5 min-w-[180px]">
+                  <div className="rounded-xl border border-white/15 bg-card/95 backdrop-blur-xl p-3 shadow-2xl text-xs space-y-1.5 min-w-[180px]">
                     <div className="font-mono font-bold text-emerald-400 border-b border-white/10 pb-1 flex items-center justify-between">
                       <span>{point.metric}</span>
                       <span className="text-[10px] text-zinc-400">

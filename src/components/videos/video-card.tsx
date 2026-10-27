@@ -29,7 +29,7 @@ export function VideoCard({ clip, onPlay }: VideoCardProps) {
     <div
       onClick={() => onPlay(clip)}
       className={cn(
-        "group relative flex flex-col justify-between rounded-2xl border border-white/[0.08] bg-[#0c1018]/80 backdrop-blur-xl overflow-hidden cursor-pointer transition-all duration-300",
+        "group relative flex flex-col justify-between rounded-2xl border border-white/[0.08] bg-card/80 backdrop-blur-xl overflow-hidden cursor-pointer transition-all duration-300",
         "hover:-translate-y-1 hover:shadow-[0_12px_30px_rgba(0,0,0,0.6),0_0_20px_rgba(16,185,129,0.12)]",
         theme.borderHover
       )}

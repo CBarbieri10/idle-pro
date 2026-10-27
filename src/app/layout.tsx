@@ -1,25 +1,21 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Lora } from "next/font/google";
+import { IBM_Plex_Sans, Barlow_Condensed } from "next/font/google";
 import "./globals.css";
 import { AppSidebar } from "@/components/app-sidebar";
 import { AppHeader } from "@/components/app-header";
 import { Providers } from "@/components/providers";
 import { CompareDock } from "@/components/compare/compare-dock";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const plex = IBM_Plex_Sans({
+  variable: "--font-plex",
   subsets: ["latin"],
+  weight: ["400", "500", "600"],
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
+const barlow = Barlow_Condensed({
+  variable: "--font-barlow",
   subsets: ["latin"],
-});
-
-const lora = Lora({
-  variable: "--font-serif-luxury",
-  subsets: ["latin"],
-  weight: ["400", "500", "600", "700"],
+  weight: ["500", "600", "700"],
 });
 
 export const metadata: Metadata = {
@@ -32,22 +28,16 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html
       lang="pt-BR"
-      className={`${geistSans.variable} ${geistMono.variable} ${lora.variable} h-full antialiased dark`}
+      className={`${plex.variable} ${barlow.variable} h-full antialiased dark`}
     >
-      <body className="min-h-full flex bg-[#080a0f] text-foreground">
+      <body className="min-h-full flex bg-background text-foreground">
         <Providers>
           <div id="app-shell" className="relative flex min-h-screen w-full">
-            {/* Global Cinematic B&W Stadium & Folded Texture Backdrop */}
+            {/* Fundo de estádio P&B fixo, com camada escura por cima */}
             <div
               aria-hidden
-              className="pointer-events-none fixed inset-0 z-0 overflow-hidden bg-[#06080a] print:hidden"
-            >
-              {/* Tactical dark vignette */}
-              <div className="absolute inset-0 bg-gradient-to-b from-[#06080a] via-[#080b0f] to-[#040608]" />
-              {/* Subtle cyan ambient glow */}
-              <div className="absolute inset-0 bg-[radial-gradient(ellipse_60%_50%_at_50%_-10%,rgba(34,211,238,0.1),transparent_70%)]" />
-              <div className="absolute inset-0 bg-[radial-gradient(circle_at_80%_80%,rgba(34,211,238,0.03),transparent_40%)]" />
-            </div>
+              className="app-backdrop pointer-events-none fixed inset-0 z-0 print:hidden"
+            />
 
             {/* Sidebar */}
             <AppSidebar />

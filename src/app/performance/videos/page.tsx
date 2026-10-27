@@ -31,7 +31,7 @@ export default async function VideosPage() {
   return (
     <div className="p-4 sm:p-8 max-w-7xl mx-auto space-y-8">
       {/* ─── Hero Header Executivo ────────────────────────────────────────────── */}
-      <header className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-r from-[#0c1424] via-[#090d16] to-[#0d161a] p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
+      <header className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-r from-card via-card to-card p-6 sm:p-8 shadow-2xl backdrop-blur-xl">
         <div className="absolute -right-16 -top-16 h-64 w-64 rounded-full bg-emerald-500/10 blur-3xl pointer-events-none" />
         <div className="absolute -left-16 -bottom-16 h-64 w-64 rounded-full bg-cyan-500/10 blur-3xl pointer-events-none" />
 

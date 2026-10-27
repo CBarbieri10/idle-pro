@@ -7,10 +7,10 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-  --font-serif: var(--font-serif-luxury), Georgia, "Times New Roman", Cambria, serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-  --font-heading: var(--font-serif-luxury), Georgia, "Times New Roman", Cambria, serif;
+  --font-sans: var(--font-plex), ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, Arial, sans-serif;
+  --font-serif: var(--font-barlow), "Arial Narrow", sans-serif;
+  --font-mono: var(--font-plex), ui-sans-serif, system-ui, sans-serif;
+  --font-heading: var(--font-barlow), "Arial Narrow", sans-serif;
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -62,115 +62,113 @@
   --color-cat-defense: var(--cat-defense);
   --color-tns-amber: var(--tns-amber);
 
-  /* Map Emerald to Cyan to instantly re-theme the app */
-  --color-emerald-50: #ecfeff;
-  --color-emerald-100: #cffafe;
-  --color-emerald-200: #a5f3fc;
-  --color-emerald-300: #67e8f9;
-  --color-emerald-400: #22d3ee;
-  --color-emerald-500: #06b6d4;
-  --color-emerald-600: #0891b2;
-  --color-emerald-700: #0e7490;
-  --color-emerald-800: #155e75;
-  --color-emerald-900: #164e63;
-  --color-emerald-950: #083344;
+  /* Escala "emerald" remapeada para o dourado da marca (ações e item ativo) */
+  --color-emerald-50: #fbf5e6;
+  --color-emerald-100: #f5e8c4;
+  --color-emerald-200: #ecd594;
+  --color-emerald-300: #e2c06c;
+  --color-emerald-400: #d4a84b;
+  --color-emerald-500: #c29a40;
+  --color-emerald-600: #a9822f;
+  --color-emerald-700: #86661f;
+  --color-emerald-800: #654c17;
+  --color-emerald-900: #4a3811;
+  --color-emerald-950: #2b2008;
+
+  /* Indigo/violeta/roxo viram neutros quentes (fora da paleta azul) */
+  --color-indigo-50: #f4f2ee;
+  --color-indigo-100: #e6e3dc;
+  --color-indigo-200: #cbc7be;
+  --color-indigo-300: #b9b5ab;
+  --color-indigo-400: #a9a59c;
+  --color-indigo-500: #8d8981;
+  --color-indigo-600: #6f6c66;
+  --color-indigo-700: #55534f;
+  --color-indigo-800: #3d3d40;
+  --color-indigo-900: #2c2c2e;
+  --color-indigo-950: #1c1c1d;
+  --color-purple-300: #cbc7be;
+  --color-purple-400: #a9a59c;
+  --color-purple-500: #8d8981;
+  --color-purple-600: #6f6c66;
+  --color-violet-300: #cbc7be;
+  --color-violet-400: #a9a59c;
+  --color-violet-500: #8d8981;
+  --color-violet-600: #6f6c66;
+
+  /* Dados em neon (somente gráficos e números) */
+  --color-data-1: var(--data-1);
+  --color-data-2: var(--data-2);
+  --color-data-3: var(--data-3);
+  --color-brand: var(--brand);
+  --color-on-brand: var(--on-brand);
 }
 
-/* Modern FinTech/DeFi Dark Theme */
-:root {
-  --background: #06080a;
-  --foreground: #f8fafc;
-  --card: #0d1117;
-  --card-foreground: #f8fafc;
-  --popover: #0d1117;
-  --popover-foreground: #f8fafc;
-  --primary: #22d3ee;
-  --primary-foreground: #000000;
-  --secondary: #161b22;
-  --secondary-foreground: #f8fafc;
-  --muted: #161b22;
-  --muted-foreground: #8b949e;
-  --accent: #22d3ee;
-  --accent-foreground: #000000;
-  --destructive: #ef4444;
-  --border: #21262d;
-  --input: #21262d;
-  --ring: #22d3ee;
-  --chart-1: #22d3ee;
-  --chart-2: #38bdf8;
-  --chart-3: #818cf8;
-  --chart-4: #c084fc;
-  --chart-5: #e879f9;
-  --radius: 1rem;
-  --sidebar: #06080a;
-  --sidebar-foreground: #f8fafc;
-  --sidebar-primary: #22d3ee;
-  --sidebar-primary-foreground: #000000;
-  --sidebar-accent: #161b22;
-  --sidebar-accent-foreground: #f8fafc;
-  --sidebar-border: #21262d;
-  --sidebar-ring: #22d3ee;
-
-  /* Enterprise Tactical Palette */
-  --bg-base: #06080a;
-  --bg-surface: #0d1117;
-  --bg-surface-elevated: #161b22;
-  --bg-surface-highlight: #21262d;
-  --border-subtle: #21262d;
-  --border-strong: #30363d;
-  --tns-primary: #22d3ee;
-  --metric-highlight: #38bdf8;
-  --cat-attack: #f43f5e;
-  --cat-possession: #38bdf8;
-  --cat-defense: #22d3ee;
-  --tns-amber: #f59e0b;
-}
-
+/* Tema padrão: preto e dourado */
+:root,
 .dark {
-  --background: #06080a;
-  --foreground: #f8fafc;
-  --card: #0d1117;
-  --card-foreground: #f8fafc;
-  --popover: #0d1117;
-  --popover-foreground: #f8fafc;
-  --primary: #22d3ee;
-  --primary-foreground: #000000;
-  --secondary: #161b22;
-  --secondary-foreground: #f8fafc;
-  --muted: #161b22;
-  --muted-foreground: #8b949e;
-  --accent: #22d3ee;
-  --accent-foreground: #000000;
+  --bg-app: #0c0c0d;
+  --bg-side: #101011;
+  --bg-panel: #161617;
+  --line: #2c2c2e;
+  --line-field: #3d3d40;
+  --track: #262628;
+  --text-1: #f4f2ee;
+  --text-2: #a9a59c;
+  --text-3: #cbc7be;
+  --tint: #2b2517;
+  --hero-end: #121213;
+  --brand: #d4a84b;
+  --on-brand: #1a1305;
+  --data-1: #22e5ff;
+  --data-2: #ff4da6;
+  --data-3: #b8ff3a;
+
+  --background: var(--bg-app);
+  --foreground: var(--text-1);
+  --card: var(--bg-panel);
+  --card-foreground: var(--text-1);
+  --popover: var(--bg-panel);
+  --popover-foreground: var(--text-1);
+  --primary: var(--brand);
+  --primary-foreground: var(--on-brand);
+  --secondary: var(--track);
+  --secondary-foreground: var(--text-1);
+  --muted: var(--track);
+  --muted-foreground: var(--text-2);
+  --accent: var(--tint);
+  --accent-foreground: var(--text-1);
   --destructive: #ef4444;
-  --border: #21262d;
-  --input: #21262d;
-  --ring: #22d3ee;
-  --chart-1: #22d3ee;
-  --chart-2: #38bdf8;
-  --chart-3: #818cf8;
+  --border: var(--line);
+  --input: var(--line-field);
+  --ring: var(--brand);
+  --chart-1: var(--data-1);
+  --chart-2: var(--data-2);
+  --chart-3: var(--data-3);
   --chart-4: #c084fc;
   --chart-5: #e879f9;
-  --sidebar: #06080a;
-  --sidebar-foreground: #f8fafc;
-  --sidebar-primary: #22d3ee;
-  --sidebar-primary-foreground: #000000;
-  --sidebar-accent: #161b22;
-  --sidebar-accent-foreground: #f8fafc;
-  --sidebar-border: #21262d;
-  --sidebar-ring: #22d3ee;
+  --radius: 0.625rem;
+  --sidebar: var(--bg-side);
+  --sidebar-foreground: var(--text-1);
+  --sidebar-primary: var(--brand);
+  --sidebar-primary-foreground: var(--on-brand);
+  --sidebar-accent: var(--tint);
+  --sidebar-accent-foreground: var(--text-1);
+  --sidebar-border: var(--line);
+  --sidebar-ring: var(--brand);
 
-  --bg-base: #06080a;
-  --bg-surface: #0d1117;
-  --bg-surface-elevated: #161b22;
-  --bg-surface-highlight: #21262d;
-  --border-subtle: #21262d;
-  --border-strong: #30363d;
-  --tns-primary: #22d3ee;
-  --metric-highlight: #38bdf8;
-  --cat-attack: #f43f5e;
-  --cat-possession: #38bdf8;
-  --cat-defense: #22d3ee;
-  --tns-amber: #f59e0b;
+  --bg-base: var(--bg-app);
+  --bg-surface: var(--bg-panel);
+  --bg-surface-elevated: var(--track);
+  --bg-surface-highlight: var(--line);
+  --border-subtle: var(--line);
+  --border-strong: var(--line-field);
+  --tns-primary: var(--brand);
+  --metric-highlight: var(--data-1);
+  --cat-attack: var(--data-2);
+  --cat-possession: var(--data-1);
+  --cat-defense: var(--data-3);
+  --tns-amber: var(--brand);
 }
 
 @layer base {
@@ -179,7 +177,8 @@
   }
   html,
   body {
-    font-family: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif;
+    font-family: var(--font-plex), ui-sans-serif, system-ui, sans-serif;
+    font-variant-numeric: tabular-nums;
   }
   body {
     @apply bg-background text-foreground font-sans;
@@ -188,21 +187,48 @@
     @apply font-sans;
   }
   h1,
+  h2,
   .font-heading {
-    font-family: var(--font-serif-luxury), Georgia, "Times New Roman", Cambria, serif;
+    font-family: var(--font-barlow), "Arial Narrow", sans-serif;
+    font-variant-numeric: tabular-nums;
   }
+  :focus-visible {
+    outline: 2px solid var(--brand);
+    outline-offset: 2px;
+  }
+}
+
+/* Painéis: 90% de opacidade sobre o fundo de estádio, com blur leve */
+[data-slot="card"],
+.card-executive {
+  background-color: color-mix(in srgb, var(--bg-panel) 90%, transparent);
+  backdrop-filter: blur(6px);
+}
+@media (prefers-reduced-transparency: reduce) {
+  [data-slot="card"],
+  .card-executive {
+    background-color: var(--bg-panel);
+    backdrop-filter: none;
+  }
+}
+
+/* Fundo de estádio (preto e branco) fixo atrás do conteúdo */
+.app-backdrop {
+  background-color: #09090a;
+  background-image:
+    linear-gradient(rgba(9, 9, 10, 0.62), rgba(9, 9, 10, 0.62)),
+    url("/bg-stadium.webp");
+  background-size: cover;
+  background-position: center;
 }
 
 /* ─── Enterprise Visual Enhancements ────────────────────────────────────────── */
 @layer components {
   .metric-highlight {
-    color: #10b981;
-    text-shadow: 0 0 10px rgba(16, 185, 129, 0.3);
+    color: var(--data-1);
   }
   .card-executive {
-    background-color: var(--bg-surface);
     border: 1px solid var(--border-subtle);
-    box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.45);
   }
   .stat-pill {
     background-color: var(--bg-surface-elevated);

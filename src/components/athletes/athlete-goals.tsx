@@ -206,7 +206,7 @@ export function AthleteGoals({
 
       {/* Add Dialog */}
       <Dialog open={isAddOpen} onOpenChange={setIsAddOpen}>
-        <DialogContent className="sm:max-w-[540px] bg-[#0d1017] border border-white/15 text-foreground shadow-2xl rounded-2xl">
+        <DialogContent className="sm:max-w-[540px] bg-card border border-white/15 text-foreground shadow-2xl rounded-2xl">
           <DialogHeader>
             <DialogTitle className="text-base font-black flex items-center gap-2 font-serif">
               <Target className="h-4 w-4 text-emerald-400" />
@@ -246,7 +246,7 @@ export function AthleteGoals({
                   <SelectTrigger className="bg-black/30 border-white/10 text-xs w-full">
                     <SelectValue placeholder="Selecione categoria" />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#12151e] border-white/15 text-foreground">
+                  <SelectContent className="bg-card border-white/15 text-foreground">
                     {GOAL_CATEGORIES.map((cat) => (
                       <SelectItem key={cat} value={cat} className="text-xs">
                         {cat}
@@ -264,7 +264,7 @@ export function AthleteGoals({
                   <SelectTrigger className="bg-black/30 border-white/10 text-xs w-full">
                     <SelectValue placeholder="Sem métrica vinculada" />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#12151e] border-white/15 text-foreground max-h-56">
+                  <SelectContent className="bg-card border-white/15 text-foreground max-h-56">
                     <SelectItem value="none" className="text-xs">
                       Objetivo Livre / Sem Métrica
                     </SelectItem>
@@ -318,7 +318,7 @@ export function AthleteGoals({
                   <SelectTrigger className="bg-black/30 border-white/10 text-xs w-full">
                     <SelectValue placeholder="Unidade" />
                   </SelectTrigger>
-                  <SelectContent className="bg-[#12151e] border-white/15 text-foreground">
+                  <SelectContent className="bg-card border-white/15 text-foreground">
                     {GOAL_UNITS.map((u) => (
                       <SelectItem key={u.value} value={u.value} className="text-xs">
                         {u.label}
@@ -445,8 +445,8 @@ export function AthleteGoals({
                 className={cn(
                   "relative rounded-xl border p-4.5 shadow-sm transition-all flex flex-col justify-between",
                   progress.isCompleted
-                    ? "bg-gradient-to-b from-emerald-950/20 to-[#0b1410]/60 border-emerald-500/30 shadow-emerald-500/5"
-                    : "bg-gradient-to-b from-[#131724]/90 to-[#0b0e17]/90 border-white/[0.09] hover:border-white/20"
+                    ? "bg-gradient-to-b from-emerald-950/20 to-card/60 border-emerald-500/30 shadow-emerald-500/5"
+                    : "bg-gradient-to-b from-card/90 to-card/90 border-white/[0.09] hover:border-white/20"
                 )}
               >
                 <div>

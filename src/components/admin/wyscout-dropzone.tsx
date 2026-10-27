@@ -109,7 +109,7 @@ export function WyscoutDropzone() {
   return (
     <div className="space-y-6 w-full">
       {/* ─── Hero Dropzone Card (Frosted Glass) ────────────────────────── */}
-      <Card className="rounded-3xl border border-white/[0.12] bg-[#0c101d]/75 backdrop-blur-2xl p-8 shadow-[0_12px_40px_rgba(0,0,0,0.6)] relative overflow-hidden">
+      <Card className="rounded-3xl border border-white/[0.12] bg-card/75 backdrop-blur-2xl p-8 shadow-[0_12px_40px_rgba(0,0,0,0.6)] relative overflow-hidden">
         {/* Glow Effects */}
         <div className="absolute -top-32 -right-32 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
         <div className="absolute -bottom-32 -left-32 w-96 h-96 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />
@@ -158,8 +158,8 @@ export function WyscoutDropzone() {
               isDragging
                 ? "border-emerald-400 bg-emerald-500/[0.08] scale-[1.01] shadow-[0_0_30px_rgba(16,185,129,0.25)]"
                 : selectedFile
-                ? "border-emerald-500/40 bg-[#121829]/60 hover:border-emerald-500/60"
-                : "border-white/[0.15] bg-[#0f1424]/40 hover:border-emerald-500/30 hover:bg-[#141b2f]/50"
+                ? "border-emerald-500/40 bg-card/60 hover:border-emerald-500/60"
+                : "border-white/[0.15] bg-card/40 hover:border-emerald-500/30 hover:bg-card/50"
             }`}
           >
             <input
@@ -257,7 +257,7 @@ export function WyscoutDropzone() {
 
       {/* ─── Resultado da Ingestão & Relatório de Fuzzy Match ────────────── */}
       {result && (
-        <Card className="rounded-3xl border border-white/[0.12] bg-[#0c101d]/85 backdrop-blur-2xl p-6 shadow-2xl space-y-6 animate-in fade-in duration-300">
+        <Card className="rounded-3xl border border-white/[0.12] bg-card/85 backdrop-blur-2xl p-6 shadow-2xl space-y-6 animate-in fade-in duration-300">
           {/* Header com Badge Verde de Auto-Detect Confirmado */}
           <div className="flex flex-wrap items-center justify-between gap-3 pb-2 border-b border-white/[0.08]">
             <div className="flex items-center gap-2">
@@ -329,13 +329,13 @@ export function WyscoutDropzone() {
                 value={filterQuery}
                 onChange={(e) => setFilterQuery(e.target.value)}
                 placeholder="Filtrar por nome ou time..."
-                className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-white/[0.1] bg-[#121828] text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/50"
+                className="w-full pl-9 pr-3 py-1.5 rounded-xl border border-white/[0.1] bg-card text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/50"
               />
             </div>
           </div>
 
           {/* Results Table */}
-          <div className="rounded-2xl border border-white/[0.08] overflow-hidden bg-[#090d18]">
+          <div className="rounded-2xl border border-white/[0.08] overflow-hidden bg-card">
             <div className="max-h-96 overflow-y-auto">
               <table className="w-full text-left text-xs">
                 <thead className="bg-white/[0.04] text-[10px] font-extrabold uppercase tracking-wider text-zinc-400 sticky top-0 backdrop-blur-md">

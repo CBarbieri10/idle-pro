@@ -27,6 +27,7 @@ import { CompareButton } from "@/components/compare/compare-button";
 import { StabilityBadge } from "@/components/athletes/stability-badge";
 import { AthleteTacticalAiSummary } from "@/components/athletes/athlete-tactical-ai-summary";
 import { AthleteTacticalInferenceCard } from "@/components/athletes/athlete-tactical-inference-card";
+import { AthleteHero } from "@/components/athletes/athlete-hero";
 import { AthleteTabsView } from "@/components/athletes/athlete-tabs-view";
 import {
   AthleteProfileTabs,
@@ -38,15 +39,13 @@ import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import {
   POSITION_LABELS,
-  POSITION_COLORS,
   formatFootPreference,
   formatHeight,
   formatWeight,
   formatAge,
   formatDate,
 } from "@/lib/domain";
-import { ArrowLeft, Shield, Globe, Sparkles } from "lucide-react";
-import Image from "next/image";
+import { ArrowLeft, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
@@ -65,27 +64,6 @@ export async function generateMetadata({
     title: `${athlete.name} | Overview Scout`,
     description: `Perfil e inteligência de performance de ${athlete.name} — ${POSITION_LABELS[athlete.position]}`,
   };
-}
-
-function KpiTile({ label, value, hint }: { label: string; value: string; hint?: string }) {
-  return (
-    <div className="rounded-xl border border-white/[0.1] bg-gradient-to-b from-[#131b2a]/95 to-[#080e18]/95 px-3 py-2.5 transition-all hover:border-[#00e676]/40">
-      <p className="truncate text-[10px] font-bold uppercase tracking-wider text-zinc-400">{label}</p>
-      <p className="mt-0.5 font-mono text-lg font-black leading-tight text-[#00e676] tabular-nums">
-        {value}
-      </p>
-      {hint && <p className="truncate text-[10px] font-mono text-zinc-500">{hint}</p>}
-    </div>
-  );
-}
-
-function InfoPill({ label, value }: { label: string; value: string }) {
-  return (
-    <div className="rounded-lg border border-white/10 bg-black/35 px-3 py-1.5 backdrop-blur-md">
-      <p className="text-[9px] font-bold uppercase tracking-wider text-white/50">{label}</p>
-      <p className="text-xs font-bold text-white">{value}</p>
-    </div>
-  );
 }
 
 export default async function AthleteProfilePage({
@@ -332,16 +310,9 @@ export default async function AthleteProfilePage({
 
   const overviewTab = (
     <div className="space-y-4">
-      {kpis.length > 0 && (
-        <div className="grid grid-cols-2 gap-2.5 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-9">
-          {kpis.map((k) => (
-            <KpiTile key={k.label} {...k} />
-          ))}
-        </div>
-      )}
 
       <div className="grid grid-cols-1 items-start gap-4 lg:grid-cols-12">
-        <div className="rounded-2xl border border-white/[0.12] bg-[#0c101d]/75 p-4 backdrop-blur-xl lg:col-span-7">
+        <div className="rounded-2xl border border-white/[0.12] bg-card/75 p-4 backdrop-blur-xl lg:col-span-7">
           <div className="mb-2 flex items-center justify-between">
             <h2 className="flex items-center gap-2 text-sm font-black uppercase tracking-wider text-white">
               <Sparkles className="h-4 w-4 text-emerald-400" />
@@ -393,7 +364,7 @@ export default async function AthleteProfilePage({
       />
 
       {isAnalystOrClub && (
-        <details className="group rounded-2xl border border-white/10 bg-[#0c101d]/75 p-4" id="athlete-metrics">
+        <details className="group rounded-2xl border border-white/10 bg-card/75 p-4" id="athlete-metrics">
           <summary className="flex cursor-pointer list-none items-center justify-between gap-3 text-xs font-black uppercase tracking-wider text-zinc-300">
             <span>Gerenciar lançamentos de scout</span>
             <span className="font-mono text-[10px] text-zinc-500 group-open:hidden">expandir</span>
@@ -579,107 +550,39 @@ export default async function AthleteProfilePage({
           </div>
         </div>
 
-        {/* ─── Hero compacto com ficha biográfica integrada ─────────────────── */}
-        <section className="relative">
-          <div className="hero-stage absolute inset-0 overflow-hidden rounded-2xl border border-border-strong shadow-2xl" />
-
-          <div className="relative z-10 flex flex-col items-start gap-5 p-5 sm:flex-row sm:items-center">
-            {athlete.photoUrl && athlete.photoHasAlpha ? (
-              <div className="relative h-[150px] w-[120px] shrink-0">
-                <Image
-                  src={athlete.photoUrl}
-                  alt={athlete.name}
-                  fill
-                  priority
-                  className="object-contain object-bottom drop-shadow-[0_20px_30px_rgba(0,0,0,0.6)]"
-                  sizes="120px"
-                  unoptimized
-                />
-              </div>
-            ) : athlete.photoUrl ? (
-              <div className="relative h-28 w-24 shrink-0 overflow-hidden rounded-2xl border border-indigo-500/30 shadow-xl ring-2 ring-indigo-500/40">
-                <Image
-                  src={athlete.photoUrl}
-                  alt={athlete.name}
-                  fill
-                  priority
-                  className="object-cover"
-                  sizes="96px"
-                  unoptimized
-                />
-              </div>
-            ) : (
-              <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-2xl bg-indigo-500/20 text-2xl font-black text-indigo-400 ring-1 ring-indigo-500/30">
-                {initials}
-              </div>
-            )}
-
-            <div className="min-w-0 flex-1">
-              <div className="flex items-start justify-between gap-4">
-                <div className="min-w-0">
-                  <div className="mb-1.5 flex flex-wrap items-center gap-2">
-                    <Badge
-                      className={`border-0 px-2 py-0.5 text-[10px] font-bold ${POSITION_COLORS[athlete.position]}`}
-                    >
-                      {positionLabel}
-                    </Badge>
-                    {((athlete.idgScore !== undefined && athlete.idgScore !== null) ||
-                      athlete.stabilityCategory) && (
-                      <StabilityBadge
-                        idgScore={athlete.idgScore}
-                        category={athlete.stabilityCategory}
-                        size="sm"
-                      />
-                    )}
-                  </div>
-                  <h1 className="truncate text-2xl font-black tracking-tight text-white">
-                    {athlete.name}
-                  </h1>
-                </div>
-
-                {isAnalystOrClub && (
-                  <div className="flex shrink-0 items-center gap-1.5">
-                    <EditAthleteButton athlete={athlete} teams={teamList} />
-                    <DeleteAthleteButton id={athlete.id} name={athlete.name} />
-                  </div>
-                )}
-              </div>
-
-              <div className="mt-3 flex flex-wrap items-center gap-2">
-                <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-black/35 px-3 py-1.5 backdrop-blur-md">
-                  {athlete.team?.logoUrl ? (
-                    // eslint-disable-next-line @next/next/no-img-element
-                    <img src={athlete.team.logoUrl} alt={athlete.team.name} className="h-5 w-5 object-contain" />
-                  ) : (
-                    <Shield className="h-4 w-4 text-indigo-400" />
-                  )}
-                  <div>
-                    <p className="text-[9px] font-bold uppercase tracking-wider text-white/50">Clube</p>
-                    <p className="text-xs font-bold text-white">{athlete.team?.name ?? "Sem Clube"}</p>
-                  </div>
-                </div>
-                {athlete.nationality && (
-                  <div className="flex items-center gap-2 rounded-lg border border-white/10 bg-black/35 px-3 py-1.5 backdrop-blur-md">
-                    <Globe className="h-4 w-4 text-indigo-400" />
-                    <div>
-                      <p className="text-[9px] font-bold uppercase tracking-wider text-white/50">Nacionalidade</p>
-                      <p className="text-xs font-bold text-white">{athlete.nationality}</p>
-                    </div>
-                  </div>
-                )}
-                {athlete.birthDate && (
-                  <InfoPill
-                    label="Idade"
-                    value={`${formatAge(athlete.birthDate)} • ${formatDate(athlete.birthDate)}`}
-                  />
-                )}
-                <InfoPill label="Altura" value={formatHeight(athlete.height)} />
-                {athlete.weight ? <InfoPill label="Peso" value={formatWeight(athlete.weight)} /> : null}
-                <InfoPill label="Pé" value={formatFootPreference(athlete.footPreference)} />
-              </div>
-            </div>
-          </div>
-        </section>
+        {/* ─── Cabeçalho do atleta: cor e escudo do clube, foto PNG, dados e números ─── */}
+        <AthleteHero
+          name={athlete.name}
+          initials={initials}
+          positionLabel={positionLabel}
+          teamName={athlete.team?.name ?? null}
+          teamLogoUrl={athlete.team?.logoUrl ?? null}
+          photoUrl={athlete.photoUrl ?? null}
+          photoHasAlpha={Boolean(athlete.photoHasAlpha)}
+          info={[
+            ...(athlete.nationality ? [{ label: "Nacionalidade", value: athlete.nationality }] : []),
+            ...(athlete.birthDate
+              ? [{ label: "Idade", value: `${formatAge(athlete.birthDate)} • ${formatDate(athlete.birthDate)}` }]
+              : []),
+            { label: "Altura", value: formatHeight(athlete.height) },
+            ...(athlete.weight ? [{ label: "Peso", value: formatWeight(athlete.weight) }] : []),
+            { label: "Pé", value: formatFootPreference(athlete.footPreference) },
+          ]}
+          kpis={kpis}
+          badges={
+            (athlete.idgScore !== undefined && athlete.idgScore !== null) || athlete.stabilityCategory ? (
+              <StabilityBadge idgScore={athlete.idgScore} category={athlete.stabilityCategory} size="sm" />
+            ) : null
+          }
+          actions={
+            isAnalystOrClub ? (
+              <>
+                <EditAthleteButton athlete={athlete} teams={teamList} />
+                <DeleteAthleteButton id={athlete.id} name={athlete.name} />
+              </>
+            ) : null
+          }
+        />
 
         <AthleteProfileTabs tabs={tabs} />
       </div>

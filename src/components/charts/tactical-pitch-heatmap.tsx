@@ -115,7 +115,7 @@ export function TacticalPitchHeatmap({
         "flex flex-col rounded-2xl border p-4 shadow-xl select-none",
         isEditorial
           ? "border-zinc-200 bg-white text-zinc-950 shadow-sm print:shadow-none print:border-zinc-300"
-          : "border-[#1e2638] bg-[#0c0f17] text-white",
+          : "border-border bg-card text-white",
         className
       )}
       style={{
@@ -127,7 +127,7 @@ export function TacticalPitchHeatmap({
       <div
         className={cn(
           "flex items-center justify-between pb-2 mb-3 border-b",
-          isEditorial ? "border-zinc-200" : "border-[#1e2638]"
+          isEditorial ? "border-zinc-200" : "border-border"
         )}
       >
         <div className="flex items-center gap-2">
@@ -136,7 +136,7 @@ export function TacticalPitchHeatmap({
               "h-6 w-6 rounded border flex items-center justify-center",
               isEditorial
                 ? "bg-emerald-50 border-emerald-300 text-emerald-700"
-                : "bg-[#00e676]/20 border-[#00e676]/40 text-[#00e676]"
+                : "bg-brand/20 border-brand/40 text-data-1"
             )}
           >
             <Flame className="h-3.5 w-3.5" />
@@ -155,7 +155,7 @@ export function TacticalPitchHeatmap({
             "text-[10px] font-bold px-2 py-0.5 rounded-full border font-mono",
             isEditorial
               ? "text-emerald-800 bg-emerald-50 border-emerald-200"
-              : "text-[#00e676] bg-[#00e676]/10 border-[#00e676]/30"
+              : "text-data-1 bg-brand/10 border-brand/30"
           )}
         >
           Ataque &uarr;
@@ -190,7 +190,7 @@ export function TacticalPitchHeatmap({
               <stop offset="0%" stopColor="#ff1744" stopOpacity="0.95" />
               <stop offset="40%" stopColor="#ff9100" stopOpacity="0.80" />
               <stop offset="75%" stopColor="#ffea00" stopOpacity="0.55" />
-              <stop offset="90%" stopColor="#00e676" stopOpacity="0.30" />
+              <stop offset="90%" stopColor="var(--data-1)" stopOpacity="0.30" />
               <stop offset="100%" stopColor="#00e5ff" stopOpacity="0" />
             </radialGradient>
 
@@ -272,7 +272,7 @@ export function TacticalPitchHeatmap({
       <div
         className={cn(
           "mt-3.5 grid grid-cols-5 gap-1 border-t pt-3 text-center",
-          isEditorial ? "border-zinc-200" : "border-[#1e2638]"
+          isEditorial ? "border-zinc-200" : "border-border"
         )}
       >
         <div className="flex flex-col items-center">
@@ -287,7 +287,7 @@ export function TacticalPitchHeatmap({
           <div
             className={cn(
               "h-1.5 w-5 rounded-full mt-1",
-              isEditorial ? "bg-emerald-600" : "bg-[#00e676] shadow-[0_0_8px_#00e676]"
+              isEditorial ? "bg-emerald-600" : "bg-brand shadow-[0_0_8px_#00e676]"
             )}
           />
           <span
@@ -312,7 +312,7 @@ export function TacticalPitchHeatmap({
           <div
             className={cn(
               "h-1.5 w-5 rounded-full mt-1",
-              isEditorial ? "bg-emerald-600" : "bg-[#00e676] shadow-[0_0_8px_#00e676]"
+              isEditorial ? "bg-emerald-600" : "bg-brand shadow-[0_0_8px_#00e676]"
             )}
           />
           <span
@@ -329,7 +329,7 @@ export function TacticalPitchHeatmap({
           <span
             className={cn(
               "text-xs font-black font-mono",
-              isEditorial ? "text-emerald-700" : "text-[#00e676]"
+              isEditorial ? "text-emerald-700" : "text-data-1"
             )}
           >
             {goals}
@@ -337,7 +337,7 @@ export function TacticalPitchHeatmap({
           <div
             className={cn(
               "h-1.5 w-5 rounded-full mt-1",
-              isEditorial ? "bg-emerald-600" : "bg-[#00e676] shadow-[0_0_8px_#00e676]"
+              isEditorial ? "bg-emerald-600" : "bg-brand shadow-[0_0_8px_#00e676]"
             )}
           />
           <span
@@ -354,7 +354,7 @@ export function TacticalPitchHeatmap({
           <span
             className={cn(
               "text-xs font-black font-mono",
-              isEditorial ? "text-emerald-700" : "text-[#00e676]"
+              isEditorial ? "text-emerald-700" : "text-data-1"
             )}
           >
             {assists}
@@ -362,7 +362,7 @@ export function TacticalPitchHeatmap({
           <div
             className={cn(
               "h-1.5 w-5 rounded-full mt-1",
-              isEditorial ? "bg-emerald-600" : "bg-[#00e676] shadow-[0_0_8px_#00e676]"
+              isEditorial ? "bg-emerald-600" : "bg-brand shadow-[0_0_8px_#00e676]"
             )}
           />
           <span
@@ -401,7 +401,7 @@ export function TacticalPitchHeatmap({
         <div
           className={cn(
             "mt-3.5 border-t pt-3",
-            isEditorial ? "border-zinc-200" : "border-[#1e2638]"
+            isEditorial ? "border-zinc-200" : "border-border"
           )}
         >
           <p
@@ -419,7 +419,7 @@ export function TacticalPitchHeatmap({
                 "rounded-lg p-2 border",
                 isEditorial
                   ? "bg-zinc-50 border-zinc-200 text-zinc-950"
-                  : "bg-[#121622] border-[#1e2638] text-white"
+                  : "bg-card border-border text-white"
               )}
             >
               <p className="text-sm font-black">{age ?? "—"}</p>
@@ -438,7 +438,7 @@ export function TacticalPitchHeatmap({
                 "rounded-lg p-2 border",
                 isEditorial
                   ? "bg-zinc-50 border-zinc-200 text-zinc-950"
-                  : "bg-[#121622] border-[#1e2638] text-white"
+                  : "bg-card border-border text-white"
               )}
             >
               <p className="text-sm font-black">{formatHeight(height)}</p>
@@ -457,7 +457,7 @@ export function TacticalPitchHeatmap({
                 "rounded-lg p-2 border",
                 isEditorial
                   ? "bg-zinc-50 border-zinc-200 text-zinc-950"
-                  : "bg-[#121622] border-[#1e2638] text-white"
+                  : "bg-card border-border text-white"
               )}
             >
               <p className="text-sm font-black">{formatWeight(weight)}</p>
@@ -476,13 +476,13 @@ export function TacticalPitchHeatmap({
                 "rounded-lg p-2 border",
                 isEditorial
                   ? "bg-zinc-50 border-zinc-200 text-zinc-950"
-                  : "bg-[#121622] border-[#1e2638] text-white"
+                  : "bg-card border-border text-white"
               )}
             >
               <p
                 className={cn(
                   "text-xs font-black",
-                  isEditorial ? "text-emerald-700" : "text-[#00e676]"
+                  isEditorial ? "text-emerald-700" : "text-data-1"
                 )}
               >
                 {position === "RIGHT_WING" || position === "STRIKER" ? "€ 45M" : "€ 18M"}
@@ -502,7 +502,7 @@ export function TacticalPitchHeatmap({
                 "rounded-lg p-2 border",
                 isEditorial
                   ? "bg-zinc-50 border-zinc-200 text-zinc-950"
-                  : "bg-[#121622] border-[#1e2638] text-white"
+                  : "bg-card border-border text-white"
               )}
             >
               <p
@@ -528,7 +528,7 @@ export function TacticalPitchHeatmap({
                 "rounded-lg p-2 border",
                 isEditorial
                   ? "bg-zinc-50 border-zinc-200 text-zinc-950"
-                  : "bg-[#121622] border-[#1e2638] text-white"
+                  : "bg-card border-border text-white"
               )}
             >
               <p className="text-xs font-black">{FOOT_LABELS[footPreference]}</p>

@@ -106,7 +106,7 @@ export function VideoPlayerModal({ clip, isOpen, onClose }: VideoPlayerModalProp
       onClick={onClose}
     >
       <div
-        className="relative w-full max-w-4xl rounded-2xl border border-white/15 bg-[#0a0d14]/95 shadow-[0_0_50px_rgba(0,0,0,0.8),0_0_30px_rgba(16,185,129,0.1)] overflow-hidden flex flex-col max-h-[92vh] animate-in zoom-in-95 duration-200"
+        className="relative w-full max-w-4xl rounded-2xl border border-white/15 bg-card/95 shadow-[0_0_50px_rgba(0,0,0,0.8),0_0_30px_rgba(16,185,129,0.1)] overflow-hidden flex flex-col max-h-[92vh] animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Header Superior */}
@@ -215,7 +215,7 @@ export function VideoPlayerModal({ clip, isOpen, onClose }: VideoPlayerModalProp
         </div>
 
         {/* Informações Táticas & Atleta */}
-        <div className="p-5 space-y-4 bg-gradient-to-b from-[#0e121b] to-[#07090f] overflow-y-auto">
+        <div className="p-5 space-y-4 bg-gradient-to-b from-card to-card overflow-y-auto">
           <div>
             <h2 className="text-lg sm:text-xl font-black text-white tracking-tight leading-snug">
               {clip.title}

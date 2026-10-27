@@ -44,7 +44,7 @@ export function AthleteTacticalInferenceCard({
     switch (tone) {
       case "alert":
         return {
-          cardBg: "from-amber-500/[0.08] via-[#141a29]/80 to-[#0c101d]/90",
+          cardBg: "from-amber-500/[0.08] via-card/80 to-card/90",
           borderColor: "border-amber-500/30 hover:border-amber-500/50",
           iconColor: "text-amber-400 bg-amber-500/10 border-amber-500/20",
           badgeBg: "bg-amber-500/15 text-amber-300 border-amber-500/30",
@@ -53,7 +53,7 @@ export function AthleteTacticalInferenceCard({
         };
       case "praise":
         return {
-          cardBg: "from-emerald-500/[0.08] via-[#141a29]/80 to-[#0c101d]/90",
+          cardBg: "from-emerald-500/[0.08] via-card/80 to-card/90",
           borderColor: "border-emerald-500/30 hover:border-emerald-500/50",
           iconColor: "text-emerald-400 bg-emerald-500/10 border-emerald-500/20",
           badgeBg: "bg-emerald-500/15 text-emerald-300 border-emerald-500/30",
@@ -62,7 +62,7 @@ export function AthleteTacticalInferenceCard({
         };
       case "cognitive":
         return {
-          cardBg: "from-cyan-500/[0.08] via-[#141a29]/80 to-[#0c101d]/90",
+          cardBg: "from-cyan-500/[0.08] via-card/80 to-card/90",
           borderColor: "border-cyan-500/30 hover:border-cyan-500/50",
           iconColor: "text-cyan-400 bg-cyan-500/10 border-cyan-500/20",
           badgeBg: "bg-cyan-500/15 text-cyan-300 border-cyan-500/30",
@@ -72,7 +72,7 @@ export function AthleteTacticalInferenceCard({
       case "info":
       default:
         return {
-          cardBg: "from-indigo-500/[0.08] via-[#141a29]/80 to-[#0c101d]/90",
+          cardBg: "from-indigo-500/[0.08] via-card/80 to-card/90",
           borderColor: "border-indigo-500/30 hover:border-indigo-500/50",
           iconColor: "text-indigo-400 bg-indigo-500/10 border-indigo-500/20",
           badgeBg: "bg-indigo-500/15 text-indigo-300 border-indigo-500/30",
@@ -83,7 +83,7 @@ export function AthleteTacticalInferenceCard({
   };
 
   return (
-    <Card className="rounded-2xl border border-white/[0.12] bg-[#0c101d]/75 backdrop-blur-xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.5)] relative overflow-hidden">
+    <Card className="rounded-2xl border border-white/[0.12] bg-card/75 backdrop-blur-xl p-6 shadow-[0_8px_32px_rgba(0,0,0,0.5)] relative overflow-hidden">
       {/* Decorative ambient gradients */}
       <div className="absolute -top-24 -right-24 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none" />
       <div className="absolute -bottom-24 -left-24 w-80 h-80 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none" />

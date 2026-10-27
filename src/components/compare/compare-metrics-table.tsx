@@ -32,7 +32,7 @@ export function CompareMetricsTable({
   return (
     <div className="space-y-4">
       {/* ─── Placar de Confronto Geral (Scoreboard) ─────────────────────────── */}
-      <div className="rounded-2xl border border-white/10 bg-[#0c101d]/90 backdrop-blur-xl p-4 shadow-xl">
+      <div className="rounded-2xl border border-white/10 bg-card/90 backdrop-blur-xl p-4 shadow-xl">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-white/[0.08]">
           <div className="flex items-center gap-2">
             <span className="h-6 w-6 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center justify-center text-amber-400">
@@ -100,12 +100,12 @@ export function CompareMetricsTable({
       </div>
 
       {/* ─── Tabela Head-to-Head Detalhada com Coluna Fixa e Célula Vencedora ─ */}
-      <div className="rounded-2xl border border-white/10 bg-[#0c101d]/90 backdrop-blur-xl overflow-hidden shadow-2xl">
+      <div className="rounded-2xl border border-white/10 bg-card/90 backdrop-blur-xl overflow-hidden shadow-2xl">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse">
             <thead>
               <tr className="border-b border-white/10 bg-white/[0.02] text-[11px] font-mono uppercase text-zinc-400 tracking-wider">
-                <th className="py-3 px-4 min-w-[200px] sticky left-0 bg-[#0c101d] z-10 border-r border-white/5 shadow-sm">
+                <th className="py-3 px-4 min-w-[200px] sticky left-0 bg-card z-10 border-r border-white/5 shadow-sm">
                   Métrica Analisada
                 </th>
                 {athletes.map((a) => {
@@ -144,7 +144,7 @@ export function CompareMetricsTable({
               {tableRows.map((row) => (
                 <tr key={row.key} className="hover:bg-white/[0.02] transition-colors">
                   {/* Primeira Coluna Fixa: Nome da Métrica & Categoria */}
-                  <td className="py-3 px-4 sticky left-0 bg-[#0c101d] z-10 border-r border-white/5">
+                  <td className="py-3 px-4 sticky left-0 bg-card z-10 border-r border-white/5">
                     <div className="flex items-center gap-2">
                       <Badge
                         variant="outline"
